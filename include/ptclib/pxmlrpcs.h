@@ -80,7 +80,7 @@ class PXMLRPCServerResource : public PHTTPResource
     );
 
   protected:
-    PMutex methodMutex;
+    PDECLARE_MUTEX(methodMutex);
     PXMLRPCServerMethodList methodList;
 };
 

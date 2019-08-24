@@ -36,13 +36,14 @@
 #include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
-#ifndef _WIN32_WCE
 #include <share.h>
 #ifdef _WIN32
 #include <WERAPI.H>
 #pragma comment(lib,"wer")
 #endif
-#endif
+
+
+#define PTraceModule() "PTLib"
 
 
 ostream & operator<<(ostream & s, PInt64 v)
@@ -364,55 +365,6 @@ PBoolean PFile::Remove(const PString & name, PBoolean force)
 }
 
 
-#ifdef _WIN32_WCE
-time_t	FileTimeToTime(const FILETIME FileTime);
-time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
-
-bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
-{
-  PString fn = name;
-  PINDEX pos = fn.GetLength()-1;
-  while (PDirectory::IsSeparator(fn[pos]))
-    pos--;
-  fn.Delete(pos+1, P_MAX_INDEX);
-  
-  HANDLE hFile = CreateFile(fn.AsUCS2(),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-  if (hFile==INVALID_HANDLE_VALUE) 
-    return false;
-  
-  bool res=false;
-  BY_HANDLE_FILE_INFORMATION FInfo;
-  if (GetFileInformationByHandle(hFile,&FInfo))
-  {
-    info.created = FileTimeToTime(FInfo.ftCreationTime);
-    info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
-    info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
-    info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);
-    
-    info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
-    
-    if ((FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY)==0)
-      info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
-    
-    if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
-    {
-      info.type = PFileInfo::SubDirectory;
-      info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
-    }
-    else
-    {
-      info.type = PFileInfo::RegularFile;
-    }
-    info.hidden = (FInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)!=0;
-    res=true;
-  }
-  
-  CloseHandle(hFile);
-  return res;
-}
-
-#else // !_WIN32_WCE
-
 #if defined(_WIN32)
 
 static void TwiddleBits(PFileInfo::Permissions newPermissions,
@@ -593,11 +545,10 @@ bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   return true;
 }
 
-#endif // _WIN32_WCE
 
 bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permissions)
 {
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32)
   FileSecurityPermissions(name, permissions);
 #endif
 
@@ -650,8 +601,8 @@ bool PFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions
   if (opts & Truncate)
     oflags |= O_TRUNC;
 
-  if (opts & Temporary)
-    m_removeOnClose = true;
+  if (opts != ModeDefault)
+    m_removeOnClose = opts & Temporary;
 
   int sflags = _SH_DENYNO;
   if (opts & DenySharedRead)
@@ -713,16 +664,17 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   if (!PAssert(type >= StandardInput && type <= StandardError, PInvalidParameter))
     return false;
 
-#ifdef _WIN32_WCE
-  return false;
-#else
   static DWORD HandleNames[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
   if (!m_hConsole.Duplicate(GetStdHandle(HandleNames[type])))
     return ConvertOSError(-2);
 
+  if (type == StandardInput)
+    SetConsoleCP(CP_UTF8);
+  else
+    SetConsoleOutputCP(CP_UTF8);
+
   os_handle = type;
   return true;
-#endif
 }
 
 
@@ -734,6 +686,9 @@ PString PConsoleChannel::GetName() const
 
 int PConsoleChannel::ReadChar()
 {
+  if (CheckNotOpen())
+    return -1;
+
   {
     DWORD mode;
     if (!GetConsoleMode(m_hConsole, &mode))
@@ -746,7 +701,10 @@ int PConsoleChannel::ReadChar()
     INPUT_RECORD input;
     DWORD numRead;
     if (!ReadConsoleInput(m_hConsole, &input, 1, &numRead))
-      return PChannel::ReadChar();
+      return ConvertOSError(-2, LastReadError);
+
+    if (CheckNotOpen())
+      return -1;
 
     if (numRead == 0)
       continue;
@@ -820,21 +778,21 @@ int PConsoleChannel::ReadChar()
 
 PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   DWORD readBytes;
   if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL))
     return SetLastReadCount(readBytes) > 0;
 
-  return ConvertOSError(-2, LastWriteError);
+  return ConvertOSError(-2, LastReadError);
 }
 
 
 PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   flush();
 
@@ -848,11 +806,20 @@ PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 
 PBoolean PConsoleChannel::Close()
 {
-  if (!m_hConsole.IsValid())
+  if (!IsOpen())
     return false;
 
-  m_hConsole.Close();
+  PTRACE(4, "PTLib", "Closing console channel.");
   os_handle = -1;
+
+  INPUT_RECORD input;
+  memset(&input, 0, sizeof(input));
+  DWORD written = 0;
+  if (!WriteConsoleInput(m_hConsole, &input, 1, &written) || written != 1) {
+    PTRACE(2, "WriteConsoleInput failed: error=" << ::GetLastError());
+  }
+
+  m_hConsole.Close();
   return true;
 }
 
@@ -871,8 +838,8 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 
 bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   CONSOLE_SCREEN_BUFFER_INFO info;
   if (!GetConsoleScreenBufferInfo(m_hConsole, &info))
@@ -889,11 +856,11 @@ bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 
 bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 {
-  if (os_handle != StandardInput)
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+  if (os_handle != StandardInput)
+    return SetErrorValues(Miscellaneous, EINVAL);
 
   DWORD mode;
   if (!GetConsoleMode(m_hConsole, &mode))
@@ -911,30 +878,13 @@ bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#ifdef _WIN32_WCE
-
-PBoolean PProcess::IsGUIProcess() const
-{
-  return true;
-}
-
-void PProcess::AddRunTimeSignalHandlers()
-{
-}
-
-void PProcess::RemoveRunTimeSignalHandlers()
-{
-}
-
-#else // _WIN32_WCE
-
 #ifdef _WIN32
 
 LONG WINAPI MyExceptionHandler(_EXCEPTION_POINTERS * info)
 {
   ostringstream str;
   str << "Unhandled exception: code=" << info->ExceptionRecord->ExceptionCode
-      << ", when=" << PTime().AsString(PTime::LoggingFormat) << ends;
+      << ", when=" << PTime().AsString(PTime::LoggingFormat PTRACE_PARAM(, PTrace::GetTimeZone())) << ends;
   
   PAssertAlways(str.str().c_str());
   ExitProcess(1);
@@ -979,8 +929,6 @@ POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
   { }
 };
 
-#endif // _WIN32_WCE
-
 
 void PProcess::PlatformConstruct()
 {
@@ -993,6 +941,11 @@ void PProcess::PlatformConstruct()
   ws._version = _QWINVER;
   ws._type = _WINSIZEMAX;
   _wsetsize(1, &ws);
+#else
+  extern LONG WINAPI PExceptionHandler(PEXCEPTION_POINTERS info);
+  SetUnhandledExceptionFilter(PExceptionHandler);
+  PTRACE_PARAM(HRESULT result =) WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
+  PTRACE_IF(1, result != S_OK, "PTLib", "Error excluding application from WER crash dialogs: err=" << result);
 #endif
 }
 

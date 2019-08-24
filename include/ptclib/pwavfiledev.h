@@ -38,7 +38,6 @@
 
 #include <ptlib/sound.h>
 #include <ptclib/pwavfile.h>
-#include <ptclib/delaychan.h>
 
 #if defined(P_WAVFILE)
 
@@ -48,48 +47,26 @@
 // This class defines a sound channel device that reads audio from a raw WAV file
 //
 
-class PSoundChannel_WAVFile : public PSoundChannel
+class PSoundChannel_WAVFile : public PSoundChannelEmulation
 {
-  PCLASSINFO(PSoundChannel_WAVFile, PSoundChannel);
+  PCLASSINFO(PSoundChannel_WAVFile, PSoundChannelEmulation);
   public:
     PSoundChannel_WAVFile();
     ~PSoundChannel_WAVFile();
+
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    bool Open(const Params & params);
+
+    virtual bool Open(const Params & params);
     virtual PString GetName() const;
-    PBoolean Close();
-    PBoolean IsOpen() const;
-    PBoolean Write(const void * buf, PINDEX len);
-    PBoolean Read(void * buf, PINDEX len);
-    PBoolean SetFormat(unsigned numChannels,
-                   unsigned sampleRate,
-                   unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
-    PBoolean SetBuffers(PINDEX size, PINDEX count);
-    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-    PBoolean HasPlayCompleted();
-    PBoolean WaitForPlayCompletion();
-    PBoolean StartRecording();
-    PBoolean IsRecordBufferFull();
-    PBoolean AreAllRecordBuffersFull();
-    PBoolean WaitForRecordBufferFull();
-    PBoolean WaitForAllRecordBuffersFull();
-    PBoolean SetVolume(unsigned volume);
-    PBoolean GetVolume(unsigned & volume);
-    bool SetMute(bool mute);
-    bool GetMute(bool & mute);
+    virtual PBoolean Close();
+    virtual PBoolean IsOpen() const;
 
   protected:
-    PINDEX         m_bufferSize;
-    PINDEX         m_bufferCount;
-    PINDEX         m_bufferPos;
-    PBYTEArray     m_buffer;
-    bool           m_autoRepeat;
-    PWAVFile       m_WAVFile;
-    PAdaptiveDelay m_Pacing;
-    bool           m_muted;
+    virtual bool RawWrite(const void * data, PINDEX size);
+    virtual bool RawRead(void * data, PINDEX size);
+    virtual bool Rewind();
+
+    PWAVFile m_WAVFile;
 };
 
 

@@ -58,16 +58,78 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 }
 
 
-void PTimeInterval::PrintOn(ostream & stream) const
+void PTimeInterval::PrintOn(ostream & strm) const
 {
-  Formats format;
-  if ((stream.flags()&ios::floatfield) != ios::scientific)
-    format = NormalFormat;
-  else if (stream.flags()&ios::showbase)
-    format = SecondsSI;
-  else
-    format = SecondsOnly;
-  stream << AsString((int)stream.precision(), format, (int)stream.width());
+  PInt64 ns = GetNanoSeconds();
+
+  std::streamsize decimals = strm.precision();
+
+  if ((strm.flags()&ios::floatfield) == ios::scientific) {
+    if ((strm.flags()&ios::showbase) != 0 && ns < SecsToNano)
+      strm << PString(PString::ScaleSI, ns/(double)SecsToNano, (unsigned)decimals);
+    else {
+      ios::fmtflags oldMode = strm.flags()&ios::floatfield;
+      strm << fixed << ns/(double)SecsToNano;
+      strm.setf(oldMode, ios::floatfield);
+    }
+    return;
+  }
+
+  bool includeDays;
+  if (decimals > 0)
+    includeDays = (strm.flags()&ios::showbase) != 0;
+  else {
+    includeDays = true;
+    decimals = -decimals;
+  }
+
+  if (decimals > 9)
+    decimals = 9; // Can't be more than nanoseconds
+  std::streamsize decimalsWidth = decimals > 0 ? decimals+1 : 0;
+
+  std::streamsize width = strm.width();
+  std::streamsize nextFieldWidth = 0;
+
+  char oldFill = strm.fill();
+  ios::fmtflags adjustMode = strm.flags()&ios_base::adjustfield;
+  strm << right;
+
+  if (includeDays && (ns > DaysToNano || width > (decimalsWidth + 9))) {
+    strm << setw(width-decimalsWidth-9) << ns/DaysToNano << 'd' << setfill('0');
+    if (ns < 0)
+      ns = -ns;
+    ns = ns % DaysToNano;
+    nextFieldWidth = 2;
+  }
+
+  if (nextFieldWidth > 0 || ns >= HoursToNano || width > (decimalsWidth + 6)) {
+    strm << setw(nextFieldWidth > 0 ? nextFieldWidth : (width-decimalsWidth-6)) << ns/HoursToNano << ':' << setfill('0');
+    nextFieldWidth = 2;
+  }
+
+  if (ns < 0)
+    ns = -ns;
+  ns = ns % HoursToNano;
+  if (nextFieldWidth > 0 || ns >= MinsToNano || width > (decimalsWidth + 3)) {
+    strm << setw(nextFieldWidth > 0 ? nextFieldWidth : (width-decimalsWidth-3)) << ns/MinsToNano << ':' << setfill('0');
+    nextFieldWidth = 2;
+  }
+
+  if (ns < 0)
+    ns = -ns;
+  strm << setw(nextFieldWidth > 0 ? nextFieldWidth : (width-decimalsWidth)) << (ns % MinsToNano)/SecsToNano;
+
+  ns = ns%SecsToNano;
+
+  if (decimals > 0) {
+    int64_t powerOfTen = SecsToNano;
+    for (int i = 0; i < decimals; ++i)
+      powerOfTen /= 10;
+    strm << '.' << setfill('0') << setw(decimals) << std::min((ns+powerOfTen/2)/powerOfTen, SecsToNano/powerOfTen-1);
+  }
+
+  strm.setf(adjustMode, ios::adjustfield);
+  strm.fill(oldFill);
 }
 
 
@@ -93,64 +155,18 @@ void PTimeInterval::ReadFrom(istream &strm)
 PString PTimeInterval::AsString(int precision, Formats format, int width) const
 {
   PStringStream str;
-
-  str << right << setfill('0');
-
-  if (precision <= 0 && format == NormalFormat) {
-    format = IncludeDays;
-    precision = -precision;
-  }
-  if (precision > 9)
-    precision = 9;
-
-  PInt64 ns = GetNanoSeconds();
-  if (ns < 0) {
-    str << '-';
-    ns = -ns;
-  }
-
   switch (format) {
-  case SecondsSI :
-    if (ns < SecsToNano)
-      return str + PString(PString::ScaleSI, ns/(double)SecsToNano, precision);
-    // else next case
-
-  case SecondsOnly :
-    str << ns/SecsToNano;
-    break;
-
-  default :
-    std::streamsize digits = 1;
-
-    if (format == IncludeDays && (ns > DaysToNano || width > (precision + 10))) {
-      str << ns/DaysToNano << 'd';
-      ns = ns % DaysToNano;
-      digits = 2;
-    }
-
-    if (digits > 1 || ns >= HoursToNano || width > (precision + 7)) {
-      str << setw(digits) << ns/HoursToNano << ':';
-      digits = 2;
-    }
-
-    ns = ns % HoursToNano;
-    if (digits > 1 || ns >= MinsToNano || width > (precision + 4)) {
-      str << setw(digits) << ns/MinsToNano << ':';
-      digits = 2;
-    }
-
-    str << setw(digits) << (ns % MinsToNano)/SecsToNano;
+    default :
+      str << fixed;
+      break;
+    case SecondsSI :
+      str << scientific << showbase;
+      break;
+    case SecondsOnly :
+      str << scientific << noshowbase;
+      break;
   }
-
-  ns = ns%SecsToNano;
-
-  if (precision > 0) {
-    int64_t powerOfTen = SecsToNano;
-    for (int i = 0; i < precision; ++i)
-      powerOfTen /= 10;
-    str << '.' << setw(precision) << (int)(ns%SecsToNano+powerOfTen/2)/powerOfTen;
-  }
-
+  str << setprecision(format == IncludeDays ? -precision : precision) << setw(width) << *this;
   return str;
 }
 
@@ -296,6 +312,9 @@ PUInt64 PTime::GetNTP() const
 
 bool PTime::InternalLocalTime(struct tm & ts) const
 {
+  if (!IsValid())
+    return false;
+
   time_t t = m_microSecondsSinceEpoch.load()/Micro;
   return os_localtime(&t, &ts) != NULL;
 }
@@ -385,7 +404,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyyMMddThhmmssZ", zone);
 
     case LongISO8601 :
-      return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
+      return AsString("yyyy-MM-ddThh:mm:ss.uuuZ", zone);
 
     case EpochTime:
     {

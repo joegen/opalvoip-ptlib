@@ -52,9 +52,9 @@
 #define PTraceModule() "Sound"
 
 
-class PSoundChannelNull : public PSoundChannel
+class PSoundChannelNull : public PSoundChannelEmulation
 {
-    PCLASSINFO(PSoundChannelNull, PSoundChannel);
+    PCLASSINFO(PSoundChannelNull, PSoundChannelEmulation);
   public:
     PSoundChannelNull();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
@@ -64,20 +64,6 @@ class PSoundChannelNull : public PSoundChannel
     PBoolean IsOpen() const;
     PBoolean Write(const void *, PINDEX len);
     PBoolean Read(void * buf, PINDEX len);
-    PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
-    PBoolean SetBuffers(PINDEX size, PINDEX);
-    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-
-  protected:
-    unsigned       m_sampleRate;
-    unsigned       m_channels;
-    unsigned       m_bytesPerSample;
-    unsigned       m_bufferSize;
-    unsigned       m_bufferCount;
-    PAdaptiveDelay m_Pacing;
 };
 
 
@@ -846,11 +832,249 @@ PBoolean PSound::PlayFile(const PFilePath & file, bool wait, unsigned volume)
 
 ///////////////////////////////////////////////////////////////////////////
 
-PSoundChannelNull::PSoundChannelNull()
+PSoundChannelEmulation::PSoundChannelEmulation()
   : m_sampleRate(0)
   , m_channels(1)
   , m_bytesPerSample(2)
   , m_bufferSize(320)
+  , m_bufferPos(0)
+  , m_autoRepeat(false)
+  , m_Pacing(1000)
+  , m_muted(false)
+{
+}
+
+
+bool PSoundChannelEmulation::RawWrite(const void * /*data*/, PINDEX /*size*/)
+{
+  return false;
+}
+
+
+bool PSoundChannelEmulation::RawRead(void * /*data*/, PINDEX /*size*/)
+{
+  return false;
+}
+
+
+bool PSoundChannelEmulation::Rewind()
+{
+  return false;
+}
+
+
+bool PSoundChannelEmulation::InternalFlush()
+{
+  if (m_bufferPos == 0)
+    return true;
+
+  PTRACE(4, "Flushing write buffer: " << m_bufferPos << " bytes");
+  if (!RawWrite(m_buffer, m_bufferPos))
+    return false;
+
+  m_bufferPos = 0;
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::Write(const void * data, PINDEX size)
+{
+  if (m_muted) {
+    if (!InternalFlush())
+      return false;
+
+    memset(m_buffer.GetPointer(size), 0, size);
+    if (!RawWrite(m_buffer.GetPointer(), size))
+      return false;
+  }
+  else if (m_bufferPos + size < m_buffer.GetSize()) {
+    memcpy(m_buffer.GetPointer() + m_bufferPos, data, size);
+    m_bufferPos += size;
+    SetLastWriteCount(size);
+  }
+  else {
+    if (!InternalFlush())
+      return false;
+
+    if (size < m_buffer.GetSize()) {
+      memcpy(m_buffer.GetPointer(), data, size);
+      m_bufferPos = size;
+      SetLastWriteCount(size);
+    }
+    else {
+      if (!RawWrite(data, size))
+        return false;
+      m_bufferPos = 0;
+    }
+  }
+
+  m_Pacing.Delay(1000LL*GetLastWriteCount()/m_sampleRate/m_bytesPerSample);
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::Read(void * data, PINDEX size)
+{
+  for (int retry = 0; retry < 2; ++retry) {
+    if (RawRead(data, size)) {
+      PINDEX count = GetLastReadCount();
+      if (m_muted)
+        memset(data, 0, count);
+      m_Pacing.Delay(1000LL*count/m_sampleRate/m_bytesPerSample);
+      return true;
+    }
+
+    if (GetErrorCode(LastReadError) != NoError) {
+      PTRACE(2, "Error reading file: " << GetErrorText(LastReadError));
+      return false;
+    }
+
+    if (!m_autoRepeat) {
+      PTRACE(3, "End of file, stopping");
+      return false;
+    }
+
+    PTRACE_IF(4, retry == 0, "End of file, repeating");
+    if (!Rewind()) {
+      PTRACE(2, "Error rewinding file: " << GetErrorText(LastReadError));
+      return false;
+    }
+  }
+
+  PTRACE(2, "File is empty, cannot repeat");
+  return false;
+}
+
+
+PBoolean PSoundChannelEmulation::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+{
+  if (bitsPerSample % 8 != 0) {
+    PTRACE(1, "NullAudio\tBits per sample must even bytes.");
+    return false;
+  }
+
+  m_sampleRate = sampleRate;
+  m_channels = numChannels;
+  m_bytesPerSample = numChannels * bitsPerSample / 8;
+  return true;
+}
+
+
+unsigned PSoundChannelEmulation::GetChannels() const
+{
+  return m_channels;
+}
+
+
+unsigned PSoundChannelEmulation::GetSampleRate() const
+{
+  return m_sampleRate;
+}
+
+
+unsigned PSoundChannelEmulation::GetSampleSize() const
+{
+  return m_bytesPerSample/m_channels*8;
+}
+
+
+PBoolean PSoundChannelEmulation::SetBuffers(PINDEX size, PINDEX count)
+{
+  m_bufferSize = size;
+  m_bufferCount = count;
+  if (!PAssert(m_buffer.SetSize(size*count), POutOfMemory))
+    return false;
+
+  PTRACE(3, "Setting write buffer to " << count << '*' << size << '=' << m_buffer.GetSize());
+  m_bufferPos = 0;
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::GetBuffers(PINDEX & size, PINDEX & count)
+{
+  size = m_bufferSize;
+  count = m_bufferCount;
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::HasPlayCompleted()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::WaitForPlayCompletion()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::StartRecording()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::IsRecordBufferFull()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::AreAllRecordBuffersFull()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::WaitForRecordBufferFull()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::WaitForAllRecordBuffersFull()
+{
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::SetVolume(unsigned volume)
+{
+  if (volume > 100)
+    return false;
+
+  m_muted = volume == 0;
+  return true;
+}
+
+
+PBoolean PSoundChannelEmulation::GetVolume(unsigned & volume)
+{
+  volume = m_muted ? 0 : 100;
+  return true;
+}
+
+
+bool PSoundChannelEmulation::SetMute(bool mute)
+{
+  m_muted = mute;
+  return true;
+}
+
+
+bool PSoundChannelEmulation::GetMute(bool & mute)
+{
+  mute = m_muted;
+  return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+PSoundChannelNull::PSoundChannelNull()
 {
 }
 
@@ -887,7 +1111,7 @@ PBoolean PSoundChannelNull::Write(const void *, PINDEX len)
     return false;
 
   SetLastWriteCount(len);
-  m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
+  m_Pacing.Delay(1000*len/m_sampleRate/m_bytesPerSample);
   return true;
 }
 
@@ -898,48 +1122,7 @@ PBoolean PSoundChannelNull::Read(void * buf, PINDEX len)
 
   memset(buf, 0, len);
   SetLastReadCount(len);
-  m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
-  return true;
-}
-
-PBoolean PSoundChannelNull::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
-{
-  if (bitsPerSample % 8 != 0) {
-    PTRACE(1, "NullAudio\tBits per sample must even bytes.");
-    return false;
-  }
-
-  m_sampleRate = sampleRate;
-  m_channels = numChannels;
-  m_bytesPerSample = bitsPerSample / 8;
-  return true;
-}
-
-unsigned PSoundChannelNull::GetChannels() const
-{
-  return m_channels;
-}
-
-unsigned PSoundChannelNull::GetSampleRate() const
-{
-  return m_sampleRate;
-}
-
-unsigned PSoundChannelNull::GetSampleSize() const
-{
-  return m_bytesPerSample*2;
-}
-
-PBoolean PSoundChannelNull::SetBuffers(PINDEX size, PINDEX)
-{
-  m_bufferSize = size;
-  return true;
-}
-
-PBoolean PSoundChannelNull::GetBuffers(PINDEX & size, PINDEX & count)
-{
-  size = m_bufferSize;
-  count = 1;
+  m_Pacing.Delay(1000*len/m_sampleRate/m_bytesPerSample);
   return true;
 }
 

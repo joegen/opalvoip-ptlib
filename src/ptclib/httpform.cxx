@@ -453,6 +453,11 @@ void PHTTPDividerField::SetValue(const PString &)
 }
 
 
+void PHTTPDividerField::SaveToConfig(PConfig &) const
+{
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPCompositeField
 
@@ -1217,6 +1222,13 @@ PString PHTTPPasswordField::Decrypt(const PString & pword)
 }
 
 
+PString PHTTPPasswordField::Encrypt(const PString & clear)
+{
+	PTEACypher crypt(PasswordKey);
+	return crypt.Encode(clear);
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPDateField
 
@@ -1383,8 +1395,7 @@ PHTTPField * PHTTPBooleanField::NewField() const
 
 void PHTTPBooleanField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::HiddenField(m_fullName, "false")
-       << PHTML::CheckBox(m_fullName, m_value ? PHTML::Checked : PHTML::UnChecked);
+  html << PHTML::CheckBox(m_fullName, m_value ? PHTML::Checked : PHTML::UnChecked);
 }
 
 
@@ -1418,9 +1429,9 @@ PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
     if (FindInputValue(input, before, after)) 
       text = input(0, before) + "true" + input.Mid(after);
     else
-      text = "<input value=\"true\"" + input.Mid(6);
+      text = "<INPUT VALUE=\"true\"" + input.Mid(6);
     SpliceChecked(text, m_value);
-    return "<input type=hidden name=\"" + m_fullName + "\">" + text;
+    return "<INPUT TYPE=hidden NAME=\"" + m_fullName + "\" VALUE=\"false\">" + text;
   }
 
   static PRegularExpression radioRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?radio\"?",

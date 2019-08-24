@@ -58,7 +58,7 @@ static const PConstString WebSocketGUID("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
 
 PHTTPSpace::PHTTPSpace()
 {
-  mutex = new PReadWriteMutex;
+  mutex = new PReadWriteMutex("HTTP Space");
   root = new Node(PString(), NULL);
 }
 
@@ -72,7 +72,7 @@ void PHTTPSpace::DestroyContents()
 
 void PHTTPSpace::CloneContents(const PHTTPSpace * c)
 {
-  mutex = new PReadWriteMutex;
+  mutex = new PReadWriteMutex("HTTP Space");
   root = new Node(*c->root);
 }
 
@@ -210,13 +210,15 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 // PHTTPServer
 
 PHTTPServer::PHTTPServer()
+  : m_lastCommandTime(0)
 {
   Construct();
 }
 
 
 PHTTPServer::PHTTPServer(const PHTTPSpace & space)
-  : m_urlSpace(space)
+  : m_lastCommandTime(0)
+  , m_urlSpace(space)
 {
   Construct();
 }
@@ -243,6 +245,10 @@ PBoolean PHTTPServer::ProcessCommand()
   if (!ReadCommand(cmd, args))
     return false;
 
+  PTime now;
+  PTRACE_IF(5, m_lastCommandTime.IsValid(), "Time since last command: " << now - m_lastCommandTime);
+  m_lastCommandTime = now;
+
   m_connectInfo.commandCode = (Commands)cmd;
   if (cmd < NumCommands)
     m_connectInfo.commandName = commandNames[cmd];
@@ -254,6 +260,7 @@ PBoolean PHTTPServer::ProcessCommand()
 
   // if no tokens, error
   if (args.IsEmpty()) {
+    PTRACE(4, "No arguments on command line for " << m_connectInfo.commandName);
     OnError(BadRequest, args, m_connectInfo);
     return false;
   }
@@ -273,11 +280,11 @@ PBoolean PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistent
   if (cmd == CONNECT) 
-    m_connectInfo.url.Parse("https://" + args);
+    m_connectInfo.m_url.Parse("https://" + args);
   else {
-    m_connectInfo.url.Parse(args, "http");
-    if (m_connectInfo.url.GetPort() == 0)
-      m_connectInfo.url.SetPort(myPort);
+    m_connectInfo.m_url.Parse(args, "http");
+    if (m_connectInfo.m_url.GetPort() == 0)
+      m_connectInfo.m_url.SetPort(myPort);
   }
 
   bool persist;
@@ -288,7 +295,8 @@ PBoolean PHTTPServer::ProcessCommand()
   PTRACE(5, "Transaction: " << m_connectInfo.GetCommandName() << " \"" << args << "\","
             " url=" << m_connectInfo.GetURL() << ","
             " persist=" << std::boolalpha << m_connectInfo.IsPersistent() << ","
-            " proxy=" << m_connectInfo.IsProxyConnection());
+            " proxy=" << m_connectInfo.IsProxyConnection() << ","
+            " websocket=" << m_connectInfo.IsWebSocket());
 
   if (m_connectInfo.IsWebSocket()) {
     if (!OnWebSocket(m_connectInfo))
@@ -355,8 +363,10 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
       connectInfo.DecodeMultipartFormInfo();
       persist = OnPOST(connectInfo);
       break;
-
-    case P_MAX_INDEX:
+   case OPTIONS:
+      connectInfo.DecodeMultipartFormInfo();
+      persist = OnOPTIONS(connectInfo);
+      break;
     default:
       persist = OnUnknown(args, connectInfo);
   }
@@ -365,47 +375,86 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
 }
 
 
+#if P_SSL
 bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 {
-#if P_SSL
-  std::map<PString, WebSocketNotifier>::iterator notifier;
-
   const PMIMEInfo & mime = connectInfo.GetMIME();
+  PString key = mime(WebSocketKeyTag());
+  PString supportedGlobally;
 
   PStringArray protocols = mime(WebSocketProtocolTag()).Tokenise(", \t\r\n", false);
-  for (PINDEX i = 0; ; ++i) {
-    if (i >= protocols.GetSize())
-      return OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
+  for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
+    PString protocol = protocols[i];
+    std::map<PString, WebSocketNotifier>::iterator notifier = m_webSocketNotifiers.find(protocol);
+    if (notifier != m_webSocketNotifiers.end()) {
+      if (notifier->second.IsNULL()) {
+        supportedGlobally = protocol;
+        break;
+      }
 
-    if ((notifier = m_webSocketNotifiers.find(protocols[i])) != m_webSocketNotifiers.end())
-      break;
+      SwitchToWebSocket(protocol, key);
+      notifier->second(*this, connectInfo);
+      return !connectInfo.IsWebSocket();
+    }
   }
 
-  PMIMEInfo reply;
-  reply.SetAt(ConnectionTag(), UpgradeTag());
-  reply.SetAt(UpgradeTag(), WebSocketTag());
-  reply.SetAt(WebSocketProtocolTag(), notifier->first);
-  reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(mime(WebSocketKeyTag()) + WebSocketGUID));
-
-  StartResponse(SwitchingProtocols, reply, -1);
-  flush();
-
-  if (!notifier->second.IsNULL()) {
-    notifier->second(*this, connectInfo);
-    return !connectInfo.IsWebSocket();
-  }
-
+  bool persist = false;
+ 
   m_urlSpace.StartRead();
+
   PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
-  bool persist = resource != NULL && resource->OnWebSocket(*this, connectInfo);
+  if (resource == NULL) {
+    if (!m_urlSpace.IsEmpty() || supportedGlobally.IsEmpty())
+      persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+    else
+      SwitchToWebSocket(supportedGlobally, key);
+  }
+  else if (!supportedGlobally.IsEmpty()) {
+    SwitchToWebSocket(supportedGlobally, key);
+    persist = resource->OnWebSocket(*this, connectInfo);
+  }
+  else {
+    bool found = false;
+    for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
+      PString protocol = protocols[i];
+      if (resource->SupportsWebSocketProtocol(protocol)) {
+        SwitchToWebSocket(protocol, key);
+        persist = resource->OnWebSocket(*this, connectInfo);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      PTRACE(3, "Unsupported WebSocket protocols: " << setfill(',') << protocols);
+      persist = OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
+    }
+  }
+
   m_urlSpace.EndRead();
 
   return persist;
+}
+
+
+void PHTTPServer::SwitchToWebSocket(const PString & protocol, const PString & key)
+{
+  PTRACE(4, "Switching to WebSocket protocol \"" << protocol << '"');
+  PMIMEInfo reply;
+  reply.SetAt(ConnectionTag(), UpgradeTag());
+  reply.SetAt(UpgradeTag(), WebSocketTag());
+  reply.SetAt(WebSocketProtocolTag(), protocol);
+  reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(key + WebSocketGUID));
+
+  StartResponse(SwitchingProtocols, reply, -1);
+  flush();
+}
 #else
+bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
+{
   PTRACE(2, "WebSocket refused due to no SSL");
   return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
-#endif
 }
+#endif // P_SSL
 
 
 void PHTTPServer::SetWebSocketNotifier(const PString & protocol, const WebSocketNotifier & notifier)
@@ -507,6 +556,22 @@ bool PHTTPServer::OnPOST(const PHTTPConnectionInfo & conInfo)
 }
 
 
+bool PHTTPServer::OnOPTIONS(const PHTTPConnectionInfo & conInfo)
+{
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(conInfo.GetURL());
+  if (resource == NULL) {
+    m_urlSpace.EndRead();
+    return OnError(NotFound, conInfo.GetURL().AsString(), m_connectInfo);
+  }
+  
+  bool retval = resource->OnOPTIONS(*this, m_connectInfo);
+ 
+  m_urlSpace.EndRead();
+  return retval;
+}
+
+
 PBoolean PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) &&
@@ -570,13 +635,13 @@ static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
 }
 
 
-PBoolean PHTTPServer::StartResponse(StatusCode code,
+bool PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
   if (m_connectInfo.majorVersion < 1) 
     return false;
-
+  
   httpStatusCodeStruct dummyInfo;
   const httpStatusCodeStruct * statusInfo;
   if (m_connectInfo.commandCode < NumCommands)
@@ -628,6 +693,20 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
 }
 
 
+bool PHTTPServer::SendResponse(StatusCode code, const PString & body)
+{
+  PMIMEInfo headers;
+  return SendResponse(code, headers, body);
+}
+
+
+bool PHTTPServer::SendResponse(StatusCode code, PMIMEInfo & headers, const PString & body)
+{
+  StartResponse(code, headers, body.GetLength());
+  return WriteString(body);
+}
+
+
 void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info, const PHTTPConnectionInfo & connectInfo) const
 {
   if (!info.Contains(DateTag))
@@ -635,7 +714,7 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info, const PHTTPConnectionInfo
 
   if (!info.Contains(MIMEVersionTag))
     info.SetAt(MIMEVersionTag, "1.0");
-
+  
   if (!info.Contains(ServerTag))
     info.SetAt(ServerTag, GetServerName());
 
@@ -660,6 +739,28 @@ PBoolean PHTTPServer::OnUnknown(const PCaselessString & cmd,
 }
 
 
+static PString FormatAsHTML(const PCaselessString & message, const httpStatusCodeStruct * statusInfo)
+{
+  if (message.Find("<body") != P_MAX_INDEX)
+    return message;
+
+  PHTML html;
+  html << PHTML::Title()
+       << statusInfo->code
+       << ' '
+       << statusInfo->text
+       << PHTML::Body()
+       << PHTML::Heading(1)
+       << statusInfo->code
+       << PHTML::NonBreakSpace()
+       << statusInfo->text
+       << PHTML::Heading(1)
+       << message
+       << PHTML::Body();
+  return html;
+}
+
+
 PBoolean PHTTPServer::OnError(StatusCode code,
              const PCaselessString & extra,
          const PHTTPConnectionInfo & connectInfo)
@@ -677,25 +778,7 @@ PBoolean PHTTPServer::OnError(StatusCode code,
     return statusInfo->code == RequestOK;
   }
 
-  PString reply;
-  if (extra.Find("<body") != P_MAX_INDEX)
-    reply = extra;
-  else {
-    PHTML html;
-    html << PHTML::Title()
-         << statusInfo->code
-         << ' '
-         << statusInfo->text
-         << PHTML::Body()
-         << PHTML::Heading(1)
-         << statusInfo->code
-         << ' '
-         << statusInfo->text
-         << PHTML::Heading(1)
-         << extra
-         << PHTML::Body();
-    reply = html;
-  }
+  PString reply = FormatAsHTML(extra, statusInfo);
 
   headers.SetAt(ContentTypeTag(), PMIMEInfo::TextHTML());
   StartResponse(code, headers, reply.GetLength());
@@ -715,6 +798,12 @@ PHTTPListener::PHTTPListener(unsigned maxWorkers)
 }
 
 
+PHTTPListener::~PHTTPListener()
+{
+  ShutdownListeners();
+}
+
+
 bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse, unsigned queueSize)
 {
   return ListenForHTTP(PString::Empty(), port, reuse, queueSize);
@@ -723,11 +812,6 @@ bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse, unsigne
 
 bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket::Reusability reuse, unsigned queueSize)
 {
-  if (port == 0) {
-    PAssertAlways(PInvalidParameter);
-    return false;
-  }
-
   if (m_listenerInterfaces == interfaces && m_listenerPort == port)
     return true;
 
@@ -747,8 +831,9 @@ bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket
   for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
     PIPSocket::Address binding(ifaces[i]);
     if (binding.IsValid()) {
-      PTCPSocket * listener = new PTCPSocket(port);
+      PTCPSocket * listener = new PTCPSocket(m_listenerPort);
       if (listener->Listen(binding, queueSize, 0, reuse)) {
+        m_listenerPort = listener->GetPort();
         PTRACE(3, "Listening for HTTP on " << listener->GetLocalAddress());
         m_httpListeningSockets.Append(listener);
         atLeastOne = true;
@@ -785,6 +870,11 @@ void PHTTPListener::ShutdownListeners()
   }
 
   m_httpListeningSockets.RemoveAll();
+
+  m_httpServersMutex.Wait();
+  for (PList<PHTTPServer>::iterator it = m_httpServers.begin(); it != m_httpServers.end(); ++it)
+    it->Close();
+  m_httpServersMutex.Signal();
 
   m_threadPool.Shutdown();
 }
@@ -843,8 +933,22 @@ void PHTTPListener::OnHTTPEnded(PHTTPServer & /*server*/)
 }
 
 
+PHTTPListener::Worker::Worker(PHTTPListener & listener, PTCPSocket * socket)
+  : m_listener(listener)
+  , m_socket(socket)
+  , m_httpServer(NULL)
+{
+}
+
+
 PHTTPListener::Worker::~Worker()
 {
+  if (m_httpServer != NULL) {
+    m_listener.m_httpServersMutex.Wait();
+    m_listener.m_httpServers.Remove(m_httpServer); // And deletes it
+    m_listener.m_httpServersMutex.Signal();
+  }
+
   delete m_socket;
 }
 
@@ -863,39 +967,43 @@ void PHTTPListener::Worker::Work()
   PStringStream socketInfo;
   socketInfo << ": local=" << m_socket->GetLocalAddress() << ", peer=" << m_socket->GetPeerAddress();
 #endif
-  PTRACE(5, "Processing thread pool work for" << socketInfo);
+  PTRACE(5, "Processing thread pool work for" << socketInfo << ", delay=" << m_queuedTime.GetElapsed());
 
-  std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
-  if (server.get() == NULL) {
+  m_httpServer = m_listener.CreateServerForHTTP();
+  if (m_httpServer == NULL) {
     PTRACE(2, "Creation failed" << socketInfo);
     return;
   }
-  server->SetServiceStartTime(m_queuedTime);
+  m_httpServer->SetServiceStartTime(m_queuedTime);
+
+  m_listener.m_httpServersMutex.Wait();
+  m_listener.m_httpServers.Append(m_httpServer); // Deleted in this list
+  m_listener.m_httpServersMutex.Signal();
 
   PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
   if (channel == NULL) {
     PTRACE(2, "Indirect channel creation failed" << socketInfo);
     return;
   }
+  m_socket = NULL; // Will be deleted via PIndirectChannel now
 
-  m_socket = NULL; // Is now auto-deleted by server.
-
-  if (!server->Open(channel)) {
+  if (!m_httpServer->Open(channel)) {
     PTRACE(2, "Open failed" << socketInfo);
+    delete channel;
     return;
   }
 
   PTRACE(5, "Started" << socketInfo);
-  m_listener.OnHTTPStarted(*server);
+  m_listener.OnHTTPStarted(*m_httpServer);
 
   // process requests
-  while (server->ProcessCommand())
-    ;
+  while (m_httpServer->ProcessCommand()) {
+    PTRACE(5, "Processed" << socketInfo << ", duration=" << m_httpServer->GetLastCommandTime().GetElapsed());
+  }
 
-  m_listener.OnHTTPEnded(*server);
-  PTRACE(5, "Ended" << socketInfo);
+  m_listener.OnHTTPEnded(*m_httpServer);
+  PTRACE(5, "Ended" << socketInfo << ", duration=" << m_queuedTime.GetElapsed());
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1024,27 +1132,54 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
-PHTTPRequest::PHTTPRequest(const PURL & _url,
-                      const PMIMEInfo & _mime,
-                 const PMultiPartList & _multipartFormInfo,
-                        PHTTPResource * resource,
-                          PHTTPServer & _server)
-  : server(_server)
-  , url(_url)
-  , inMIME(_mime)
-  , multipartFormInfo(_multipartFormInfo)
+PHTTPRequest::PHTTPRequest(PHTTPServer & _server,
+             const PHTTPConnectionInfo & info,
+                         PHTTPResource * resource)
+  : PHTTPConnectionInfo(info)
+  , server(_server)
+  , m_resource(resource)
   , code(PHTTP::RequestOK)
   , contentSize(P_MAX_INDEX)
   , origin(0)
   , localAddr(0)
   , localPort(0)
-  , m_resource(resource)
 {
   PIPSocket * socket = server.GetSocket();
   if (socket != NULL) {
     socket->GetPeerAddress(origin);
     socket->GetLocalAddress(localAddr, localPort);
   }
+}
+
+
+bool PHTTPRequest::OnError(PHTTP::StatusCode statusCode, const PCaselessString & extra)
+{
+  return server.OnError(statusCode, extra, *this);
+}
+
+
+bool PHTTPRequest::OnError(const PCaselessString & extra)
+{
+  return server.OnError(code >= 200 && code < 300 ? PHTTP::InternalServerError : code, extra, *this);
+}
+
+
+bool PHTTPRequest::SendResponse()
+{
+  return PAssertNULL(m_resource)->StartResponse(*this); // This version of StartResponse handles CORS
+}
+
+
+bool PHTTPRequest::SendResponse(const PString & body, bool html)
+{
+  if (!outMIME.Contains(PHTTP::ContentTypeTag()))
+    outMIME.Set(PHTTP::ContentTypeTag(), html ? PMIMEInfo::TextPlain() : PMIMEInfo::TextHTML());
+
+  PString finalBody = outMIME.Get(PHTTP::ContentTypeTag()) != PMIMEInfo::TextHTML() ? body : FormatAsHTML(body, GetStatusCodeStruct(code));
+  contentSize = finalBody.GetLength();
+
+  PAssertNULL(m_resource)->StartResponse(*this); // This version of StartResponse handles CORS
+  return server.WriteString(finalBody);
 }
 
 
@@ -1083,7 +1218,9 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
 
     switch (opCode) {
       case Ping :
+        m_writeMutex.Wait();
         WriteHeader(Pong, false, 0, -1);
+        m_writeMutex.Signal();
         break;
 
       case ConnectionClose :
@@ -1098,7 +1235,7 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
   if (len > (PINDEX)m_remainingPayload)
     len = (PINDEX)m_remainingPayload;
 
-  if (!PIndirectChannel::ReadBlock(buf, len))
+  if (!ReadBlock(buf, len))
     goto badRead;
 
   if (m_currentMask >= 0) {
@@ -1112,13 +1249,16 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
     switch (count) {
       case 1 :
         *(BYTE *)ptr ^= m_currentMask;
+        m_currentMask = uint32_t(m_currentMask << 24) | (m_currentMask >> 8);
         break;
       case 2:
         *(uint16_t *)ptr ^= m_currentMask;
+        m_currentMask = uint32_t(m_currentMask << 16) | (m_currentMask >> 16);
         break;
       case 3:
         *(uint16_t *)ptr ^= m_currentMask;
         *(BYTE *)(ptr+2) ^= m_currentMask>>16;
+        m_currentMask = uint32_t(m_currentMask << 8) | (m_currentMask >> 24);
         break;
     }
   }
@@ -1134,7 +1274,7 @@ badRead:
 
 bool PWebSocket::ReadMessage(PBYTEArray & msg)
 {
-  if (!PAssert(m_remainingPayload == 0, "Cannot call ReadMessage whan have partial frames unread."))
+  if (!PAssert(m_remainingPayload == 0, "Cannot call ReadMessage when have partial frames unread."))
     return false;
 
   PINDEX totalSize = 0;
@@ -1151,10 +1291,30 @@ bool PWebSocket::ReadMessage(PBYTEArray & msg)
 }
 
 
+bool PWebSocket::ReadText(PString & msg)
+{
+  PBYTEArray data;
+  if (!ReadMessage(data))
+    return false;
+
+  msg = PString(data);
+  return true;
+}
+
+
+bool PWebSocket::IsMessageComplete() const
+{
+  return !m_fragmentedRead && m_remainingPayload == 0;
+}
+
+
 PBoolean PWebSocket::Write(const void * buf, PINDEX len)
 {
   if (CheckNotOpen())
     return false;
+
+  // Make sure WriteHeader and WriteMasked/Write of body are atomic
+  PWaitAndSignal lock(m_writeMutex);
 
   if (!m_client)
     return WriteHeader(m_binaryWrite ? BinaryFrame : TextFrame, m_fragmentingWrite, len, -1) && PIndirectChannel::Write(buf, len);
@@ -1186,22 +1346,37 @@ bool PWebSocket::WriteMasked(const uint32_t * data, PINDEX len, uint32_t mask)
 }
 
 
+void PWebSocket::SetSSLCredentials(const PString & authority, const PString & certificate, const PString & privateKey)
+{
+  m_authority = authority;
+  m_certificate = certificate;
+  m_privateKey = privateKey;
+}
+
+
 bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PString * selectedProtocol)
 {
-  PHTTPClient * http = new PHTTPClient;
-  if (IsOpen()) {
-    PChannel * upstream = Detach();
-    if (upstream)
-      http->Open(upstream);
-    else {
-      http->SetReadChannel(Detach(ShutdownRead));
-      http->SetWriteChannel(Detach(ShutdownWrite));
-    }
+  channelPointerMutex.StartWrite();
+
+  // See if we already have a HTTP client in the chain
+  PHTTPClient * http = FindChannel<PHTTPClient>();
+  if (http == NULL) {
+    http = new PHTTPClient;
+    http->SetReadChannel(Detach(ShutdownRead));
+    http->SetWriteChannel(Detach(ShutdownWrite));
+    http->SetReadTimeout(GetReadTimeout()); // Set timeouts, as Open() copies form subchannel
+    http->SetWriteTimeout(GetWriteTimeout());
+    Open(http);
   }
 
-  Open(http);
+  channelPointerMutex.EndWrite();
 
-  PString key = PBase64::Encode("What is in here?");
+  http->SetSSLCredentials(m_authority, m_certificate, m_privateKey);
+
+  // Before starting up, make sure underlying socket is closed, so reconnects
+  http->CloseBaseReadChannel();
+
+  PString key = PBase64::Encode(PRandom::Octets(16));
   PMIMEInfo outMIME, replyMIME;
   outMIME.SetAt(PHTTP::ConnectionTag(), PHTTP::UpgradeTag());
   outMIME.SetAt(PHTTP::UpgradeTag(), PHTTP::WebSocketTag());
@@ -1211,13 +1386,17 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
 
   int result = http->ExecuteCommand(PHTTP::GET, url, outMIME, PString::Empty(), replyMIME);
   if (result < 100 || result >= 300) {
-    PTRACE(2, "WebSocket reply error: " << result);
+    PTRACE(2, "WebSocket reply error: " << result << " - " << http->GetLastResponseInfo());
     SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
 
-  if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
-    PTRACE(2, "WebSocket reply accept is unacceptable.");
+  PMessageDigestSHA1::Result theirHash, ourHash;
+  PBase64::Decode(replyMIME(PHTTP::WebSocketAcceptTag()), theirHash);
+  PMessageDigestSHA1::Encode(key + WebSocketGUID, ourHash);
+
+  if (!ourHash.ConstantTimeCompare(theirHash)) {
+    PTRACE(2, "WebSocket reply Accept header is unacceptable: ours=" << ourHash << ", theirs=" << theirHash);
     SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
@@ -1251,10 +1430,11 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
   opCode = (OpCodes)(header1 & 0xf);
 
   PTimeInterval oldTimeout = GetReadTimeout();
+  SetReadTimeout(1000);
   bool ok = false;
 
   BYTE header2;
-  if (!ReadBlock(&header2, 1))
+  if (!Read(&header2, 1))
     goto badHeader;
 
   switch (header2 & 0x7f) {
@@ -1341,6 +1521,9 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
   : persistenceSeconds(DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistent connections
+  , url(m_url)
+  , inMIME(mimeInfo)
+  , multipartFormInfo(m_multipartFormInfo)
 {
   // maximum lifetime (in transactions) of persistent connections
   persistenceMaximum = DEFAULT_PERSIST_TRANSATIONS;
@@ -1372,6 +1555,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // otherwise, attempt to extract a version number
   PINDEX dotPos = args.Find('.', lastSpacePos+6);
   if (dotPos == 0 || dotPos == P_MAX_INDEX) {
+    PTRACE(3, "Malformed version number: \"" << args << '"');
     server.OnError(PHTTP::BadRequest, "Malformed version number: " + args, *this);
     return false;
   }
@@ -1385,8 +1569,10 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 
   // build our connection info reading MIME info until an empty line is
   // received, or EOF
-  if (!mimeInfo.Read(server))
+  if (!mimeInfo.Read(server)) {
+    PTRACE(4, "Failed to read MIME: " << server.GetErrorText());
     return false;
+  }
 
   wasPersistent = isPersistent;
   isPersistent = false;
@@ -1405,8 +1591,18 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
       if (token == PHTTP::KeepAliveTag())
         isPersistent = true;
       else if (token == PHTTP::UpgradeTag()) {
-        if (PHTTP::WebSocketTag() != mimeInfo(PHTTP::UpgradeTag()) || mimeInfo(PHTTP::WebSocketVersionTag()) != "13")
-          return server.OnError(PHTTP::MethodNotAllowed, "Cannot upgrade to protocol or version", *this);
+        PCaselessString protocol = mimeInfo(PHTTP::UpgradeTag());
+        if (protocol != PHTTP::WebSocketTag()) {
+          PTRACE(4, "Cannot upgrade to protocol \"" << protocol << '"');
+          return server.OnError(PHTTP::MethodNotAllowed, "Can only upgrade to \"websocket\" protocol", *this);
+        }
+
+        int wsVer = mimeInfo.GetInteger(PHTTP::WebSocketVersionTag());
+        if (wsVer < 13) {
+          PTRACE(4, "WebSocket version " << wsVer << " is not supported.");
+          return server.OnError(PHTTP::MethodNotAllowed, "Can only upgrade to websocket version 13 or later", *this);
+        }
+
         m_isWebSocket = true;
       }
     }
@@ -1494,10 +1690,28 @@ PHTTPResource::PHTTPResource(const PURL & url,
 {
 }
 
+PHTTPResource::PHTTPResource(const PURL & url,
+                             const PString & type,
+                             const PHTTPAuthority & auth,
+							 const PString & allowedOrigins)   
+  : m_baseURL(url)
+  , m_contentType(type)
+  , m_authority(auth.CloneAs<PHTTPAuthority>())
+  , m_hitCount(0)
+{
+  SetAllowedOrigins(allowedOrigins);
+}
+
 
 PHTTPResource::~PHTTPResource()
 {
   delete m_authority;
+}
+
+
+bool PHTTPResource::SupportsWebSocketProtocol(const PString &) const
+{
+  return false;
 }
 
 
@@ -1529,10 +1743,7 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
     if (!IsModifiedSince(PTime(connectInfo.GetMIME()[PHTTP::IfModifiedSinceTag()])))
       return server.OnError(PHTTP::NotModified, connectInfo.GetURL().AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(connectInfo.GetURL(),
-                                         connectInfo.GetMIME(),
-                                         connectInfo.GetMultipartFormInfo(),
-                                         server);
+  PHTTPRequest * request = CreateRequest(server, connectInfo);
   request->entityBody = connectInfo.GetEntityBody();
 
   bool retVal = true;
@@ -1560,7 +1771,7 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
       retVal = request->outMIME.Contains(PHTTP::ContentLengthTag());
     else {
       m_hitCount++;
-      retVal = OnGETData(server, connectInfo.GetURL(), connectInfo, *request);
+      retVal = OnGETData(*request);
     }
   }
 
@@ -1569,14 +1780,23 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
 }
 
 
-PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
-                               const PURL & /*url*/,
-                const PHTTPConnectionInfo & /*connectInfo*/,
-                             PHTTPRequest & request)
+PBoolean PHTTPResource::OnGETData(PHTTPRequest & request)
 {
   SendData(request);
   return request.outMIME.Contains(PHTTP::ContentLengthTag()) ||
          request.outMIME.Contains(PHTTP::TransferEncodingTag());
+}
+
+
+bool PHTTPResource::OnOPTIONS(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
+{
+  if (m_corsHeaders.IsEmpty())
+    return InternalOnCommand(server, connectInfo, PHTTP::OPTIONS);
+
+  PMIMEInfo headers;
+  server.SetDefaultMIMEInfo(headers, connectInfo);
+  headers.Merge(m_corsHeaders, PStringOptions::e_MergeOverwrite);
+  return server.StartResponse(PHTTP::RequestOK, headers, 0);
 }
 
 
@@ -1586,8 +1806,7 @@ bool PHTTPResource::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & con
 }
 
 
-PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
-                               const PStringToString & data)
+PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request, const PStringToString & data)
 {
   PHTML msg;
   PBoolean persist = Post(request, data, msg);
@@ -1605,9 +1824,9 @@ PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
 
   request.outMIME.SetAt(PHTTP::ContentTypeTag(), PMIMEInfo::TextHTML());
 
-  PINDEX len = msg.GetLength();
-  request.server.StartResponse(request.code, request.outMIME, len);
-  return request.server.Write((const char *)msg, len) && persist;
+  request.contentSize = msg.GetLength();
+  StartResponse(request);
+  return request.server.Write((const char *)msg, request.contentSize) && persist;
 }
 
 
@@ -1696,12 +1915,9 @@ PBoolean PHTTPResource::GetExpirationDate(PTime &)
 }
 
 
-PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
-                                            const PMIMEInfo & inMIME,
-                                            const PMultiPartList & multipartFormInfo,
-                                            PHTTPServer & socket)
+PHTTPRequest * PHTTPResource::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return new PHTTPRequest(url, inMIME, multipartFormInfo, this, socket);
+  return new PHTTPRequest(server, connectInfo, this);
 }
 
 
@@ -1731,7 +1947,7 @@ void PHTTPResource::SendData(PHTTPRequest & request)
 
   PCharArray data;
   if (LoadData(request, data)) {
-    if (request.server.StartResponse(request.code, request.outMIME, request.contentSize)) {
+    if (StartResponse(request)) {
       // Chunked transfer encoding
       request.outMIME.RemoveAll();
       do {
@@ -1749,8 +1965,9 @@ void PHTTPResource::SendData(PHTTPRequest & request)
     }
   }
   else {
-    request.server.StartResponse(request.code, request.outMIME, data.GetSize());
-    request.server.write(data, data.GetSize());
+    request.contentSize = data.GetSize();
+    StartResponse(request);
+    request.server.Write(data, request.contentSize);
   }
 }
 
@@ -1786,6 +2003,29 @@ PBoolean PHTTPResource::Post(PHTTPRequest & request,
   msg = "Error in POST";
   msg << "Post to this resource is not allowed" << PHTML::Body();
   return true;
+}
+
+
+bool PHTTPResource::StartResponse(PHTTPRequest & request)
+{
+  request.outMIME.Merge(m_corsHeaders, PStringOptions::e_MergeOverwrite);
+  return request.server.StartResponse(request.code, request.outMIME, request.contentSize);
+}
+
+
+void PHTTPResource::SetAllowedOrigins(const PString & allowedOrigins)
+{
+  if (allowedOrigins.IsEmpty())
+    m_corsHeaders.RemoveAll();
+  else {
+    if (!m_corsHeaders.Has(PHTTP::AllowHeaderTag))
+      m_corsHeaders.Set(PHTTP::AllowHeaderTag, "Content-Type");
+    if (!m_corsHeaders.Has(PHTTP::AllowMethodTag))
+      m_corsHeaders.Set(PHTTP::AllowMethodTag, "POST, GET, OPTIONS");
+    if (!m_corsHeaders.Has(PHTTP::MaxAgeTAG))
+      m_corsHeaders.SetInteger(PHTTP::MaxAgeTAG, 24*60*60);
+    m_corsHeaders.Set(PHTTP::AllowOriginTag, allowedOrigins);
+  }
 }
 
 
@@ -1911,22 +2151,17 @@ PHTTPFile::PHTTPFile(const PURL & url,
 }
 
 
-PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
-                              const PMIMEInfo & inMIME,
-                         const PMultiPartList & multipartFormInfo,
-                                PHTTPResource * resource,
-                                  PHTTPServer & server)
-  : PHTTPRequest(url, inMIME, multipartFormInfo, resource, server)
+PHTTPFileRequest::PHTTPFileRequest(PHTTPServer & server,
+                     const PHTTPConnectionInfo & connectInfo,
+                                 PHTTPResource * resource)
+  : PHTTPRequest(server, connectInfo, resource)
 {
 }
 
 
-PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME,
-                              const PMultiPartList & multipartFormInfo,
-                                       PHTTPServer & server)
+PHTTPRequest * PHTTPFile::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return new PHTTPFileRequest(url, inMIME, multipartFormInfo, this, server);
+  return new PHTTPFileRequest(server, connectInfo, this);
 }
 
 
@@ -1935,6 +2170,7 @@ PBoolean PHTTPFile::LoadHeaders(PHTTPRequest & request)
   PFile & file = ((PHTTPFileRequest&)request).m_file;
 
   if (!file.Open(m_filePath, PFile::ReadOnly)) {
+    PTRACE(3, "Could not open \"" << m_filePath << "\" for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2081,24 +2317,19 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 }
 
 
-PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
-                            const PMIMEInfo & inMIME,
-                       const PMultiPartList & multipartFormInfo,
-                              PHTTPResource * resource,
-                                PHTTPServer & server)
-  : PHTTPFileRequest(url, inMIME, multipartFormInfo, resource, server)
+PHTTPDirRequest::PHTTPDirRequest(PHTTPServer & server,
+                   const PHTTPConnectionInfo & connectInfo,
+                               PHTTPResource * resource)
+  : PHTTPFileRequest(server, connectInfo, resource)
 {
 }
 
 
-PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
-                                        const PMIMEInfo & inMIME,
-                                   const PMultiPartList & multipartFormInfo,
-                                            PHTTPServer & socket)
+PHTTPRequest * PHTTPDirectory::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, this, socket);
+  PHTTPDirRequest * request = new PHTTPDirRequest(server, connectInfo, this);
 
-  const PStringArray & path = url.GetPath();
+  const PStringArray & path = connectInfo.url.GetPath();
   request->m_realPath = m_basePath;
   PINDEX i;
   for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)
@@ -2170,7 +2401,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // if not able to obtain resource information, then consider the resource "not found"
   PFileInfo info;
   if (!PFile::GetInfo(realPath, info)) {
-    PTRACE(4, "Directory " << realPath << " does not exist.");
+    PTRACE(4, "Directory \"" << realPath << "\" does not exist for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2180,7 +2411,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   if (info.type != PFileInfo::SubDirectory) {
     if (!file.Open(realPath, PFile::ReadOnly) ||
         (!m_authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
-      PTRACE(4, "No permission to access " << realPath);
+      PTRACE(4, "No permission to access \"" << realPath << "\" for URL " << request.url);
       request.code = PHTTP::NotFound;
       return false;
     }
@@ -2188,7 +2419,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 
   // resource is a directory - if index files disabled, then return "not found"
   else if (!m_allowDirectoryListing) {
-    PTRACE(4, "No directory listing allowed for " << realPath);
+    PTRACE(4, "No directory listing allowed for \"" << realPath << "\" for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2204,7 +2435,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).m_fakeIndex;
   if (file.IsOpen()) {
-    PTRACE(4, "Delivering file " << file.GetFilePath());
+    PTRACE(4, "Delivering file \"" << file.GetFilePath() << "\" for URL " << request.url);
     request.outMIME.SetAt(PHTTP::ContentTypeTag(),
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();

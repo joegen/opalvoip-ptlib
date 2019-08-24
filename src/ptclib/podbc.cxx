@@ -30,7 +30,7 @@
 
 #include <ptlib.h>
 
-#if defined(P_ODBC) && !defined(_WIN32_WCE)
+#if defined(P_ODBC)
 
 #include <ptclib/podbc.h>
 #include <ptclib/guid.h>
@@ -286,7 +286,7 @@ PStringList PODBC::GetDrivers(bool withAttributes) const
                                attributes, sizeof(attributes), &attrLen))) {
     do {
       if (withAttributes) {
-        for (PINDEX i = 0; i < attrLen-1; ++i) {
+        for (PINDEX i = 0; i < (PINDEX)attrLen-1; ++i) {
           if (attributes[i] == '\0')
             attributes[i] = '\t';
         }

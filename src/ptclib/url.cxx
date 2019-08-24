@@ -39,7 +39,7 @@
 #include <ptclib/mime.h>
 #include <ctype.h>
 
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <shellapi.h>
 #ifdef _MSC_VER
 #pragma comment(lib,"shell32.lib")
@@ -343,7 +343,7 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
       }
     }
 
-    key = PURL::UntranslateString(key, type);
+    key = PURL::UntranslateString(key.Trim(), type);
     if (!key.IsEmpty()) {
       data = PURL::UntranslateString(data, type);
       if (vars.Contains(key))
@@ -523,11 +523,11 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     else
       pos = str.FindOneOf(endHostChars, start);
 
-    PString uphp = str(start, pos-1);
-    if (pos != P_MAX_INDEX)
+    PString uphp;
+    if (pos > start) {
+      uphp = str(start, pos - 1);
       start = pos;
-    else
-      start = P_MAX_INDEX;
+    }
 
     // if the URL is of type UserPasswordHostPort, then parse it
     if (schemeInfo->hasUsername) {
@@ -536,31 +536,27 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
       PINDEX pos3 = P_MAX_INDEX;
       if (schemeInfo->hasPassword)
         pos3 = uphp.Find(':');
-      switch (pos2) {
-        case 0 :
-          uphp.Delete(0, 1);
-          break;
-
-        case P_MAX_INDEX :
-          if (schemeInfo->defaultToUserIfNoAt) {
-            if (pos3 == P_MAX_INDEX)
-              m_username = UntranslateString(uphp, LoginTranslation);
-            else {
-              m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-              m_password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
-            }
-            uphp.MakeEmpty();
-          }
-          break;
-
-        default :
-          if (pos3 > pos2)
-            m_username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+      if (pos2 == 0)
+        uphp.Delete(0, 1);
+      else if (pos2 == P_MAX_INDEX) {
+        if (schemeInfo->defaultToUserIfNoAt) {
+          if (pos3 == P_MAX_INDEX)
+            m_username = UntranslateString(uphp, LoginTranslation);
           else {
             m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-            m_password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+            m_password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
           }
-          uphp.Delete(0, pos2+1);
+          uphp.MakeEmpty();
+        }
+      }
+      else {
+        if (pos3 > pos2)
+          m_username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+        else {
+          m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+          m_password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+        }
+        uphp.Delete(0, pos2+1);
       }
     }
 
@@ -1150,6 +1146,29 @@ class PURL_TelScheme : public PURLScheme
 };
 
 PFACTORY_CREATE(PURLSchemeFactory,PURL_TelScheme, "tel", true);
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// RFC8141/RFC3406/RFC2141 URN URI
+
+class PURL_URNScheme : public PURLScheme
+{
+    PCLASSINFO(PURL_URNScheme, PURLScheme);
+  public:
+    virtual bool Parse(const char * cstr, PURL & url) const
+    {
+      url.SetContents(cstr);
+      return true;
+    }
+
+    virtual PString AsString(PURL::UrlFormat fmt, const PURL & url) const
+    {
+      return "urn:" + url.GetContents();
+    }
+};
+
+PFACTORY_CREATE(PURLSchemeFactory, PURL_URNScheme, "urn", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////

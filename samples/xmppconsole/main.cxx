@@ -15,14 +15,12 @@
 #include <ptlib.h>
 
 #include "main.h"
-#include "version.h"
 
 
 PCREATE_PROCESS(XMPPConsole);
 
 XMPPConsole::XMPPConsole()
-  : PProcess("Reitek S.p.A & Derek Smithies code factory.", "XMPPConsole", 
-             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Reitek S.p.A & Derek Smithies code factory.", "XMPPConsole")
 {
 }
 

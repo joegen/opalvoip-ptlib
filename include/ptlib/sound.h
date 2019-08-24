@@ -37,6 +37,11 @@
 
 #include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
+#include <ptclib/delaychan.h>
+
+
+#define PSOUND_PCM16 "PCM-16"
+
 
 /** A class representing a sound. A sound is a highly platform dependent
    entity that is abstracted for use here. Very little manipulation of the
@@ -749,6 +754,56 @@ class PSoundChannel : public PIndirectChannel
     Directions m_activeDirection;
 
     P_REMOVE_VIRTUAL(PBoolean, Open(const PString &,Directions,unsigned,unsigned,unsigned),false);
+};
+
+
+/////////////////////////////////////////////////////////////////////////
+
+class PSoundChannelEmulation : public PSoundChannel
+{
+    PCLASSINFO(PSoundChannelEmulation, PSoundChannel);
+  public:
+    PSoundChannelEmulation();
+
+    PBoolean Write(const void * buf, PINDEX len);
+    PBoolean Read(void * buf, PINDEX len);
+
+    virtual PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
+    virtual unsigned GetChannels() const;
+    virtual unsigned GetSampleRate() const;
+    virtual unsigned GetSampleSize() const;
+    virtual PBoolean SetBuffers(PINDEX size, PINDEX);
+    virtual PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+
+    virtual PBoolean HasPlayCompleted();
+    virtual PBoolean WaitForPlayCompletion();
+    virtual PBoolean StartRecording();
+    virtual PBoolean IsRecordBufferFull();
+    virtual PBoolean AreAllRecordBuffersFull();
+    virtual PBoolean WaitForRecordBufferFull();
+    virtual PBoolean WaitForAllRecordBuffersFull();
+
+    virtual PBoolean SetVolume(unsigned volume);
+    virtual PBoolean GetVolume(unsigned & volume);
+    virtual bool SetMute(bool mute);
+    virtual bool GetMute(bool & mute);
+
+  protected:
+    virtual bool RawWrite(const void * data, PINDEX size);
+    virtual bool RawRead(void * data, PINDEX size);
+    virtual bool Rewind();
+    bool InternalFlush();
+
+    unsigned       m_sampleRate;
+    unsigned       m_channels;
+    unsigned       m_bytesPerSample;
+    unsigned       m_bufferSize;
+    unsigned       m_bufferCount;
+    PINDEX         m_bufferPos;
+    PBYTEArray     m_buffer;
+    bool           m_autoRepeat;
+    PAdaptiveDelay m_Pacing;
+    bool           m_muted;
 };
 
 

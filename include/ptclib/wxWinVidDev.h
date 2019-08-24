@@ -29,9 +29,9 @@
 
 #ifndef P_WXWINDOWS_IMPLEMENTATION_ONLY
 
-#define P_WXWINDOWS_DRIVER_NAME  wxWindows
+#define P_WXWINDOWS_DRIVER_NAME "wxWindows"
 #define P_WXWINDOWS_DEVICE_NAME "wxWindows"
-#define P_WXWINDOWS_DEVICE_CLASS  PVideoOutputDevice_##P_WXWINDOWS_DRIVER_NAME
+#define P_WXWINDOWS_DEVICE_CLASS  PVideoOutputDevice_##wxWindows
 
 
 /**Display data to the wxWindows window.
@@ -98,9 +98,11 @@ class P_WXWINDOWS_DEVICE_CLASS : public PVideoOutputDeviceRGB, public wxFrame
     virtual PBoolean FrameComplete();
 
   protected:
-    void InternalOpen();
-    void OnClose(wxCloseEvent &);
+    void InternalOpen(PString deviceName);
+    void InternalClose();
     void InternalFrameComplete();
+
+    void OnClose(wxCloseEvent &);
     void OnPaint(wxPaintEvent &);
 
     bool       m_opened;
@@ -123,7 +125,7 @@ BEGIN_EVENT_TABLE(P_WXWINDOWS_DEVICE_CLASS, wxFrame)
   EVT_PAINT(P_WXWINDOWS_DEVICE_CLASS::OnPaint)
 END_EVENT_TABLE()
 
-PCREATE_VIDOUTPUT_PLUGIN_EX(P_WXWINDOWS_DRIVER_NAME,
+PCREATE_VIDOUTPUT_PLUGIN_EX(wxWindows,
   virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
   {
     return deviceName.NumCompare(GetServiceName()) == PObject::EqualTo;
@@ -164,18 +166,25 @@ PStringArray P_WXWINDOWS_DEVICE_CLASS::GetOutputDeviceNames()
 
 PBoolean P_WXWINDOWS_DEVICE_CLASS::Open(const PString & deviceName, PBoolean /*startImmediate*/)
 {
-  Close();
+  if (wxThread::IsMain())
+    InternalOpen(deviceName);
+  else {
+    CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalOpen, deviceName);
+    PAssert(m_openComplete.Wait(10000), PLogicError);
+  }
 
-  m_deviceName = deviceName;
-
-  CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalOpen);
-  PAssert(m_openComplete.Wait(10000), PLogicError);
   return m_opened;
 }
 
 
-void P_WXWINDOWS_DEVICE_CLASS::InternalOpen()
+void P_WXWINDOWS_DEVICE_CLASS::InternalOpen(PString deviceName)
 {
+  PWaitAndSignal lock(m_mutex);
+
+  InternalClose();
+
+  m_deviceName = deviceName;
+
   m_opened = Create(NULL, 0,
                     PwxString(ParseDeviceNameTokenString("TITLE", "Video Output")),
                     wxPoint(ParseDeviceNameTokenInt("X", -1),
@@ -191,12 +200,28 @@ PBoolean P_WXWINDOWS_DEVICE_CLASS::Close()
   if (!IsOpen())
     return false;
 
-  PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Closed " << *this);
-  wxFrame::Close(true);
-  PAssert(m_closeComplete.Wait(10000), PLogicError);
+  if (wxThread::IsMain())
+    InternalClose();
+  else {
+    PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Closing " << *this);
+    CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalClose);
+    PAssert(m_closeComplete.Wait(10000), PLogicError);
+  }
+
   return true;
 }
   
+
+void P_WXWINDOWS_DEVICE_CLASS::InternalClose()
+{
+  PWaitAndSignal lock(m_mutex);
+
+  if (IsOpen()) {
+    wxFrame::Close(true);
+    PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Closed " << *this);
+  }
+}
+
 
 void P_WXWINDOWS_DEVICE_CLASS::OnClose(wxCloseEvent & evt)
 {
@@ -243,7 +268,6 @@ PBoolean P_WXWINDOWS_DEVICE_CLASS::SetFrameSize(unsigned width, unsigned height)
     }
 
     PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Resized wxBitmap to " << m_frameWidth << 'x' << m_frameHeight << " on " << *this);
-    SetSize(width, height);
   }
 
   return true;
@@ -278,6 +302,7 @@ void P_WXWINDOWS_DEVICE_CLASS::InternalFrameComplete()
   PWaitAndSignal lock(m_mutex);
 
   if (IsOpen()) {
+    SetSize(m_bitmap.GetWidth(), m_bitmap.GetHeight());
     Show(true);
     Refresh(false);
   }

@@ -42,7 +42,7 @@
 #include <errno.h>
 
 
-#define VERSION "1.25"
+#define VERSION "1.26"
 
 using namespace std;
 
@@ -927,9 +927,10 @@ int main(int argc, char* argv[])
   if (feature != g_features.end()) {
     ifstream version("version.h", ios::in);
     if (version.is_open()) {
-      static const char * const VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE", "VERSION" };
+      enum {                                      eVERSION , eMAJOR_VERSION , eMINOR_VERSION , ePATCH_VERSION , eOEM_VERSION , eBUILD_TYPE  };
+      static const char * const VersionTags[] = { "VERSION", "MAJOR_VERSION", "MINOR_VERSION", "PATCH_VERSION", "OEM_VERSION", "BUILD_TYPE" };
       static const size_t VersionTagCount = sizeof(VersionTags)/sizeof(VersionTags[0]);
-      string version_parts[VersionTagCount] = { "1", "0", "0" };
+      string version_parts[VersionTagCount] = { "", "1", "0", "0", "0" };
 
       while (version.good()) {
         string line;
@@ -950,8 +951,11 @@ int main(int argc, char* argv[])
         }
       }
 
-      if (version_parts[4].empty())
-        version_parts[4] = version_parts[0] + "." + version_parts[1] + "." + version_parts[2];
+      if (version_parts[eVERSION].empty()) {
+        version_parts[eVERSION] = version_parts[eMAJOR_VERSION] + "." + version_parts[eMINOR_VERSION] + "." + version_parts[ePATCH_VERSION];
+        if (!version_parts[eOEM_VERSION].empty() && version_parts[eOEM_VERSION] != "0")
+          version_parts[eVERSION] += "-" + version_parts[eOEM_VERSION];
+      }
 
       for (size_t i = 0; i < VersionTagCount; ++i) {
         map<string,string>::iterator it = feature->m_defines.find(VersionTagPrefix+VersionTags[i]);

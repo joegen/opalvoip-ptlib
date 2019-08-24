@@ -34,7 +34,6 @@
   public:
     ~PProcess();
 
-    virtual PBoolean IsServiceProcess() const;
     virtual PBoolean IsGUIProcess() const;
     void WaitOnExitConsoleWindow();
     void SetWaitOnExitConsoleWindow(bool b) { m_waitOnExitConsoleWindow = b; }

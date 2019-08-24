@@ -225,7 +225,6 @@ PBoolean PPER_Stream::RealDecode(PASN_Real &)
   if (!MultiBitDecode(8, len))
     return false;
 
-  PAssertAlways(PUnimplementedFunction);
   byteOffset += len+1;
   return true;
 }
@@ -1085,7 +1084,7 @@ void PPER_Stream::SingleBitEncode(PBoolean value)
 
 PBoolean PPER_Stream::MultiBitDecode(unsigned nBits, unsigned & value)
 {
-  if (!PAssert(nBits <= sizeof(value)*8, PInvalidParameter))
+  if (nBits > sizeof(value)*8)
     return false;
 
   unsigned bitsLeft = (GetSize() - byteOffset)*8 - (8 - bitOffset);

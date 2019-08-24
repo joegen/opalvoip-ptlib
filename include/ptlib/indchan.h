@@ -205,6 +205,24 @@ class PIndirectChannel : public PChannel
      */
     virtual PChannel * GetBaseWriteChannel() const;
 
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for reading of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseReadChannel();
+
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for writing of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseWriteChannel();
+
     /** Get error message description.
         Return a string indicating the error message that may be displayed to
        the user. The error for the last I/O operation in this object is used.
@@ -307,6 +325,22 @@ class PIndirectChannel : public PChannel
       bool autoDelete = true,     ///< Automatically delete the channel
       bool closeExisting = false  ///< Close (and auto-delete) the existing read channel
     );
+
+    /**Locate a channel of a specific class in the indirect chain.
+      */
+    template <class ChannelClass> ChannelClass * FindChannel()
+    {
+      ChannelClass * channel = dynamic_cast<ChannelClass *>(this);
+      if (channel == NULL) {
+        PIndirectChannel * indirect = dynamic_cast<PIndirectChannel *>(readChannel);
+        if (indirect == NULL || (channel = indirect->FindChannel<ChannelClass>()) == NULL) {
+          indirect = dynamic_cast<PIndirectChannel *>(writeChannel);
+          if (indirect != NULL)
+            channel = indirect->FindChannel<ChannelClass>();
+        }
+      }
+      return channel;
+    }
   //@}
 
 

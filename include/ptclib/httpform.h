@@ -242,6 +242,7 @@ class PHTTPDividerField : public PHTTPField
     virtual void GetHTMLTag(PHTML & html) const;
     virtual PString GetValue(PBoolean dflt = false) const;
     virtual void SetValue(const PString & newValue);
+    virtual void SaveToConfig(PConfig & cfg) const;
 };
 
 
@@ -479,6 +480,7 @@ class PHTTPPasswordField : public PHTTPStringField
     );
 
     static PString Decrypt(const PString & pword);
+	static PString Encrypt(const PString & clear);
 };
 
 

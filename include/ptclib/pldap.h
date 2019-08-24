@@ -31,7 +31,7 @@
 #pragma interface
 #endif
 
-#if defined(P_LDAP) && !defined(_WIN32_WCE)
+#if defined(P_LDAP)
 
 #include <ptlib/sockets.h>
 #include <ptlib/pluginmgr.h>

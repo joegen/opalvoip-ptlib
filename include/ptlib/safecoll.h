@@ -128,12 +128,17 @@ class PSafeObject : public PObject
   //@{
     /**Create a thread safe object.
      */
+    PSafeObject();
+    PSafeObject(
+      const PSafeObject & other ///< Other safe object
+    );
     explicit PSafeObject(
-      PSafeObject * indirectLock = NULL ///< Other safe object to be locked when this is locked
+      PSafeObject * indirectLock ///< Other safe object to be locked when this is locked
     );
     explicit PSafeObject(
       PReadWriteMutex & mutex ///< Mutex to be locked when this is locked
     );
+    ~PSafeObject();
   //@}
 
   /**@name Operations */
@@ -283,16 +288,19 @@ class PSafeObject : public PObject
   //@}
 
   private:
+    void operator=(const PSafeObject &) { }
+
     bool InternalLockReadOnly(const PDebugLocation * location) const;
     void InternalUnlockReadOnly(const PDebugLocation * location) const;
     bool InternalLockReadWrite(const PDebugLocation * location) const;
     void InternalUnlockReadWrite(const PDebugLocation * location) const;
+    PReadWriteMutex & InternalGetMutex() const;
 
     mutable PCriticalSection m_safetyMutex;
     unsigned          m_safeReferenceCount;
     bool              m_safelyBeingRemoved;
-    PReadWriteMutex   m_safeInUseMutex;
-    PReadWriteMutex * m_safeInUse;
+    bool              m_safeMutexCreated;
+    PReadWriteMutex * m_safeInUseMutex;
 
   friend class PSafeCollection;
   friend class PSafePtrBase;
@@ -1285,7 +1293,22 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
        PSafeObject and lock to the object in the mode specified. The lock
        will remain until the PSafePtr goes out of scope.
       */
-    virtual PSafePtr<Base> FindWithLock(
+    virtual PSafePtr<Base> Find(
+      const Key & key,
+      PSafetyMode mode = PSafeReadWrite
+    ) const {
+        this->m_collectionMutex.Wait();
+        PSafePtr<Base> ptr(dynamic_cast<Coll &>(*this->m_collection).GetAt(key), PSafeReference);
+        this->m_collectionMutex.Signal();
+        ptr.SetSafetyMode(mode);
+        return ptr;
+      }
+
+    /**Find instance and use PSafePtr as an iterator.
+       This is not recommended for use, as the there is a true iterator class
+       available which is much more efficient
+      */
+    virtual PSafePtr<Base> FindIterator(
       const Key & key,
       PSafetyMode mode = PSafeReadWrite
     ) const {
@@ -1295,6 +1318,11 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
         ptr.SetSafetyMode(mode);
         return ptr;
       }
+
+    P_DEPRECATED virtual PSafePtr<Base> FindWithLock(
+      const Key & key,
+      PSafetyMode mode = PSafeReadWrite
+    ) const { return FindIterator(key, mode); }
 
     /** Move an object from one key location to another.
       */
@@ -1401,7 +1429,7 @@ template <class K, class D>
 
           this->m_position = position;
           this->m_internal_first  = &this->m_keys[position];
-          this->m_internal_second = this->m_dictionary->FindWithLock(*this->m_internal_first, PSafeReference);
+          this->m_internal_second = this->m_dictionary->Find(*this->m_internal_first, PSafeReference);
           return this->m_internal_second == NULL;
         }
 

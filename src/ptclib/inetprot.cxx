@@ -438,49 +438,38 @@ PBoolean PInternetProtocol::WriteResponse(const PString & code,
 PBoolean PInternetProtocol::ReadResponse()
 {
   PString line;
-  if (!ReadLine(line)) {
-    lastResponseCode = -1;
-    if (GetErrorCode(LastReadError) != NoError)
-      lastResponseInfo = GetErrorText(LastReadError);
-    else {
-      lastResponseInfo = "Remote shutdown";
-      SetErrorValues(ProtocolFailure, 0, LastReadError);
-    }
-    return false;
-  }
+  if (!ReadLine(line))
+    return SetLastResponse(-1, "Remote shutdown", LastReadError);
 
   PINDEX continuePos = ParseResponse(line);
   if (continuePos == 0)
     return true;
 
+  PString info;
   PString prefix = line.Left(continuePos);
   char continueChar = line[continuePos];
   while (line[continuePos] == continueChar ||
          (!isdigit(line[0]) && strncmp(line, prefix, continuePos) != 0)) {
-    lastResponseInfo += '\n';
-    if (!ReadLine(line)) {
-      if (GetErrorCode(LastReadError) != NoError)
-        lastResponseInfo += GetErrorText(LastReadError);
-      else
-        SetErrorValues(ProtocolFailure, 0, LastReadError);
-      return false;
-    }
+    info += '\n';
+    if (!ReadLine(line))
+      return SetLastResponse(-1, info, LastReadError);
+
     if (line.Left(continuePos) == prefix)
-      lastResponseInfo += line.Mid(continuePos+1);
+      info += line.Mid(continuePos+1);
     else
-      lastResponseInfo += line;
+      info += line;
   }
 
-  return true;
+  return SetLastResponse(0, info, LastReadError);
 }
 
 
 PBoolean PInternetProtocol::ReadResponse(int & code, PString & info)
 {
-  PBoolean retval = ReadResponse();
+  bool retval = ReadResponse();
 
-  code = lastResponseCode;
-  info = lastResponseInfo;
+  code = GetLastResponseCode();
+  info = GetLastResponseInfo();
 
   return retval;
 }
@@ -499,13 +488,11 @@ PINDEX PInternetProtocol::ParseResponse(const PString & line)
 {
   PINDEX endCode = line.FindOneOf(" -");
   if (endCode == P_MAX_INDEX) {
-    lastResponseCode = -1;
-    lastResponseInfo = line;
+    SetLastResponse(-1, line);
     return 0;
   }
 
-  lastResponseCode = line.Left(endCode).AsInteger();
-  lastResponseInfo = line.Mid(endCode+1);
+  SetLastResponse(line.Left(endCode).AsInteger(), line.Mid(endCode+1));
   return line[endCode] != ' ' ? endCode : 0;
 }
 
@@ -524,19 +511,28 @@ int PInternetProtocol::ExecuteCommand(PINDEX cmd,
   while (ReadChar() >= 0)
     ;
   SetReadTimeout(oldTimeout);
-  return WriteCommand(cmd, param) && ReadResponse() ? lastResponseCode : -1;
+  return WriteCommand(cmd, param) && ReadResponse() ? m_lastResponseCode : -1;
 }
 
 
-int PInternetProtocol::GetLastResponseCode() const
+bool PInternetProtocol::SetLastResponse(int code, const PString & info, ErrorGroup group)
 {
-  return lastResponseCode;
-}
+  m_lastResponseCode = code;
+  m_lastResponseInfo = info;
 
+  if (code == 0 || (code >= 200 && code < 300))
+    return true;
 
-PString PInternetProtocol::GetLastResponseInfo() const
-{
-  return lastResponseInfo;
+  if (code < 200) {
+    Errors err = GetErrorCode(group);
+    if (err != NoError) {
+      m_lastResponseInfo = GetErrorText(group);
+      m_lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber(group));
+      return false;
+    }
+  }
+
+  return SetErrorValues(ProtocolFailure, code, group);
 }
 
 

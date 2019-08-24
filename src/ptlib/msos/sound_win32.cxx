@@ -39,12 +39,8 @@
 #include <math.h>
 
 
-#ifndef _WIN32_WCE
 #ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
-#endif
-#else
-#include <ptlib/wm/mmsystemx.h>
 #endif
 
 

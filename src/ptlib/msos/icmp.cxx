@@ -32,57 +32,6 @@
 
 
 
-#ifdef _WIN32_WCE
-
-#include "Icmpapi.h"
-
-typedef ICMP_ECHO_REPLY         ICMPECHO;
-typedef ip_option_information   IPINFO;
-
-#define RTTime RoundTripTime
-
-class PICMPDLL : public PObject
-{
-  PCLASSINFO(PICMPDLL, PObject);
-
-public:
-
-  HANDLE IcmpCreateFile() {
-    return ::IcmpCreateFile();
-  }
-
-  BOOL IcmpCloseHandle(HANDLE handle) {
-    return ::IcmpCloseHandle(handle);
-  }
-
-  DWORD IcmpSendEcho(
-    HANDLE   handle,           /* handle returned from IcmpCreateFile() */
-    u_long   destAddr,         /* destination IP address (in network order) */
-    void   * sendBuffer,       /* pointer to buffer to send */
-    WORD     sendLength,       /* length of data in buffer */
-    IPINFO * requestOptions,   /* see structure definition above */
-    void   * replyBuffer,      /* structure definitionm above */
-    DWORD    replySize,        /* size of reply buffer */
-    DWORD    timeout           /* time in milliseconds to wait for reply */
-    ) {
-    return ::IcmpSendEcho(
-      handle,
-      destAddr,
-      sendBuffer,
-      sendLength,
-      requestOptions,
-      replyBuffer,
-      replySize,
-      timeout);
-  }
-
-  bool IsLoaded() {
-    return true;
-  }
-} ICMP;
-
-#else // _WIN32_WCE
-
 ///////////////////////////////////////////////////////////////
 //
 // Definitions for Microsft ICMP library
@@ -182,9 +131,6 @@ class PICMPDLL : public PDynaLink
     DWORD    timeout           /* time in milliseconds to wait for reply */
   );
 } ICMP;
-
-
-#endif // _WIN32_WCE
 
 
 PICMPSocket::PICMPSocket()

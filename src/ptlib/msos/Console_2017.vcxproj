@@ -30,7 +30,7 @@
     <ProjectName>PTLib Static</ProjectName>
     <ProjectGuid>{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}</ProjectGuid>
     <RootNamespace>PTLib Static</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">
@@ -70,21 +70,27 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="PTLib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -154,12 +160,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -183,12 +184,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib />
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
@@ -219,12 +215,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -249,12 +240,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -282,12 +268,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -312,12 +293,7 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent>
-      <Command>
-      </Command>
-      <Message>
-      </Message>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -636,7 +612,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\cli.cxx" />
-    <ClCompile Include="..\..\ptclib\cypher.cxx" />
+    <ClCompile Include="..\..\ptclib\cypher.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramFiles)\OpenSSL-Win64\include;$(ProgramW6432)\OpenSSL-Win64\include;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\delaychan.cxx" />
     <ClCompile Include="..\..\ptclib\dtmf.cxx" />
     <ClCompile Include="..\..\ptclib\enum.cxx" />
@@ -712,7 +695,14 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pwavfile.cxx" />
     <ClCompile Include="..\..\ptclib\pwavfiledev.cxx" />
-    <ClCompile Include="..\..\ptclib\pxml.cxx" />
+    <ClCompile Include="..\..\ptclib\pxml.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\pxmlrpc.cxx" />
     <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx" />
     <ClCompile Include="..\..\ptclib\qchannel.cxx" />
@@ -884,11 +874,9 @@ bison -o ../common/getdate_tab.c ../common/getdate.y
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
@@ -910,11 +898,9 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
@@ -929,48 +915,84 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">if not exist "$(PTLibGitRootDir)\.git" (
+  rem we do this so it doesn't rebuild every time in non GIT tree
+  mkdir "$(PTLibGitRootDir)\.git"
+  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
+  echo Created "$(PTLibGitRootDir)\.git\index"
+)
+cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
     </CustomBuild>
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl" />
     <None Include="..\..\..\tools\get_revision.sh" />

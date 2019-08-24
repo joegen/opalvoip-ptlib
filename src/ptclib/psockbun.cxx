@@ -38,11 +38,7 @@
 
 PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
 
-#ifndef _WIN32_WCE
 #define UDP_BUFFER_SIZE 32768
-#else
-#define UDP_BUFFER_SIZE 8192
-#endif
 
 #define PTraceModule() "MonSock"
 
@@ -249,16 +245,15 @@ static bool SplitInterfaceDescription(const PString & iface,
   if (iface[0] == '[')
     right = iface.Find(']');
   PINDEX percent = iface.Find('%', right);
-  switch (percent) {
-    case 0 :
-      address = PIPSocket::GetDefaultIpAny();
-      name = iface.Mid(1);
-      return !name.IsEmpty();
-
-    case P_MAX_INDEX :
-      address = iface;
-      name = PString::Empty();
-      return !address.IsAny();
+  if (percent == 0) {
+    address = PIPSocket::GetDefaultIpAny();
+    name = iface.Mid(1);
+    return !name.IsEmpty();
+  }
+  if (percent == P_MAX_INDEX) {
+    address = iface;
+    name = PString::Empty();
+    return !address.IsAny();
   }
 
   if (iface[0] == '*')
@@ -615,7 +610,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       break;
 
     case PChannel::BufferTooSmall :
-      PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
+      PTRACE(2, "Read UDP packet too large (" << param.m_lastCount << " bytes) for buffer of " << param.m_length << " bytes.");
       break;
 
     case PChannel::NotFound :

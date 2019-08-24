@@ -164,7 +164,7 @@ PSMTPClient::~PSMTPClient()
 
 PBoolean PSMTPClient::OnOpen()
 {
-  return ReadResponse() && lastResponseCode/100 == 2;
+  return ReadResponse() && m_lastResponseCode/100 == 2;
 }
 
 
@@ -224,7 +224,7 @@ bool PSMTPClient::InternalExtendedHello()
 
   m_extensions.SetAt("EHLO", PString::Empty()); // Make sure something in set.
 
-  PStringArray lines = lastResponseInfo.Lines();
+  PStringArray lines = m_lastResponseInfo.Lines();
   for (PINDEX i = 1; i < lines.GetSize(); ++i) {
     PString key, data;
     if (lines[i].Split(' ', key, data, PString::SplitDefaultToBefore|PString::SplitTrimBefore|PString::SplitBeforeNonEmpty))
@@ -237,19 +237,15 @@ bool PSMTPClient::InternalExtendedHello()
 
 bool PSMTPClient::LogIn(const PString & username, const PString & password)
 {
-  if (m_haveHello) {
-    lastResponseInfo = "Cannot log in when already logged in.";
-    return false; // Wrong state
-  }
+  if (m_haveHello)
+    return SetLastResponse(-1, "Cannot log in when already logged in."); // Wrong state
 
   if (!InternalHello())
     return false;
 
   PStringArray serverMechs = m_extensions("AUTH").Tokenise(' ', false);
-  if (serverMechs.IsEmpty()) {
-    lastResponseInfo = "Server did not provide any authentication mechanisms";
-    return false;
-  }
+  if (serverMechs.IsEmpty())
+    return SetLastResponse(-1, "Server did not provide any authentication mechanisms");
   
 #if P_SASL
   PSASLClient auth("smtp", username, username, password);
@@ -285,14 +281,14 @@ bool PSMTPClient::LogIn(const PString & username, const PString & password)
   int response;
 
   do {
-    response = lastResponseCode/100;
+    response = m_lastResponseCode/100;
 
     if (response == 2)
       break;
     else if (response != 3)
       return false;
 
-    result = auth.Negotiate(lastResponseInfo, output);
+    result = auth.Negotiate(m_lastResponseInfo, output);
       
     if (result == PSASLClient::Fail)
       return false;
@@ -307,10 +303,8 @@ bool PSMTPClient::LogIn(const PString & username, const PString & password)
   return true;
 #else
   PConstString plain("PLAIN");
-  if (serverMechs.GetValuesIndex(plain) == P_MAX_INDEX) {
-    lastResponseInfo = "SASL not available and PLAIN authentication not allowed.";
-    return false;
-  }
+  if (serverMechs.GetValuesIndex(plain) == P_MAX_INDEX)
+    return SetLastResponse(-1, "SASL not available and PLAIN authentication not allowed.");
 
   PBYTEArray auth((username.GetLength()+1)*2 + password.GetLength());
   memcpy(auth.GetPointer(),                            username.GetPointer(), username.GetLength());
@@ -347,10 +341,8 @@ bool PSMTPClient::InternalBeginMessage(bool useEightBitMIME)
   if (!InternalHello())
     return false;
 
-  if (useEightBitMIME && !m_extensions.Contains("8BITMIME")) {
-    lastResponseInfo = "Eight bit MIME not supported.";
-    return false;
-  }
+  if (useEightBitMIME && !m_extensions.Contains("8BITMIME"))
+    return SetLastResponse(-1, "Eight bit MIME not supported.");
 
   PString localHost;
   PString peerHost;
@@ -395,7 +387,7 @@ PBoolean PSMTPClient::EndMessage()
   if (!WriteString(CRLFdotCRLF))
     return false;
 
-  return ReadResponse() && lastResponseCode/100 == 2;
+  return ReadResponse() && m_lastResponseCode/100 == 2;
 }
 
 
@@ -937,12 +929,12 @@ PPOP3::PPOP3()
 
 PINDEX PPOP3::ParseResponse(const PString & line)
 {
-  lastResponseCode = line[0] == '+';
+  m_lastResponseCode = line[0] == '+';
   PINDEX endCode = line.Find(' ');
   if (endCode != P_MAX_INDEX)
-    lastResponseInfo = line.Mid(endCode+1);
+    m_lastResponseInfo = line.Mid(endCode+1);
   else
-    lastResponseInfo = PString();
+    m_lastResponseInfo.MakeEmpty();
   return 0;
 }
 
@@ -963,14 +955,14 @@ PPOP3Client::~PPOP3Client()
 
 PBoolean PPOP3Client::OnOpen()
 {
-  if (!ReadResponse() || lastResponseCode <= 0)
+  if (!ReadResponse() || m_lastResponseCode <= 0)
     return false;
 
   // APOP login command supported?
-  PINDEX i = lastResponseInfo.FindRegEx("<.*@.*>");
+  PINDEX i = m_lastResponseInfo.FindRegEx("<.*@.*>");
 
   if (i != P_MAX_INDEX)
-    apopBanner = lastResponseInfo.Mid(i);
+    apopBanner = m_lastResponseInfo.Mid(i);
 
   return true;
 }
@@ -1026,14 +1018,14 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
     PSASLClient::PSASLResult result;
 
     do {
-      result = auth.Negotiate(lastResponseInfo, output);
+      result = auth.Negotiate(m_lastResponseInfo, output);
       
       if (result == PSASLClient::Fail)
         return false;
 
       if (!output.IsEmpty()) {
         WriteLine(output);
-        if (!ReadResponse() || !lastResponseCode)
+        if (!ReadResponse() || m_lastResponseCode == 0)
           return false;
       }
     } while (result == PSASLClient::Continue);
@@ -1080,7 +1072,7 @@ int PPOP3Client::GetMessageCount()
   if (ExecuteCommand(STATcmd, "") <= 0)
     return -1;
 
-  return (int)lastResponseInfo.AsInteger();
+  return (int)m_lastResponseInfo.AsInteger();
 }
 
 

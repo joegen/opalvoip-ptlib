@@ -368,6 +368,10 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
     void InternalEndWriteWithNest(Nest & nest, const PDebugLocation & location);
     void InternalWait(Nest & nest, PSync & sync, const PDebugLocation & location) const;
 
+  private:
+    PReadWriteMutex(const PReadWriteMutex & other) : PObject(other) { }
+    void operator=(const PReadWriteMutex &) { }
+
   friend class PSafeObject;
   friend class PReadWaitAndSignal;
   friend class PWriteWaitAndSignal;
@@ -586,6 +590,7 @@ template <class T> class PSyncQueue : public PObject
     {
       e_Open,
       e_Blocked,
+      e_Draining,
       e_Closed
     };
 
@@ -606,7 +611,7 @@ template <class T> class PSyncQueue : public PObject
     bool Enqueue(const T & obj)
     {
       PWaitAndSignal lock(m_mutex);
-      if (m_state == e_Closed)
+      if (m_state == e_Closed || m_state == e_Draining)
         return false;
       m_queue.push(obj);
       m_available.Signal();
@@ -624,7 +629,7 @@ template <class T> class PSyncQueue : public PObject
 
       switch (m_state) {
         case e_Blocked :
-          PAssertAlways("Multiple threads in PSyncQueue::pop()");
+          PAssertAlways("Multiple threads in PSyncQueue::Dequeue()");
           break;
 
         case e_Open :
@@ -642,10 +647,25 @@ template <class T> class PSyncQueue : public PObject
             }
           }
 
-          if (m_state != e_Closed) {
+          if (m_state == e_Blocked) {
             m_state = e_Open;
             break;
           }
+          if (m_state == e_Draining && m_queue.empty())
+            m_state = e_Closed;     // Just popped the last item
+          if (m_state == e_Closed)
+            m_closed.Signal();
+          break;
+
+        case e_Draining:
+          if (!m_queue.empty()) {
+            // Continue draining
+            value = m_queue.front();
+            m_queue.pop();
+            dequeued = true;
+            break;  
+          }
+          m_state = e_Closed;
           // Do closed case
 
         case e_Closed :
@@ -655,6 +675,26 @@ template <class T> class PSyncQueue : public PObject
       m_mutex.Signal();
 
       return dequeued;
+    }
+
+    /** Begin graceful draining of the queue. No further Enqueues will be
+        accepted, and the queue will close automatically once empty.
+        This may optionally wait for Dequeue() to exit before returning. */
+    void Drain(bool wait)
+    {
+      bool blocked;
+      {
+        PWaitAndSignal mutex(m_mutex);
+        if (m_state == e_Closed || m_state == e_Draining)
+          return;
+
+        blocked = m_state == e_Blocked;
+        m_state = m_queue.empty() ? e_Closed : e_Draining;
+        m_available.Signal();
+      }
+
+      if (blocked && wait)
+        m_closed.Wait();
     }
 
     /** Close the queue and break block in Dequeue() function.
@@ -719,11 +759,11 @@ template <class T> class PSyncQueue : public PObject
     __inline       PMutex & GetMutex()       { return m_mutex; }
 
   protected:
-    BaseQueue  m_queue;
-    State      m_state;
-    PSemaphore m_available;
-    PMutex     m_mutex;
-    PSyncPoint m_closed;
+    BaseQueue      m_queue;
+    State          m_state;
+    PSemaphore     m_available;
+    PDECLARE_MUTEX(m_mutex);
+    PSyncPoint     m_closed;
 
   private:
     __inline PSyncQueue(const PSyncQueue & other) : PObject(other) { }

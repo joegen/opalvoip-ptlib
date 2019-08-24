@@ -845,8 +845,8 @@ class PCLI : public PObject
     virtual void OnSetIntegerCommand(Arguments & args, const InternalCommand & cmd);
 
     typedef std::list<Context *> ContextList_t;
-    ContextList_t m_contextList;
-    PMutex        m_contextMutex;
+    ContextList_t  m_contextList;
+    PDECLARE_MUTEX(m_contextMutex);
 };
 
 

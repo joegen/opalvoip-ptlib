@@ -30,7 +30,6 @@
 #include <string>
 
 #include "main.h"
-#include "version.h"
 
 
 PCREATE_PROCESS(StringTest);
@@ -39,7 +38,7 @@ PCREATE_PROCESS(StringTest);
 
 
 StringTest::StringTest()
-  : PProcess("Derek Smithies code factory", "StringTest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Derek Smithies code factory", "StringTest")
 {
 }
 

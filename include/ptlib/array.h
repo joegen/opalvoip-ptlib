@@ -654,6 +654,29 @@ class PBYTEArray : public PBaseArray<BYTE>
 };
 
 
+/**Helper class for outputting a block of memory in hex
+  */
+class PHexDump : public PBYTEArray
+{
+  PCLASSINFO(PHexDump, PBYTEArray)
+public:
+  PHexDump(const void * data, PINDEX length, bool compact = true)
+    : PBYTEArray(static_cast<const BYTE *>(data), length, false)
+    , m_compact(compact)
+  { }
+
+  explicit PHexDump(const PBYTEArray & data, bool compact = true)
+    : PBYTEArray(data, data.GetSize(), false)
+    , m_compact(compact)
+  { }
+
+  virtual void PrintOn(ostream & strm) const;
+
+protected:
+  bool m_compact;
+};
+
+
 /// Array of unsigned short integers.
 typedef PScalarArray<WORD> PWORDArray;
 

@@ -61,28 +61,33 @@ class PSTUN {
 
     /** Determine the NAT type using RFC3489 discovery method
       */
-    virtual PNatMethod::NatTypes DoRFC3489Discovery(
+    void DoRFC3489Discovery(
+      PNatMethod::NatTypes & natType,
       PSTUNUDPSocket * socket, 
       const PIPSocketAddressAndPort & serverAddress, 
       PIPSocketAddressAndPort & baseAddressAndPort, 
-      PIPSocketAddressAndPort & externalAddressAndPort
+      PIPSocket::Address & externalAddress,
+      bool externalAddressOnly
     );
 
-    virtual PNatMethod::NatTypes FinishRFC3489Discovery(
+    void FinishRFC3489Discovery(
+      PNatMethod::NatTypes & natType,
       PSTUNMessage & responseI,
       PSTUNUDPSocket * socket, 
-      PIPSocketAddressAndPort & externalAddressAndPort
-    );
-
-    virtual int MakeAuthenticatedRequest(
-      PSTUNUDPSocket * socket, 
-      PSTUNMessage & request, 
-      PSTUNMessage & response
+      PIPSocket::Address & externalAddress,
+      bool externalAddressOnly
     );
 
     virtual bool GetFromBindingResponse(
       const PSTUNMessage & response,
       PIPSocketAddressAndPort & externalAddress
+    );
+
+#if P_SSL
+    virtual int MakeAuthenticatedRequest(
+      PSTUNUDPSocket * socket, 
+      PSTUNMessage & request, 
+      PSTUNMessage & response
     );
 
     virtual void AppendMessageIntegrity(
@@ -92,6 +97,7 @@ class PSTUN {
     virtual bool ValidateMessageIntegrity(
       const PSTUNMessage & message
     );
+#endif // P_SSL
 
     virtual void SetCredentials(
       const PString & username, 
@@ -309,10 +315,11 @@ class PSTUNChangeRequest : public PSTUNAttribute
 };
 
 
+#if P_SSL
 class PSTUNMessageIntegrity : public PSTUNAttribute
 {
   public:
-    BYTE m_hmac[PHMAC::KeyLength];
+    BYTE m_hmac[PMessageDigestSHA1::DigestLength];
 
     PSTUNMessageIntegrity(const BYTE * hmac = NULL)
       : PSTUNAttribute(MESSAGE_INTEGRITY, sizeof(m_hmac))
@@ -325,6 +332,7 @@ class PSTUNMessageIntegrity : public PSTUNAttribute
 
     bool IsValid() const { return type == MESSAGE_INTEGRITY && length == sizeof(m_hmac); }
 };
+#endif // P_SSL
 
 
 struct PSTUNFingerprintCRC {
@@ -446,6 +454,8 @@ class PSTUNMessage : public PBYTEArray
     enum MsgType {
       InvalidMessage,
 
+      BindingRequestRFC3489 = 0x10001,
+
       BindingRequest        = 0x0001,
       BindingResponse       = 0x0101,
       BindingError          = 0x0111,
@@ -528,18 +538,23 @@ class PSTUNMessage : public PBYTEArray
 
     const PIPSocketAddressAndPort GetSourceAddressAndPort() const { return m_sourceAddressAndPort; }
 
+#if P_SSL
     void AddMessageIntegrity(const PBYTEArray & credentialsHash) { AddMessageIntegrity(credentialsHash, credentialsHash.GetSize()); }
     void AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi = NULL);
 
     unsigned CheckMessageIntegrity(const PBYTEArray & credentialsHash) const { return CheckMessageIntegrity(credentialsHash, credentialsHash.GetSize()); }
     unsigned CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen) const;
+#endif // P_SSL
 
     void AddFingerprint(PSTUNFingerprint * fp = NULL);
     bool CheckFingerprint(bool required) const;
 
   protected:
     PSTUNAttribute * GetFirstAttribute() const;
-    void CalculateMessageIntegrity(const BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * hmac) const;
+#if P_SSL
+    void CalculateMessageIntegrity(const BYTE * credentialsHash, PINDEX credentialsHashLen,
+                                   PSTUNMessageIntegrity * mi, BYTE * hmacPtr, PINDEX hmacSize) const;
+#endif // P_SSL
     DWORD CalculateFingerprint(PSTUNFingerprint * fp) const;
 
     PIPSocketAddressAndPort m_sourceAddressAndPort;
@@ -594,10 +609,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
        Defaults to be "address:port" string form.
       */
     virtual PString GetServer() const;
-
-    virtual bool GetServerAddress(
-      PIPSocketAddressAndPort & serverAddressAndPort 
-    ) const;
 
     virtual bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress
@@ -655,8 +666,9 @@ class PSTUNClient : public PNatMethod, public PSTUN
     );
 
   protected:
+    virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
-    virtual void InternalUpdate();
+    virtual void InternalUpdate(bool externalAddressOnly);
     bool InternalSetServer(const PString & server, const PIPSocketAddressAndPort & addr PTRACE_PARAM(, const char * source));
 
     PSTUNUDPSocket * m_socket;
@@ -668,6 +680,8 @@ class PSTUNClient : public PNatMethod, public PSTUN
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#if P_TURN
 
 /**TURN client.
   */
@@ -756,7 +770,7 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
     bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
     bool InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort);
     bool InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort);
-    void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+    bool InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery = -1);
     void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
 
     bool m_allocationMade;
@@ -823,6 +837,8 @@ class PTURNClient : public PSTUNClient
     virtual bool RefreshAllocation(DWORD lifetime = 600);
 };
 
+
+#endif // P_TURN
 
 #endif // P_STUN
 

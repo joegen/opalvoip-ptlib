@@ -101,21 +101,37 @@ class PBase64 : public PObject
   PCLASSINFO(PBase64, PObject);
 
   public:
+    /// Encoding options
+    enum Options {
+      e_CRLF, ///< Line endings are CR LF
+      e_LF,   ///< Line endings are LF only
+      e_NoLF, ///< No line endings
+      e_URL   ///< URL safe encoding, no line breaks, no trailing '= and alternate alphabet
+    };
+
     /** Construct a base 64 encoder/decoder and initialise both encode and
        decode members as in <code>StartEncoding()</code> and <code>StartDecoding()</code>.
      */
-    PBase64();
+    explicit PBase64(
+      Options options = e_CRLF,  ///< Options for encoding.
+      PINDEX width = 76          ///< Line widths if options != e_URL
+    );
 
+    /// Start a base 64 encoding operation, initialising the object instance.
     void StartEncoding(
-      bool useCRLFs = true,  ///< Use CR, LF pairs in end of line characters.
-      PINDEX width = 76      ///< Line widths if usCRLF true
+      Options options = e_CRLF,  ///< Options for encoding.
+      PINDEX width = 76          ///< Line widths if options != e_URL
     );
     void StartEncoding(
       const char * endOfLine,  ///< String to use for end of line.
       PINDEX width = 76        ///< Line widths if endOfLine non empty
     );
-    // Begin a base 64 encoding operation, initialising the object instance.
+    void StartEncoding(
+      bool useCRLFs,         ///< Use CR, LF pairs in end of line characters.
+      PINDEX width = 76      ///< Line widths
+    ) { StartEncoding(useCRLFs ? e_CRLF : e_LF, width); }
 
+    /// Incorporate the specified data into the base 64 encoding.
     void ProcessEncoding(
       const PString & str      // String to be encoded
     );
@@ -129,7 +145,6 @@ class PBase64 : public PObject
       const void * dataBlock,  // Pointer to data to be encoded
       PINDEX length            // Length of the data block.
     );
-    // Incorporate the specified data into the base 64 encoding.
 
     /** Get the partial Base64 string for the data encoded so far.
     
@@ -147,28 +162,49 @@ class PBase64 : public PObject
     PString CompleteEncoding();
 
 
+    /// Encode the data in memory to Base 64 data returnin the string.
     static PString Encode(
-      const PString & str,            ///< String to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      const PString & str,    ///< String to be encoded to Base64
+      Options options = e_LF, ///< Options for encoding.
+      PINDEX width = 76       ///< Line widths if options != e_URL
     );
     static PString Encode(
-      const char * cstr,              ///< C String to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      const PString & str,    ///< String to be encoded to Base64
+      const char * endOfLine, ///< String to use for end of line.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const PBYTEArray & data,        ///< Data block to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      const char * cstr,      ///< C String to be encoded to Base64
+      Options options = e_LF, ///< Options for encoding.
+      PINDEX width = 76       ///< Line widths if options != e_URL
     );
     static PString Encode(
-      const void * dataBlock,         ///< Pointer to data to be encoded to Base64
-      PINDEX length,                  ///< Length of the data block.
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      const char * cstr,      ///< C String to be encoded to Base64
+      const char * endOfLine, ///< String to use for end of line.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
-    // Encode the data in memory to Base 64 data returnin the string.
+    static PString Encode(
+      const PBYTEArray & data, ///< Data block to be encoded to Base64
+      Options options = e_LF,  ///< Options for encoding.
+      PINDEX width = 76        ///< Line widths if options != e_URL
+    );
+    static PString Encode(
+      const PBYTEArray & data, ///< Data block to be encoded to Base64
+      const char * endOfLine,  ///< String to use for end of line.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
+    static PString Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to Base64
+      PINDEX length,           ///< Length of the data block.
+      Options options = e_LF,  ///< Options for encoding.
+      PINDEX width = 76        ///< Line widths if options != e_URL
+    );
+    static PString Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to Base64
+      PINDEX length,           ///< Length of the data block.
+      const char * endOfLine,  ///< String to use for end of line.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
 
 
     void StartDecoding();
@@ -204,7 +240,7 @@ class PBase64 : public PObject
        @return
        Decoded data for the processed Base64 string.
      */
-    PBoolean IsDecodeOK() { return perfectDecode; }
+    PBoolean IsDecodeOK() { return m_perfectDecode; }
 
 
     /** Convert a printable text string to binary data using the Internet MIME
@@ -236,77 +272,137 @@ class PBase64 : public PObject
   private:
     void OutputBase64(const BYTE * data);
 
-    PString encodedString;
-    BYTE    saveTriple[3];
-    PINDEX  saveCount;
-    PString endOfLine;
-    PINDEX  maxLineLength;
-    PINDEX  currentLineLength;
+    PString m_encodedString;
+    BYTE    m_saveTriple[3];
+    PINDEX  m_saveCount;
+    PString m_endOfLine;
+    PINDEX  m_maxLineLength;
+    PINDEX  m_currentLineLength;
+    const char * m_alphabet;
 
-    bool       perfectDecode;
-    PINDEX     quadPosition;
-    PBYTEArray decodedData;
-    PINDEX     decodeSize;
+    bool       m_perfectDecode;
+    PINDEX     m_quadPosition;
+    PBYTEArray m_decodedData;
+    PINDEX     m_decodeSize;
 };
 
+
+/**Abstract class for message digests/hashing.
+ */
 class PMessageDigest : public PObject
 {
-  PCLASSINFO(PMessageDigest, PObject)
-
+    PCLASSINFO(PMessageDigest, PObject)
   public:
     /// Create a new message digestor
     PMessageDigest();
 
+    /// Result of digest/hash function
     class Result : public PBYTEArray {
       public:
         virtual void PrintOn(ostream & strm) const;
 
-        PString AsBase64() const { return PBase64::Encode(*this, ""); }
+        bool ConstantTimeCompare(const Result & other) const;
+
+        PString AsBase64(PBase64::Options options = PBase64::e_NoLF) const { return PBase64::Encode(*this, options); }
         PString AsHex() const;
     };
 
     /// Begin a Message Digest operation, initialising the object instance.
-    virtual void Start() = 0;
+    void Start() { InternalStart(); }
 
-    virtual void Process(
-      const void * dataBlock,  ///< Pointer to data to be part of the MD5
+    void Process(
+      const void * dataBlock,  ///< Pointer to data to be part of the digest
       PINDEX length            ///< Length of the data block.
     );
 
     /** Incorporate the specified data into the message digest. */
-    virtual void Process(
-      const PString & str      ///< String to be part of the MD5
+    void Process(
+      const PString & str      ///< String to be part of the digest
     );
     /** Incorporate the specified data into the message digest. */
-    virtual void Process(
-      const char * cstr        ///< C String to be part of the MD5
+    void Process(
+      const char * cstr        ///< C String to be part of the digest
     );
     /** Incorporate the specified data into the message digest. */
-    virtual void Process(
-      const PBYTEArray & data  ///< Data block to be part of the MD5
+    void Process(
+      const PBYTEArray & data  ///< Data block to be part of the digest
     );
 
     /**
     Complete the message digest and return the magic number result.
-    The parameterless form returns the MD5 code as a Base64 string.
+    The parameterless form returns the digest code as a Base64 string.
     
     @return
-       Base64 encoded MD5 code for the processed data.
+       Base64 encoded digest code for the processed data.
     */
-    virtual PString CompleteDigest();
-    virtual void CompleteDigest(
-      Result & result   ///< The resultant 128 bit MD5 code
-    );
+    PString Complete();
+    void Complete(
+      Result & result   ///< The resultant digest value
+    ) { InternalCompleteDigest(result); }
 
   protected:
-    virtual void InternalProcess(
-       const void * dataBlock,  ///< Pointer to data to be part of the MD5
-      PINDEX length            ///< Length of the data block.
-    ) = 0;
+    virtual void InternalStart() = 0;
+    virtual void InternalProcess(const void * dataBlock, PINDEX length) = 0;
+    virtual void InternalCompleteDigest(Result & result) = 0;
+};
 
-    virtual void InternalCompleteDigest(
-      Result & result   ///< The resultant 128 bit MD5 code
-    ) = 0;
+
+template <class Digestor> struct PMessageDigestStatics
+{
+    /** Encode the data in memory to and digest value. */
+    static PString Encode(
+      const PString & str      ///< String to be encoded to digest
+    ) { return Encode(str.GetPointer(), str.GetLength()); }
+
+    /** Encode the data in memory to and digest value. */
+    static void Encode(
+      const PString & str,            ///< String to be encoded to digest
+      PMessageDigest::Result & result ///< The resultant digest code
+    ) { Encode(str.GetPointer(), str.GetLength(), result); }
+
+    /** Encode the data in memory to and digest value. */
+    static PString Encode(
+      const char * cstr        ///< C String to be encoded to digest
+    ) { return Encode(cstr, (PINDEX)strlen(cstr)); }
+
+    /** Encode the data in memory to and digest value. */
+    static void Encode(
+      const char * cstr,       ///< C String to be encoded to digest
+      PMessageDigest::Result & result            ///< The resultant digest code
+    ) { Encode(cstr, (PINDEX)strlen(cstr), result); }
+
+    /** Encode the data in memory to and digest value. */
+    static PString Encode(
+      const PBYTEArray & data  ///< Data block to be encoded to digest
+    ) { return Encode(data, data.GetSize()); }
+
+    /** Encode the data in memory to and digest value. */
+    static void Encode(
+      const PBYTEArray & data, ///< Data block to be encoded to digest
+      PMessageDigest::Result & result            ///< The resultant digest code
+    ) { Encode(data, data.GetSize(), result); }
+
+    /** Encode the data in memory to and digest value. */
+    static PString Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to digest
+      PINDEX length            ///< Length of the data block.
+    ) {
+      PMessageDigest::Result result;
+      Encode(dataBlock, length, result);
+      return result.AsBase64();
+    }
+
+    /** Encode the data in memory to digest value.
+    */
+    static void Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to digest
+      PINDEX length,           ///< Length of the data block.
+      PMessageDigest::Result & result            ///< The resultant digest code
+    ) {
+      Digestor stomach;
+      stomach.Process(dataBlock, length);
+      stomach.Complete(result);
+    }
 };
 
 
@@ -316,149 +412,49 @@ class PMessageDigest : public PObject
 
 class PHMAC : public PObject
 {
+    PCLASSINFO(PHMAC, PObject);
   public:
-    enum { KeyLength = 20 };
-    enum { BlockSize = 64 };
+    void SetKey(const char * key)             { InitKey(key, strlen(key)); }
+    void SetKey(const PString & key)          { InitKey(key.GetPointer(), key.GetLength()); }
+    void SetKey(const PBYTEArray & key)       { InitKey((const BYTE *)key, key.GetSize()); }
+    void SetKey(const BYTE * key, PINDEX len) { InitKey(key, len); }
+
+    PString Encode(const void * data, PINDEX len, PBase64::Options options = PBase64::e_NoLF);
+    PString Encode(const PBYTEArray & data, PBase64::Options options = PBase64::e_NoLF);
+    PString Encode(const PString & str, PBase64::Options options = PBase64::e_NoLF);
 
     typedef PMessageDigest::Result Result;
-    virtual void Hash(const BYTE * data, PINDEX len, Result & result) = 0;
-
-    virtual PString Encode(const BYTE * data, PINDEX len);
-    virtual PString Encode(const PBYTEArray & data);
-    virtual PString Encode(const PString & str);
-
-    virtual void Process(const BYTE * data, PINDEX len, Result & result);
+    virtual void Process(const void * data, PINDEX len, Result & result);
     virtual void Process(const PBYTEArray & data, Result & result);
     virtual void Process(const PString & str, Result & result);
 
   protected:
-    virtual PINDEX GetL() const { return KeyLength; };
-    virtual PINDEX GetB() const { return BlockSize; }
-    virtual void Initialise(const BYTE * key, PINDEX len);
-    virtual void InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & result);
+    virtual void InitKey(const void * key, PINDEX len);
+    virtual void InternalProcess(const void * data, PINDEX len, PHMAC::Result & result) = 0;
 
     PBYTEArray m_key;
 };
 
-template <class hash_class>
-class PHMACTemplate : public PHMAC
-{
-  public:
-    PHMACTemplate(const PString & key)                   { Initialise((const BYTE *)(const char *)key, key.GetLength()); }
-    PHMACTemplate(const PBYTEArray & key)                { Initialise((const BYTE *)key, key.GetSize()); }
-    PHMACTemplate(const BYTE * key, PINDEX len)          { Initialise(key, len); }
-
-    virtual void Hash(const BYTE * data, PINDEX len, Result & result)
-    { hash_class::Encode(data, len, result); }
-};
 
 /** MD5 Message Digest.
  A class to produce a Message Digest for a block of text/data using the
  MD5 algorithm as defined in RFC1321 by Ronald Rivest of MIT Laboratory
  for Computer Science and RSA Data Security, Inc.
  */
-class PMessageDigest5 : public PMessageDigest
+class PMessageDigest5 : public PMessageDigest, public PMessageDigestStatics<PMessageDigest5>
 {
-  PCLASSINFO(PMessageDigest5, PMessageDigest)
-
+    PCLASSINFO(PMessageDigest5, PMessageDigest)
   public:
     enum { DigestLength = 16 };
+    typedef PMessageDigest::Result Code; // Backward compatibility
 
     /// Create a new message digestor
     PMessageDigest5();
 
-    /// Begin a Message Digest operation, initialising the object instance.
-    void Start();
-
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const PString & str      ///< String to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PString & str,     ///< String to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const char * cstr        ///< C String to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const char * cstr,       ///< C String to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const PBYTEArray & data  ///< Data block to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PBYTEArray & data, ///< Data block to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
-      PINDEX length            ///< Length of the data block.
-    );
-    /** Encode the data in memory to and MD5 hash value.
-    
-    @return
-       Base64 encoded MD5 code for the processed data.
-    */
-    static void Encode(
-      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
-      PINDEX length,           ///< Length of the data block.
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-
-    // backwards compatibility functions
-    class Code {
-      private:
-        PUInt32l value[4];
-        friend class PMessageDigest5;
-    };
-
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PString & str,     ///< String to be encoded to MD5
-      Code & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const char * cstr,       ///< C String to be encoded to MD5
-      Code & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PBYTEArray & data, ///< Data block to be encoded to MD5
-      Code & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value.
-   
-    @return
-       Base64 encoded MD5 code for the processed data.
-    */
-    static void Encode(
-      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
-      PINDEX length,           ///< Length of the data block.
-      Code & result            ///< The resultant 128 bit MD5 code
-    );
-    virtual void Complete(
-      Code & result   ///< The resultant 128 bit MD5 code
-    );
-    virtual PString Complete();
-
   protected:
-    virtual void InternalProcess(
-       const void * dataBlock,  ///< Pointer to data to be part of the MD5
-      PINDEX length            ///< Length of the data block.
-    );
-
-    virtual void InternalCompleteDigest(
-      Result & result   ///< The resultant 128 bit MD5 code
-    );
+    virtual void InternalStart();
+    virtual void InternalProcess(const void * dataBlock, PINDEX length);
+    virtual void InternalCompleteDigest(Result & result);
 
   private:
     void Transform(const BYTE * block);
@@ -471,88 +467,146 @@ class PMessageDigest5 : public PMessageDigest
     PUInt64 count;
 };
 
-typedef PHMACTemplate<PMessageDigest5> PHMAC_MD5;
+
+/** HMAC algorithm using MD5 hashing.
+ */
+class PHMAC_MD5 : public PHMAC
+{
+    PCLASSINFO(PHMAC_MD5, PHMAC)
+  public:
+    enum { BlockSize = 64 };
+
+  protected:
+    virtual void InitKey(const void * key, PINDEX len);
+    virtual void InternalProcess(const void * data, PINDEX len, PHMAC::Result & result);
+};
+
 
 #if P_SSL
 
-/** SHA1 Digest.
- A class to produce a Message Digest for a block of text/data using the
- SHA-1 algorithm 
- */
-class PMessageDigestSHA1 : public PMessageDigest
+class PMessageDigestSHA : public PMessageDigest
 {
-  PCLASSINFO(PMessageDigestSHA1, PMessageDigest)
-
+    PCLASSINFO(PMessageDigestSHA, PMessageDigest)
   public:
-    enum { DigestLength = 20 };
-
-    /// Create a new message digestor
-    PMessageDigestSHA1();
-    ~PMessageDigestSHA1();
-
-    /// Begin a Message Digest operation, initialising the object instance.
-    void Start();
-
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const PString & str      ///< String to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PString & str,     ///< String to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const char * cstr        ///< C String to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const char * cstr,       ///< C String to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const PBYTEArray & data  ///< Data block to be encoded to MD5
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static void Encode(
-      const PBYTEArray & data, ///< Data block to be encoded to MD5
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
-    /** Encode the data in memory to and MD5 hash value. */
-    static PString Encode(
-      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
-      PINDEX length            ///< Length of the data block.
-    );
-    /** Encode the data in memory to and MD5 hash value.
-    
-    @return
-       Base64 encoded MD5 code for the processed data.
-    */
-    static void Encode(
-      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
-      PINDEX length,           ///< Length of the data block.
-      Result & result            ///< The resultant 128 bit MD5 code
-    );
+    struct Context;
 
   protected:
-    virtual void InternalProcess(
-       const void * dataBlock,  ///< Pointer to data to be part of the MD5
-      PINDEX length            ///< Length of the data block.
-    );
+    /// Create a new message digestor
+    explicit PMessageDigestSHA(Context * context);
 
-    void InternalCompleteDigest(
-      Result & result   ///< The resultant 128 bit MD5 code
-    );
+  public:
+    ~PMessageDigestSHA();
+
+  protected:
+    virtual void InternalStart();
+    virtual void InternalProcess(const void * dataBlock, PINDEX length);
+    virtual void InternalCompleteDigest(Result & result);
+    void Failed();
+
+    Context * m_context;
+    enum {
+      e_Uninitialised,
+      e_Processing,
+      e_Failed
+    } m_state;
 
   private:
-    void * shaContext;
+    PMessageDigestSHA(const PMessageDigestSHA &) { }
+    void operator=(const PMessageDigestSHA &) { }
 };
 
-typedef PHMACTemplate<PMessageDigestSHA1> PHMAC_SHA1;
 
-#endif
+/** A class to produce a Message Digest for a block of text/data using the
+ SHA-1 algorithm 
+ */
+class PMessageDigestSHA1 : public PMessageDigestSHA, public PMessageDigestStatics<PMessageDigestSHA1>
+{
+    PCLASSINFO(PMessageDigestSHA1, PMessageDigestSHA)
+  public:
+    enum { DigestLength = 20 };
+    PMessageDigestSHA1();
+};
+
+
+/** A class to produce a Message Digest for a block of text/data using the
+ SHA-256 algorithm 
+ */
+class PMessageDigestSHA256 : public PMessageDigestSHA, public PMessageDigestStatics<PMessageDigestSHA256>
+{
+    PCLASSINFO(PMessageDigestSHA256, PMessageDigestSHA)
+  public:
+    PMessageDigestSHA256();
+};
+
+
+/** A class to produce a Message Digest for a block of text/data using the
+ SHA-384 algorithm 
+ */
+class PMessageDigestSHA384 : public PMessageDigestSHA, public PMessageDigestStatics<PMessageDigestSHA384>
+{
+    PCLASSINFO(PMessageDigestSHA384, PMessageDigestSHA)
+  public:
+    PMessageDigestSHA384();
+};
+
+
+/** A class to produce a Message Digest for a block of text/data using the
+ SHA-512 algorithm 
+ */
+class PMessageDigestSHA512 : public PMessageDigestSHA, public PMessageDigestStatics<PMessageDigestSHA512>
+{
+    PCLASSINFO(PMessageDigestSHA512, PMessageDigestSHA)
+  public:
+    PMessageDigestSHA512();
+};
+
+
+class PHMAC_SHA : public PHMAC
+{
+    PCLASSINFO(PHMAC_SHA, PHMAC)
+  protected:
+    typedef struct env_md_st Algorithm;
+
+    explicit PHMAC_SHA(Algorithm const * algo);
+    virtual void InternalProcess(const void * data, PINDEX len, PHMAC::Result & result);
+
+    Algorithm const * m_algorithm;
+};
+
+
+class PHMAC_SHA1 : public PHMAC_SHA
+{
+    PCLASSINFO(PHMAC_SHA1, PHMAC_SHA)
+  public:
+    PHMAC_SHA1();
+};
+
+
+class PHMAC_SHA256 : public PHMAC_SHA
+{
+    PCLASSINFO(PHMAC_SHA256, PHMAC_SHA)
+  public:
+    PHMAC_SHA256();
+};
+
+
+class PHMAC_SHA384 : public PHMAC_SHA
+{
+    PCLASSINFO(PHMAC_SHA384, PHMAC_SHA)
+  public:
+    PHMAC_SHA384();
+};
+
+
+class PHMAC_SHA512 : public PHMAC_SHA
+{
+    PCLASSINFO(PHMAC_SHA512, PHMAC_SHA)
+  public:
+    PHMAC_SHA512();
+};
+
+#endif // P_SSL
+
 
 /**This abstract class defines an encryption/decryption algortihm.
 A specific algorithm is implemented in a descendent class.

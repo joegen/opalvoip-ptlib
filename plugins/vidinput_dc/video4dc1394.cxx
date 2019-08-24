@@ -536,8 +536,11 @@ PINDEX PVideoInputDevice_1394DC::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_1394DC::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
+
   if (!IsCapturing()) return false;
 
 #if 0
@@ -553,7 +556,7 @@ PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
   // If converting on the fly do it from frame store to output buffer, otherwise do
   // straight copy.
   if (converter != NULL)
-    converter->Convert((const BYTE *)camera.capture_buffer, buffer, bytesReturned);
+    converter->Convert((const BYTE *)camera.capture_buffer, buffer, &bytesReturned);
   else {
     PTRACE(1, "Converter must exist. Something goes wrong.");
     return false;
@@ -583,13 +586,6 @@ PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
 
   return true;
 }
-
-PBoolean PVideoInputDevice_1394DC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  m_pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer,bytesReturned);
-}
-
 
 void PVideoInputDevice_1394DC::ClearMapping()
 {

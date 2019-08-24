@@ -58,6 +58,28 @@ static __inline bool IsOK(int response) { return (response/100) == 2; }
 
 #if PTRACING
 PINDEX PHTTPClient::MaxTraceContentSize = 1000;
+
+class PHTTPClient_OutputBody
+{
+  private:
+    const void * m_body;
+    PINDEX m_length;
+  public:
+    PHTTPClient_OutputBody(const void * body, PINDEX len) : m_body(body), m_length(len) { }
+    friend ostream & operator<<(ostream & strm, const PHTTPClient_OutputBody & ob)
+    {
+      PINDEX len = std::min(ob.m_length, PHTTPClient::MaxTraceContentSize);
+      const char * ptr = static_cast<const char *>(ob.m_body);
+      while (len-- > 0) {
+        if (isspace(*ptr) || isgraph(*ptr))
+          strm << *ptr;
+        ++ptr;
+      }
+      if (ob.m_length > PHTTPClient::MaxTraceContentSize)
+        strm << "\n...";
+      return strm;
+    }
+};
 #endif
 
 
@@ -282,22 +304,20 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
     }
 
     if (!WriteCommand(cmd, url.AsString(PURL::RelativeOnly), outMIME, processor)) {
-      lastResponseCode = TransportWriteError;
-      lastResponseInfo = GetErrorText(LastWriteError);
-      lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber(LastWriteError));
+      SetLastResponse(TransportWriteError, PString::Empty(), LastWriteError);
       break;
     }
 
     // If not persisting need to shut down write so other end stops reading
-    if (!m_persist)
+    if (!m_persist && !outMIME.Has(ContentLengthTag))
       Shutdown(ShutdownWrite);
 
     // Await a response, if all OK exit loop
-    if (ReadResponse(replyMIME) && (lastResponseCode != Continue || ReadResponse(replyMIME))) {
-      if (IsOK(lastResponseCode))
-        return lastResponseCode;
+    if (ReadResponse(replyMIME) && (m_lastResponseCode != Continue || ReadResponse(replyMIME))) {
+      if (IsOK(m_lastResponseCode))
+        return m_lastResponseCode;
 
-      switch (lastResponseCode) {
+      switch (m_lastResponseCode) {
         case MovedPermanently:
         case MovedTemporarily:
           adjustableURL = replyMIME("Location");
@@ -320,7 +340,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
               continue;
             }
 
-            lastResponseInfo += " - " + errorMsg;
+            m_lastResponseInfo += " - " + errorMsg;
           }
           // Do next case
 
@@ -340,8 +360,8 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
     }
   }
 
-  PTRACE_IF(3, !IsOK(lastResponseCode), "Error " << lastResponseCode << ' ' << lastResponseInfo);
-  return lastResponseCode;
+  PTRACE_IF(3, !IsOK(m_lastResponseCode), "Error " << m_lastResponseCode << ' ' << m_lastResponseInfo.Left(m_lastResponseInfo.FindOneOf("\r\n")));
+  return m_lastResponseCode;
 }
 
 
@@ -367,6 +387,7 @@ bool PHTTPClient::WriteCommand(Commands cmd,
   }
 
 #if PTRACING
+  ostream * trace = NULL;
   if (PTrace::CanTrace(3)) {
     ostream & strm = PTRACE_BEGIN(3);
     strm << "Sending ";
@@ -377,9 +398,13 @@ bool PHTTPClient::WriteCommand(Commands cmd,
       strm << '/';
     else
       strm << url;
-    if (PTrace::CanTrace(4))
+    if (PTrace::CanTrace(4)) {
       strm << " HTTP/1.1\n" << outMIME;
-    strm << PTrace::End;
+      if (outMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
+        trace = &strm;
+    }
+    if (trace == NULL)
+        strm << PTrace::End;
   }
 #endif
 
@@ -390,10 +415,18 @@ bool PHTTPClient::WriteCommand(Commands cmd,
   const void * data;
   PINDEX len = 0;
   while ((data = processor.GetBuffer(len)) != NULL) {
+#if PTRACING
+    if (trace != NULL)
+      *trace << PHTTPClient_OutputBody(data, len);
+#endif
     if (!Write(data, len))
       return false;
   }
 
+#if PTRACING
+  if (trace != NULL)
+    *trace << PTrace::End;
+#endif
   return true;
 }
 
@@ -405,10 +438,8 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     UnRead(http);
 
     if (http.Find("HTTP/") == P_MAX_INDEX) {
-      lastResponseCode = PHTTP::RequestOK;
-      lastResponseInfo = "HTTP/0.9";
       PTRACE(3, "Read HTTP/0.9 OK");
-      return true;
+      return SetLastResponse(PHTTP::RequestOK, "HTTP/0.9");
     }
 
     if (http[0] == '\n')
@@ -420,9 +451,9 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       bool readOK = replyMIME.Read(*this);
 
       PString body;
-      if (lastResponseCode >= 300) {
+      if (m_lastResponseCode >= 300) {
 #if PTRACING
-        if (replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
+        if (PTrace::CanTrace(4) && replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else
 #endif
@@ -435,35 +466,22 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
         strm << "Response ";
         if (PTrace::CanTrace(4))
           strm << '\n';
-        strm << lastResponseCode << ' ' << lastResponseInfo;
-        if (PTrace::CanTrace(4)) {
-          strm << '\n' << replyMIME;
-          if (!body.IsEmpty())
-            strm << body;
-        }
+        strm << m_lastResponseCode << ' ' << m_lastResponseInfo;
+        if (PTrace::CanTrace(4))
+          strm << '\n' << replyMIME << PHTTPClient_OutputBody(body.GetPointer(), body.GetLength());
         strm << PTrace::End;
       }
 #endif
 
       if (!body.IsEmpty())
-        lastResponseInfo += '\n' + body;
+        m_lastResponseInfo += '\n' + body;
 
       if (readOK)
         return true;
     }
   }
  
-  lastResponseCode = TransportReadError;
-  if (GetErrorCode(LastReadError) != NoError) {
-    lastResponseInfo = GetErrorText(LastReadError);
-    lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber(LastReadError));
-  }
-  else {
-    lastResponseInfo = "Premature shutdown";
-    SetErrorValues(ProtocolFailure, 0, LastReadError);
-  }
-
-  return false;
+  return SetLastResponse(TransportReadError, "Premature shutdown");
 }
 
 
@@ -498,47 +516,32 @@ bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & proc
 
       PINDEX size = length;
       void * ptr = processor.GetBuffer(size);
-      if (ptr == NULL) {
-        lastResponseCode = ContentProcessorError;
-        lastResponseInfo = "No buffer from HTTP content processor";
-        return false;
-      }
+      if (ptr == NULL)
+        return SetLastResponse(ContentProcessorError, "No buffer from HTTP content processor");
 
       if (length == size)
         return ReadBlock(ptr, length);
 
       while (length > 0 && Read(ptr, PMIN(length, size))) {
-        if (!processor.Process(ptr, GetLastReadCount())) {
-          lastResponseCode = ContentProcessorError;
-          lastResponseInfo = "Content processing error";
-          return false;
-        }
+        if (!processor.Process(ptr, GetLastReadCount()))
+          return SetLastResponse(ContentProcessorError, "Content processing error");
         length -= GetLastReadCount();
       }
       return true;
     }
 
-    if (!(encoding.IsEmpty())) {
-      lastResponseCode = UnknownTransferEncoding;
-      lastResponseInfo = "Unknown Transfer-Encoding extension";
-      return false;
-    }
+    if (!(encoding.IsEmpty()))
+      return SetLastResponse(UnknownTransferEncoding, "Unknown Transfer-Encoding extension");
 
     PINDEX size = 8192;
     void * ptr = processor.GetBuffer(size);
-    if (ptr == NULL) {
-      lastResponseCode = ContentProcessorError;
-      lastResponseInfo = "No buffer from HTTP content processor";
-      return false;
-    }
+    if (ptr == NULL)
+      return SetLastResponse(ContentProcessorError, "No buffer from HTTP content processor");
 
     // Must be raw, read to end file variety
     while (Read(ptr, size)) {
-      if (!processor.Process(ptr, GetLastReadCount())) {
-        lastResponseCode = ContentProcessorError;
-        lastResponseInfo = "Content processing error";
-        return false;
-      }
+      if (!processor.Process(ptr, GetLastReadCount()))
+        return SetLastResponse(ContentProcessorError, "Content processing error");
     }
 
     return GetErrorCode(LastReadError) == NoError;
@@ -558,11 +561,8 @@ bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & proc
 
     PINDEX size = chunkLength;
     void * ptr = processor.GetBuffer(size);
-    if (ptr == NULL) {
-      lastResponseCode = ContentProcessorError;
-      lastResponseInfo = "No buffer from HTTP content processor";
-      return false;
-    }
+    if (ptr == NULL)
+      return SetLastResponse(ContentProcessorError, "No buffer from HTTP content processor");
 
     if (chunkLength == size) {
       if (!ReadBlock(ptr, chunkLength))
@@ -571,11 +571,8 @@ bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & proc
     else {
       // Read the chunk
       while (chunkLength > 0 && Read(ptr, PMIN(chunkLength, size))) {
-        if (!processor.Process(ptr, GetLastReadCount())) {
-          lastResponseCode = ContentProcessorError;
-          lastResponseInfo = "Content processing error";
-          return false;
-        }
+        if (!processor.Process(ptr, GetLastReadCount()))
+          return SetLastResponse(ContentProcessorError, "Content processing error");
         chunkLength -= GetLastReadCount();
       }
     }
@@ -628,7 +625,7 @@ bool PHTTPClient::GetTextDocument(const PURL & url,
   }
 
   PTRACE_IF(4, !document.IsEmpty(), "Received body:\n"
-            << document.Left(MaxTraceContentSize) << (document.GetLength() > MaxTraceContentSize ? "\n...." : ""));
+            << PHTTPClient_OutputBody(document.GetPointer(), document.GetLength()));
   return true;
 }
 
@@ -702,7 +699,6 @@ bool PHTTPClient::PostData(const PURL & url, const PStringToString & data, PMIME
 {
   PStringStream entityBody;
   PURL::OutputVars(entityBody, data, '\0', '&', '=', PURL::QueryTranslation);
-  entityBody << "\r\n"; // Add CRLF for compatibility with some CGI servers.
 
   PMIMEInfo outMIME;
   return PostData(url, outMIME, entityBody, replyMIME, replyBody);
@@ -734,7 +730,15 @@ bool PHTTPClient::PostData(const PURL & url,
                             PMIMEInfo & replyMIME,
                               PString & body)
 {
-  return PostData(url, outMIME, data, replyMIME) && ReadContentBody(replyMIME, body);
+  if (!PostData(url, outMIME, data, replyMIME))
+    return false;
+
+  if (!ReadContentBody(replyMIME, body))
+    return false;
+
+  PTRACE_IF(4, !body.IsEmpty(), "Received body:\n"
+            << PHTTPClient_OutputBody(body.GetPointer(), body.GetLength()));
+  return true;
 }
 
 
@@ -778,66 +782,45 @@ bool PHTTPClient::ConnectURL(const PURL & url)
   PString host = url.GetHostName();
 
   // Is not open or other end shut down, restablish connection
-  if (host.IsEmpty()) {
-    lastResponseCode = BadRequest;
-    lastResponseInfo = "No host specified";
-    return SetErrorValues(ProtocolFailure, 0, LastReadError);
-  }
+  if (host.IsEmpty())
+    return SetLastResponse(BadRequest, "No host specified");
 
 #if P_SSL
-  if (url.GetScheme() == "https") {
-    PSSLChannel * ssl = NULL;
+  if (url.GetScheme() == "https" || url.GetScheme() == "wss") {
+    std::auto_ptr<PSSLChannel> ssl;
     PSSLContext::Method method = PSSLContext::HighestTLS;
     for (;;) {
-      PTCPSocket * tcp = new PTCPSocket(url.GetPort());
+    std::auto_ptr<PTCPSocket> tcp(new PTCPSocket(url.GetPort()));
       tcp->SetReadTimeout(readTimeout);
-      if (!tcp->Connect(host)) {
-        lastResponseCode = TransportConnectError;
-        lastResponseInfo = tcp->GetErrorText();
-        lastResponseInfo.sprintf(" (errno=%i)", tcp->GetErrorNumber());
-        delete tcp;
-        return false;
-      }
+      if (!tcp->Connect(host))
+        return SetLastResponse(TransportConnectError, tcp->GetErrorText() + psprintf(" (errno=%i)", tcp->GetErrorNumber()));
 
-      PSSLContext * context = new PSSLContext(method);
-      if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
-        lastResponseCode = TransportConnectError;
-        lastResponseInfo = "Could not set certificates";
-        delete context;
-        delete tcp;
-        return false;
-      }
+      std::auto_ptr<PSSLContext> context(new PSSLContext(method));
+      if (!context->SetCredentials(m_authority, m_certificate, m_privateKey))
+        return SetLastResponse(TransportConnectError, "Could not set certificates");
 
-      ssl = new PSSLChannel(context, true);
-      if (ssl->Connect(tcp))
+      ssl.reset(new PSSLChannel(context.release(), true));
+      ssl->SetServerNameIndication(host);
+      if (ssl->Connect(tcp.release()))
         break;
 
-      if ((unsigned)ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod) {
-        lastResponseCode = TransportConnectError;
-        lastResponseInfo = ssl->GetErrorText();
-        delete ssl;
-        return false;
-      }
+      if ((unsigned)ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod)
+        return SetLastResponse(TransportConnectError, ssl->GetErrorText());
 
-      delete ssl;
       --method;
     }
 
-    if (!Open(ssl)) {
-      lastResponseCode = TransportConnectError;
-      lastResponseInfo = GetErrorText();
-      return false;
-    }
+    if (!ssl->CheckHostName(host))
+        return SetLastResponse(TransportConnectError, ssl->GetErrorText());
+
+    if (!Open(ssl.release()))
+      return SetLastResponse(TransportConnectError, PString::Empty());
   }
   else
 #endif
 
-  if (!Connect(host, url.GetPort())) {
-    lastResponseCode = TransportConnectError;
-    lastResponseInfo = GetErrorText();
-    lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber());
-    return false;
-  }
+  if (!Connect(host, url.GetPort()))
+    return SetLastResponse(TransportConnectError, PString::Empty());
 
   PTRACE(5, "Connected to " << host);
   return true;
@@ -909,15 +892,6 @@ PString PHTTPClientAuthentication::GetAuthParam(const PString & auth, const char
   }
 
   return value;
-}
-
-PString PHTTPClientAuthentication::AsHex(PMessageDigest5::Code & digest) const
-{
-  PStringStream out;
-  out << hex << setfill('0');
-  for (PINDEX i = 0; i < 16; i++)
-    out << setw(2) << (unsigned)((BYTE *)&digest)[i];
-  return out;
 }
 
 PString PHTTPClientAuthentication::AsHex(const PBYTEArray & data) const

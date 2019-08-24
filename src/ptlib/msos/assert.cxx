@@ -36,15 +36,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#ifdef _WIN32_WCE
-
-  void PProcess::WaitOnExitConsoleWindow()
-  {
-  }
-
-  #define InternalStackWalk(strm, id)
-
-  #elif defined(__MINGW32__)
+#ifdef __MINGW32__
 
   void PProcess::WaitOnExitConsoleWindow()
   {
@@ -72,7 +64,7 @@
     if (wndProcess != (DWORD)thisProcess)
       return true;
 
-    PTRACE(4, "PTLib\tAwaiting key press on exit.");
+    PTRACE(2, "PTLib", "Awaiting key press on exit.");
     cerr << "\nPress a key to exit . . .";
     cerr.flush();
 
@@ -148,8 +140,12 @@
       PFUNCTION_TABLE_ACCESS_ROUTINE64 m_SymFunctionTableAccess64;
       PGET_MODULE_BASE_ROUTINE64       m_SymGetModuleBase64;
 
+      HANDLE m_hProcess;
+
+
       PDebugDLL()
         : PDynaLink("DBGHELP.DLL")
+        , m_hProcess(GetCurrentProcess())
       {
       }
 
@@ -159,7 +155,7 @@
           m_SymCleanup(GetCurrentProcess());
       }
 
-      void WalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
+      bool Initialise(ostream & strm)
       {
         if (!GetFunction("SymInitialize", (Function &)m_SymInitialize) ||
             !GetFunction("SymCleanup", (Function &)m_SymCleanup) ||
@@ -170,20 +166,18 @@
             !GetFunction("SymFunctionTableAccess64", (Function &)m_SymFunctionTableAccess64) ||
             !GetFunction("SymGetModuleBase64", (Function &)m_SymGetModuleBase64)) {
           strm << "\n    Invalid stack walk DLL: " << GetName() << " not all functions present.";
-          return;
+          return false;
         }
 
         if (!GetFunction("SymGetLineFromAddr64", (Function &)m_SymGetLineFromAddr64))
           m_SymGetLineFromAddr64 = NULL;
 
-        HANDLE hProcess = GetCurrentProcess();
-
         // Get the directory the .exe file is in
         char filename[_MAX_PATH];
-        if (GetModuleFileNameEx(hProcess, NULL, filename, sizeof(filename)) == 0) {
+        if (GetModuleFileNameEx(m_hProcess, NULL, filename, sizeof(filename)) == 0) {
           DWORD err = ::GetLastError();
           strm << "\n    GetModuleFileNameEx failed, error=" << err;
-          return;
+          return false;
         }
 
         ostringstream path;
@@ -208,10 +202,10 @@
           path << ';' << env;
 
         // Initialise the symbols with path for PDB files.
-        if (!m_SymInitialize(hProcess, path.str().c_str(), TRUE)) {
+        if (!m_SymInitialize(m_hProcess, path.str().c_str(), TRUE)) {
           DWORD err = ::GetLastError();
           strm << "\n    SymInitialize failed, error=" << err;
-          return;
+          return false;
         }
 
         strm << "\n    Stack walk symbols initialised, path=\"" << path.str() << '"';
@@ -227,6 +221,57 @@
           strm << "\n    Stack walk could not find symbols file \"" << filename << '"';
 
         m_SymSetOptions(m_SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
+        return true;
+      }
+
+      void OutputSymbol(ostream & strm, DWORD64 addrPC, DWORD64 * params = NULL)
+      {
+        strm << "\n    " << hex << setfill('0');
+
+        char buffer[sizeof(IMAGEHLP_SYMBOL64) + 200];
+        PIMAGEHLP_SYMBOL64 symbol = (PIMAGEHLP_SYMBOL64)buffer;
+        symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+        symbol->MaxNameLength = sizeof(buffer) - sizeof(IMAGEHLP_SYMBOL64);
+        DWORD64 displacement = 0;
+        DWORD error = 0;
+        if (m_SymGetSymFromAddr64(m_hProcess, addrPC, &displacement, symbol))
+          strm << symbol->Name;
+        else {
+          error = ::GetLastError();
+          strm << setw(8) << addrPC;
+        }
+
+        if (params) {
+          strm << '(';
+          for (PINDEX i = 0; i < 4; i++) {
+            if (i > 0)
+              strm << ", ";
+            if (params[i] != 0)
+              strm << "0x";
+            strm << params[i];
+          }
+          strm << setfill(' ') << ')';
+        }
+
+        if (displacement != 0)
+          strm << " + 0x" << displacement;
+
+        strm << dec << setfill(' ');
+
+        IMAGEHLP_LINE64 line;
+        line.SizeOfStruct = sizeof(line);
+        DWORD dwDisplacement;
+        if (m_SymGetLineFromAddr64 != NULL && m_SymGetLineFromAddr64(m_hProcess, addrPC, &dwDisplacement, &line))
+          strm << ' ' << line.FileName << '(' << line.LineNumber << ')';
+
+        if (error != 0)
+          strm << " - symbol lookup error=" << error;
+      }
+
+      void WalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
+      {
+        if (!Initialise(strm))
+          return;
 
         // The thread information.
         HANDLE hThread;
@@ -290,7 +335,7 @@
         unsigned frameCount = 0;
         while (frameCount++ < InternalMaxStackWalk) {
           if (!m_StackWalk64(imageType,
-                             hProcess,
+                             m_hProcess,
                              hThread,
                              &frame,
                              &threadContext,
@@ -311,42 +356,7 @@
           if (frameCount <= framesToSkip || frame.AddrPC.Offset == 0)
             continue;
 
-          strm << "\n    " << hex << setfill('0');
-
-          char buffer[sizeof(IMAGEHLP_SYMBOL64)+200];
-          PIMAGEHLP_SYMBOL64 symbol = (PIMAGEHLP_SYMBOL64)buffer;
-          symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
-          symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL64);
-          DWORD64 displacement = 0;
-          DWORD error = 0;
-          if (m_SymGetSymFromAddr64(hProcess, frame.AddrPC.Offset, &displacement, symbol))
-            strm << symbol->Name;
-          else {
-            error = ::GetLastError();
-            strm << setw(8) << frame.AddrPC.Offset;
-          }
-          strm << '(';
-          for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
-            if (i > 0)
-              strm << ", ";
-            if (frame.Params[i] != 0)
-              strm << "0x";
-            strm << frame.Params[i];
-          }
-          strm << setfill(' ') << ')';
-          if (displacement != 0)
-            strm << " + 0x" << displacement;
-
-          strm << dec << setfill(' ');
-
-          IMAGEHLP_LINE64 line;
-          line.SizeOfStruct = sizeof(line);
-          DWORD dwDisplacement;
-          if (m_SymGetLineFromAddr64 != NULL && m_SymGetLineFromAddr64(hProcess, frame.AddrPC.Offset, &dwDisplacement, &line))
-            strm << ' ' << line.FileName << '(' << line.LineNumber << ')';
-
-          if (error != 0)
-            strm << " - symbol lookup error=" << error;
+          OutputSymbol(strm, frame.AddrReturn.Offset, frame.Params);
 
           if (frame.AddrReturn.Offset == 0)
             break;
@@ -358,17 +368,23 @@
   };
 
 
-  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier, unsigned framesToSkip)
+  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier, unsigned framesToSkip, bool)
   {
     PDebugDLL debughelp;
     if (debughelp.IsLoaded())
       debughelp.WalkStack(strm, id, framesToSkip);
   }
 
-#endif // _WIN32_WCE
+#endif // __MINGW32__
 
 
-static bool AssertAction(int c)
+  static const char ActionMessage[] = "<A>bort, <B>reak, "
+  #if P_EXCEPTIONS
+                                      "<T>hrow exception, "
+  #endif
+                                      "<I>gnore";
+
+static bool AssertAction(int c, const char * msg)
 {
   switch (c) {
     case 'A':
@@ -385,6 +401,13 @@ static bool AssertAction(int c)
       PBreakToDebugger();
       return false; // Then ignore it
 
+  #if P_EXCEPTIONS
+      case 't' :
+      case 'T' :
+        PError << "\nThrowing exception.\n";
+        throw std::runtime_error(msg);
+  #endif
+
     case 'I':
     case 'i':
       cerr << "Ignored" << endl;
@@ -400,30 +423,86 @@ static bool AssertAction(int c)
 
 void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const char * msg, char defaultAction)
 {
-#ifndef _WIN32_WCE
-  if (PProcess::Current().IsServiceProcess()) {
-    PSYSTEMLOG(Fatal, msg);
-    return;
-  }
-#endif // !_WIN32_WCE
-
 #if PTRACING
   PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End;
 #endif
 
-  if (defaultAction != '\0')
-    AssertAction(defaultAction);
+  if (defaultAction != '\0' && !AssertAction(defaultAction, msg))
+      return;
+
   else if (PProcess::Current().IsGUIProcess()) {
     PVarString boxMsg = msg;
     PVarString boxTitle = PProcess::Current().GetName();
-    AssertAction(MessageBox(NULL, boxMsg, boxTitle, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
+    AssertAction(MessageBox(NULL, boxMsg, boxTitle, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL), msg);
   }
   else {
     do {
-      cerr << msg << "\n<A>bort, <B>reak, <I>gnore? ";
-      cerr.flush();
-    } while (AssertAction(cin.get()));
+      cerr << msg << '\n' << ActionMessage << "? " << flush;
+    } while (AssertAction(cin.get(), msg));
   }
+}
+
+
+LONG WINAPI PExceptionHandler(PEXCEPTION_POINTERS info)
+{
+  ostringstream strm;
+  switch (info->ExceptionRecord->ExceptionCode) {
+    case EXCEPTION_ACCESS_VIOLATION:
+      strm << "Access violation: " << (info->ExceptionRecord->ExceptionInformation[0] ? "Write" : "Read")
+           << " at " << (void *)(info->ExceptionRecord->ExceptionInformation[1]);
+      break;
+    case EXCEPTION_IN_PAGE_ERROR:
+      strm << "In page error (" << info->ExceptionRecord->ExceptionInformation[2] << ")"
+              ": " << (info->ExceptionRecord->ExceptionInformation[0] ? "Write" : "Read")
+           << " at " << (void *)(info->ExceptionRecord->ExceptionInformation[1]);
+      break;
+    case EXCEPTION_STACK_OVERFLOW :
+      strm << "Stack overflow";
+      break;
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO :
+    case EXCEPTION_INT_DIVIDE_BY_ZERO :
+      strm << "Divide by zero";
+      break;
+    default:
+      strm << "Unhandled exception: code=0x" << hex << info->ExceptionRecord->ExceptionCode << dec;
+  }
+
+  strm << ", when=" << PTime().AsString(PTime::LoggingFormat PTRACE_PARAM(, PTrace::GetTimeZone()));
+
+  PDebugDLL debughelp;
+  if (debughelp.Initialise(strm)) {
+#ifdef _M_IX86
+    // normally, call ImageNtHeader() and use machine info from PE header
+    debughelp.OutputSymbol(strm, info->ContextRecord->Eip);
+#elif _M_X64
+    debughelp.OutputSymbol(strm, info->ContextRecord->Rip);
+#elif _M_IA64
+    debughelp.OutputSymbol(strm, info->ContextRecord->StIIP);
+#endif
+  }
+
+  string msg = strm.str();
+
+  if (PProcess::Current().IsServiceProcess())
+    PSYSTEMLOG(Fatal, "Caught Exception: " << msg);
+  else {
+    if (PProcess::Current().IsGUIProcess()) {
+      PVarString boxMsg = msg;
+      PVarString boxTitle = PProcess::Current().GetName();
+      MessageBox(NULL, boxMsg, "Exception", MB_OK | MB_ICONHAND | MB_TASKMODAL);
+    }
+    else {
+      cerr << msg << endl;
+#if PTRACING
+      if (PTrace::GetStream() != &PError)
+        PTrace::Begin(0, NULL, 0, NULL, "PException") << msg << PTrace::End;
+#endif
+      PProcess::Current().WaitOnExitConsoleWindow();
+    }
+    ExitProcess(1);
+  }
+
+  return EXCEPTION_CONTINUE_SEARCH;
 }
 
 

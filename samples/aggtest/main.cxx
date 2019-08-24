@@ -27,14 +27,13 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 #include <ptclib/sockagg.h>
 
 PCREATE_PROCESS(AggTest);
 
 AggTest::AggTest()
-  : PProcess("Post Increment", "AggTest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "AggTest")
 {
 }
 

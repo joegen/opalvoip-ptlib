@@ -156,14 +156,14 @@ class PPluginManager : public PObject
     PList<PDirectory> m_directories;
     PStringList       m_suffixes;
 
-    PMutex            m_pluginsMutex;
+    PDECLARE_MUTEX(   m_pluginsMutex);
     PArray<PDynaLink> m_plugins;
 
     typedef std::multimap<PCaselessString, const PPluginServiceDescriptor *> ServiceMap;
-    ServiceMap m_services;
-    PMutex     m_servicesMutex;
+    ServiceMap     m_services;
+    PDECLARE_MUTEX(m_servicesMutex);
 
-    PMutex           m_notifiersMutex;
+    PDECLARE_MUTEX(  m_notifiersMutex);
     PList<PNotifier> m_notifiers;
 };
 

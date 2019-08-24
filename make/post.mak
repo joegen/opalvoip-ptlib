@@ -143,6 +143,10 @@ $(OBJDIR)/%.o : %.cpp
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
 
+$(OBJDIR)/%.o : %.cc 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
+
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
@@ -158,6 +162,7 @@ SRC_OBJS := $(SOURCES:.c=.o)
 SRC_OBJS := $(SRC_OBJS:.mm=.o)
 SRC_OBJS := $(SRC_OBJS:.cxx=.o)
 SRC_OBJS := $(SRC_OBJS:.cpp=.o)
+SRC_OBJS := $(SRC_OBJS:.cc=.o)
 OBJS	 := $(strip $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS))))
 
 #
@@ -168,6 +173,7 @@ SRC_DEPS := $(SOURCES:.c=.dep)
 SRC_DEPS := $(SRC_DEPS:.mm=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
+SRC_DEPS := $(SRC_DEPS:.cc=.dep)
 DEPS	  = $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS)))
 
 #
@@ -179,6 +185,11 @@ $(DEPDIR)/%.dep : %.cxx
 	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	@printf %s $(OBJDIR)/ > $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
+
+$(DEPDIR)/%.dep : %.cc 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
@@ -195,6 +206,7 @@ $(DEPDIR)/%.dep : %.c
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.cpp $(VPATH_CXX)
+vpath %.cc  $(VPATH_CXX)
 vpath %.mm  $(VPATH_MM)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
@@ -437,8 +449,11 @@ ifdef VERSION_FILE
   ifndef MINOR_VERSION_DEFINE
     MINOR_VERSION_DEFINE:=MINOR_VERSION
   endif
-  ifndef BUILD_NUMBER_DEFINE
-    BUILD_NUMBER_DEFINE:=BUILD_NUMBER
+  ifndef PATCH_VERSION_DEFINE
+    PATCH_VERSION_DEFINE:=PATCH_VERSION
+  endif
+  ifndef OEM_VERSION_DEFINE
+    OEM_VERSION_DEFINE:=OEM_VERSION
   endif
 
 
@@ -459,9 +474,13 @@ ifdef VERSION_FILE
   ifndef BUILD_TYPE
     BUILD_TYPE:=$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,$(CODE_STATUS))))
   endif
-  ifndef BUILD_NUMBER
-    BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
-                  $(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
+  ifndef PATCH_VERSION
+    PATCH_VERSION:=$(strip $(subst \#define,,$(subst $(PATCH_VERSION_DEFINE),,\
+                   $(shell grep "define *$(PATCH_VERSION_DEFINE)" $(VERSION_FILE)))))
+  endif
+  ifndef OEM_VERSION
+    OEM_VERSION:=$(strip $(subst \#define,,$(subst $(OEM_VERSION_DEFINE),,\
+                  $(shell grep "define *$(OEM_VERSION_DEFINE)" $(VERSION_FILE)))))
   endif
 
   # Finally check that version numbers are not empty
@@ -474,13 +493,19 @@ ifdef VERSION_FILE
   ifeq (,$(BUILD_TYPE))
     override BUILD_TYPE:=alpha
   endif
-  ifeq (,$(BUILD_NUMBER))
-    override BUILD_NUMBER:=0
+  ifeq (,$(PATCH_VERSION))
+    override PATCH_VERSION:=0
+  endif
+    ifeq (,$(OEM_VERSION))
+    override OEM_VERSION:=0
   endif
 
   # Check for VERSION either predefined or defined by previous section from VERSION_FILE
   ifndef VERSION
-    VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+    VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(PATCH_VERSION)
+	ifneq ($(OEM_VERSION),0)
+	  VERSION+=-$(OEM_VERSION)
+	endif
   endif # ifndef VERSION
 endif # ifdef VERSION_FILE
 

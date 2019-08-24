@@ -41,7 +41,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 4
+#define PATCH_VERSION 4
 
 
 unsigned lineNumber;
@@ -221,7 +221,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Equivalence", "ASNParse", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, PATCH_VERSION)
 {
 }
 

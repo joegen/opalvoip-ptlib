@@ -96,14 +96,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
-    );
+    virtual PBoolean SetFrameData(const FrameData & frameData);
 
 #ifdef P_MACOSX
     virtual bool ApplicationMain();
@@ -113,7 +106,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     struct SDL_Window * m_window;
     struct SDL_Renderer * m_renderer;
     struct SDL_Texture * m_texture;
-    PMutex               m_texture_mutex;
+    PDECLARE_MUTEX(      m_texture_mutex);
     PSyncPoint           m_operationComplete;
 
     bool InternalOpen();

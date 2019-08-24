@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 #include <ptlib/sockets.h>
 #include <ptclib/url.h>
@@ -37,7 +36,7 @@ PCREATE_PROCESS(IPV6Test);
 
 
 IPV6Test::IPV6Test()
-  : PProcess("Post Increment", "ipv6test", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "ipv6test")
 {
 }
 
@@ -47,7 +46,7 @@ void IPV6Test::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-             "-isrfc1918."
+             "-is-private."
              "4-ipv4." 
              "d-dns:"                
              "h-help."
@@ -67,7 +66,7 @@ void IPV6Test::Main()
 
   if (args.HasOption('h')) {
     cout << "usage: ipv6test -v                display version information\n"
-            "       ipv6test --isrfc1918 addr  check if specified address is RFC1918\n"
+            "       ipv6test --is-private addr check if specified address is RFC1918/RFC6598\n"
             "       ipv6test [-4] -d name      perform DNS lookup of hostname (with optional IPV4 force)\n"
             "       ipv6test                   perform a variety of IPV6 tests\n";
     return;
@@ -103,12 +102,12 @@ void IPV6Test::Main()
     return;
   }
 
-  if (args.HasOption("isrfc1918")) {
+  if (args.HasOption("is-private")) {
     if (args.GetCount() == 0) 
       PError << "error: must supply IP address as argument" << endl;
     else {
       PIPSocket::Address addr(args[0]);
-      cout << addr << " is " << (addr.IsRFC1918() ? "" : "not ") << "an RFC1918 address" << endl;
+      cout << addr << " is " << (addr.IsPrivate() ? "" : "not ") << "an RFC1918/RFC6598 address" << endl;
     }
     return;
   }

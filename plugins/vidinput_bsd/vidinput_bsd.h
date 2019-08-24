@@ -67,18 +67,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-//  PBoolean GetFrame(
-//    PBYTEArray & frame
-//  );
-  PBoolean GetFrameData(
-    BYTE * buffer,
-    PINDEX * bytesReturned = NULL
-  );
-  PBoolean GetFrameDataNoDelay(
-    BYTE * buffer,
-    PINDEX * bytesReturned = NULL
-  );
-
   PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
@@ -98,6 +86,9 @@ public:
   PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
+
+protected:
+  virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
 
   struct video_capability
   {

@@ -277,7 +277,7 @@ class PScriptLanguage : public PObject
     typedef map<PString, FunctionNotifier> FunctionMap;
     FunctionMap m_functions;
 
-    PMutex m_mutex;
+    PDECLARE_MUTEX(m_mutex);
 };
 
 

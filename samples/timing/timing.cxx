@@ -46,23 +46,41 @@ void TimingTest::Main()
 {
   cout << "Timing Test Program\n" << endl;
 
-  PTimeInterval nano = PTimeInterval::NanoSeconds(-543210123456789LL);
+  PTimeInterval nano(0,10);
+  cout << "TimeInterval default: " << nano << endl;
+
+  nano = PTimeInterval::NanoSeconds(-543210123456789LL);
   int w, p;
   for (w = 1; w <= 18; w++)
     for (p = 0; p <= 9; p++)
       cout << "TimeInterval scientific, width " << w << ", precision " << p << ": \""
-             << setiosflags(ios::scientific)
-             << setw(w) << setprecision(p) << nano
-             << resetiosflags(ios::scientific) << '"' << endl;
-  nano.SetNanoSeconds(PTimeInterval::DaysToNano*10+
+             << scientific << setw(w) << setprecision(p) << nano << fixed << "\"\n";
+
+  nano.SetNanoSeconds(PTimeInterval::DaysToNano*9+
                       PTimeInterval::HoursToNano*12+
                       PTimeInterval::MinsToNano*34+
                       PTimeInterval::SecsToNano*56+
                       123456789);
-  for (w = 1; w <= 23; w++)
+  for (w = 1; w <= 22; w++)
     for (p = -9; p <= 9; p++)
+      cout << "TimeInterval output, width " << w << ", precision " << left << setw(2) << p << ": \""
+           << setw(w) << setprecision(p) << nano << "\"\n";
+
+  nano.SetNanoSeconds(123456789);
+  for (w = 1; w <= 18; w++)
+    for (p = 0; p <= 9; p++)
       cout << "TimeInterval output, width " << w << ", precision " << p << ": \""
-           << setw(w) << setprecision(p) << nano << '"' << endl;
+           << setw(w) << setprecision(p) << nano << "\"\n";
+
+  nano.SetInterval(123,4,5,6,7);
+  cout << "TimeInterval output, width 15, precision 3, leading zeros: \""
+       << showbase << setw(15) << setprecision(3) << setfill('0') << nano << setfill(' ') << noshowbase << "\"\n";
+  for (nano.SetInterval(123,4,5,6); nano > 0; nano /= 60)
+    cout << "TimeInterval output, width 12, precision 3, leading zeros: \""
+         << setw(12) << setprecision(3) << setfill('0') << nano << setfill(' ') << "\"\n";
+
+  nano.SetNanoSeconds(1999999999);
+  cout << "TimeInterval output, rounding boundary: \"" << setprecision(3) << nano << "\"\n";
 
   cout << "\n\n";
 

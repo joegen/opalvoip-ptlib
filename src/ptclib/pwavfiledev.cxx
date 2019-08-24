@@ -78,12 +78,6 @@ PCREATE_SOUND_PLUGIN_EX(WAVFile, PSoundChannel_WAVFile,
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
-  : m_bufferSize(320)
-  , m_bufferCount(1)
-  , m_bufferPos(0)
-  , m_autoRepeat(false)
-  , m_Pacing(1000)
-  , m_muted(false)
 {
 }
 
@@ -112,10 +106,19 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
 {
   Close();
 
+  m_activeDirection = params.m_direction;
+
   if (params.m_direction == PSoundChannel::Player) {
-    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
-    if (m_WAVFile.Open(params.m_device, PFile::WriteOnly))
+    if (SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+        m_WAVFile.Open(params.m_device, PFile::WriteOnly) &&
+        m_WAVFile.SetChannels(m_channels) &&
+        m_WAVFile.SetSampleRate(m_sampleRate) &&
+        m_WAVFile.SetSampleSize(m_bytesPerSample*8))
+    {
+      PTRACE(4, "Opened Player \"" << m_WAVFile.GetFilePath() << '"');
       return true;
+    }
+
     SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
     return false;
   }
@@ -132,9 +135,13 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
     return false;
   }
 
-  if (params.m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample) {
-    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
-    return SetBuffers(320, 1);
+  if (params.m_sampleRate >= 8000 &&
+      params.m_bitsPerSample == m_WAVFile.GetSampleSize() &&
+      SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+      SetBuffers(320, 1))
+  {
+    PTRACE(4, "Opened Recorder \"" << m_WAVFile.GetFilePath() << "\", autoRepeat=" << ::boolalpha << m_autoRepeat);
+    return true;
   }
 
   Close();
@@ -149,36 +156,6 @@ PBoolean PSoundChannel_WAVFile::IsOpen() const
   return m_WAVFile.IsOpen();
 }
 
-PBoolean PSoundChannel_WAVFile::SetFormat(unsigned numChannels,
-                                      unsigned sampleRate,
-                                      unsigned bitsPerSample)
-{
-  m_WAVFile.SetChannels(numChannels);
-  m_WAVFile.SetSampleRate(sampleRate);
-  m_WAVFile.SetSampleSize(bitsPerSample);
-
-  return true;
-}
-
-
-unsigned PSoundChannel_WAVFile::GetChannels() const
-{
-  return m_WAVFile.GetChannels();
-}
-
-
-unsigned PSoundChannel_WAVFile::GetSampleRate() const
-{
-  return m_WAVFile.GetSampleRate();
-}
-
-
-unsigned PSoundChannel_WAVFile::GetSampleSize() const
-{
-  return m_WAVFile.GetSampleSize();
-}
-
-
 PBoolean PSoundChannel_WAVFile::Close()
 {
   if (CheckNotOpen())
@@ -192,181 +169,39 @@ PBoolean PSoundChannel_WAVFile::Close()
 }
 
 
-PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX size, PINDEX count)
+bool PSoundChannel_WAVFile::RawWrite(const void * data, PINDEX size)
 {
-  m_bufferSize = size;
-  m_bufferCount = count;
-  if (!PAssert(m_buffer.SetSize(size*count), POutOfMemory))
-    return false;
-
-  PTRACE(3, "Setting write buffer to " << count << '*' << size << '=' << m_buffer.GetSize());
-  m_bufferPos = 0;
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
-{
-  size = m_bufferSize;
-  count = m_bufferCount;
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
-{
-  bool ok = true;
-  PINDEX written = 0;
-
-  if (m_muted) {
-    if (m_bufferPos > 0) {
-      PTRACE(4, "Muted, flushing write buffer: " << m_bufferPos << " bytes");
-      ok = m_WAVFile.Write(m_buffer, m_bufferPos);
-      m_bufferPos = 0;
-    }
-    if (ok) {
-      memset(m_buffer.GetPointer(size), 0, size);
-      ok = m_WAVFile.Write(m_buffer.GetPointer(), size);
-    }
-  }
-  else if (size >= m_buffer.GetSize()) {
-    if (m_bufferPos > 0) {
-      PTRACE(4, "Write too big, flushing write buffer: " << m_bufferPos << " bytes");
-      ok = m_WAVFile.Write(m_buffer, m_bufferPos);
-      m_bufferPos = 0;
-    }
-    if (ok)
-      ok = m_WAVFile.Write(data, size);
-  }
-  else if (m_bufferPos + size > m_buffer.GetSize()) {
-    PTRACE(4, "Flushing write buffer: " << m_bufferPos << " bytes");
-    ok = m_WAVFile.Write(m_buffer, m_bufferPos);
-    memcpy(m_buffer.GetPointer(), data, size);
-    m_bufferPos = size;
-    written = size;
-  }
-  else {
-    memcpy(m_buffer.GetPointer() + m_bufferPos, data, size);
-    m_bufferPos += size;
-    written = size;
+  if (m_WAVFile.Write(data, size)) {
+    SetLastWriteCount(m_WAVFile.GetLastWriteCount());
+    return true;
   }
 
-  if (!ok) {
-    SetLastWriteCount(0);
-    SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
-    return false;
-  }
-
-  if (written == 0)
-    written = m_WAVFile.GetLastWriteCount();
-  SetLastWriteCount(written);
-
-  m_Pacing.Delay(written * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate() / m_WAVFile.GetChannels());
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::HasPlayCompleted()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::WaitForPlayCompletion()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::StartRecording()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
-{
-  for (int retry = 0; retry < 2; ++retry) {
-    if (m_WAVFile.Read(data, size)) {
-      PINDEX count = m_WAVFile.GetLastReadCount();
-      if (m_muted)
-        memset(data, 0, count);
-      m_Pacing.Delay(count * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
-      SetLastReadCount(count);
-      return true;
-    }
-
-    if (m_WAVFile.GetErrorCode(LastReadError) != NoError) {
-      PTRACE(2, "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
-      return false;
-    }
-
-    if (!m_autoRepeat) {
-      PTRACE(3, "End of file, stopping");
-      return false;
-    }
-
-    PTRACE_IF(4, retry == 0, "End of file, repeating");
-    m_WAVFile.SetPosition(0);
-  }
-
-  PTRACE(2, "File is empty, cannot repeat");
+  SetLastWriteCount(0);
+  SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber(), LastWriteError);
   return false;
 }
 
 
-PBoolean PSoundChannel_WAVFile::IsRecordBufferFull()
+bool PSoundChannel_WAVFile::RawRead(void * data, PINDEX size)
 {
-  return true;
+  if (m_WAVFile.Read(data, size)) {
+    SetLastReadCount(m_WAVFile.GetLastReadCount());
+    return true;
+  }
+
+  SetLastReadCount(0);
+  SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber(), LastReadError);
+  return false;
 }
 
 
-PBoolean PSoundChannel_WAVFile::AreAllRecordBuffersFull()
+bool PSoundChannel_WAVFile::Rewind()
 {
-  return true;
-}
+  if (m_WAVFile.SetPosition(0))
+    return true;
 
-
-PBoolean PSoundChannel_WAVFile::WaitForRecordBufferFull()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::SetVolume(unsigned volume)
-{
-  if (volume > 100)
-    return false;
-
-  m_muted = volume == 0;
-  return true;
-}
-
-
-PBoolean PSoundChannel_WAVFile::GetVolume(unsigned & volume)
-{
-  volume = m_muted ? 0 : 100;
-  return true;
-}
-
-
-bool PSoundChannel_WAVFile::SetMute(bool mute)
-{
-  m_muted = mute;
-  return true;
-}
-
-
-bool PSoundChannel_WAVFile::GetMute(bool & mute)
-{
-  mute = m_muted;
-  return true;
+  SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
+  return false;
 }
 
 

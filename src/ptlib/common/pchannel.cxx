@@ -521,6 +521,18 @@ PChannel * PChannel::GetBaseWriteChannel() const
 }
 
 
+bool PChannel::CloseBaseReadChannel()
+{
+  return Close();
+}
+
+
+bool PChannel::CloseBaseWriteChannel()
+{
+  return Close();
+}
+
+
 PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
 {
   return m_status[group]->m_lastErrorCode;
@@ -947,6 +959,20 @@ PChannel * PIndirectChannel::GetBaseWriteChannel() const
 }
 
 
+bool PIndirectChannel::CloseBaseReadChannel()
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return readChannel != NULL && readChannel->CloseBaseReadChannel();
+}
+
+
+bool PIndirectChannel::CloseBaseWriteChannel()
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return writeChannel != NULL && writeChannel->CloseBaseWriteChannel();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
@@ -1145,11 +1171,7 @@ bool PFile::Rename(const PFilePath & oldname, const PString & newname, bool forc
 {
   for (PINDEX i = 0; i< newname.GetLength(); ++i) {
     if (PDirectory::IsSeparator(newname[i])) {
-#ifdef _WIN32_WCE
-      set_errno(EINVAL);
-#else
       errno = EINVAL;
-#endif
       return false;
     }
   }

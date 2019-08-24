@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>Hello World Static</ProjectName>
     <ProjectGuid>{D38CA533-D522-4D9E-B2C9-D59F6C415268}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">

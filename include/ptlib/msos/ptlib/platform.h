@@ -84,11 +84,11 @@
     #define WINVER 0x0500
   #endif
 
-  #if !defined(_WIN32_WINNT) && !defined(_WIN32_WCE)
+  #if !defined(_WIN32_WINNT)
     #define _WIN32_WINNT WINVER
   #endif
 
-  #if !defined(_WIN32_WCE) && defined(_WIN32_WINNT) && (_WIN32_WINNT == 0x0500) && P_HAS_IPV6 && !defined(NTDDI_VERSION)
+  #if defined(_WIN32_WINNT) && (_WIN32_WINNT == 0x0500) && P_HAS_IPV6 && !defined(NTDDI_VERSION)
     #define NTDDI_VERSION NTDDI_WIN2KSP1
   #endif
 
@@ -102,7 +102,10 @@
 
   #include <windows.h>
 
-  #undef DELETE   // Remove define from NT headers.
+  // Remove some stupid defines from Windows headers.
+  #undef DELETE
+  #undef min
+  #undef max
 
 
 #else
@@ -165,45 +168,22 @@ typedef uint64_t PUInt64;
 
 // Standard array index type (depends on compiler)
 // Type used in array indexes especially that required by operator[] functions.
-#if defined(_MSC_VER) || defined(__MINGW32__)
-
-  #if P_64BIT
-    typedef size_t PINDEX;
-    const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
-    #define PINDEX_SIGNED 0
-  #else
-    #define PINDEX int
-    #if defined(_WIN32) || defined(_WIN32_WCE)
-      const PINDEX P_MAX_INDEX = 0x7fffffff;
-    #else
-      const PINDEX P_MAX_INDEX = 0x7fff;
-    #endif
-    #define PINDEX_SIGNED 1
-  #endif
-
+#if defined(_MSC_VER) && !P_64BIT
+  #define PINDEX int
+  #define PINDEX_SIGNED 1
 #else
-
   typedef size_t PINDEX;
-  #if SIZEOF_INT == 8
-     const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
-  #else
-     const PINDEX P_MAX_INDEX = 0xffffffff;
-  #endif
   #define PINDEX_SIGNED 0
-
 #endif
 
-#ifndef _WIN32_WCE 
 
-  #if _MSC_VER>=1400
-    #define strcasecmp(s1,s2) _stricmp(s1,s2)
-    #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
-  #elif defined(_MSC_VER)
-    #define strcasecmp(s1,s2) stricmp(s1,s2)
-    #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
-  #endif
-
-#endif // !_WIN32_WCE 
+#if _MSC_VER>=1400
+  #define strcasecmp(s1,s2) _stricmp(s1,s2)
+  #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
+#elif defined(_MSC_VER)
+  #define strcasecmp(s1,s2) stricmp(s1,s2)
+  #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+#endif
 
 
 class PWin32Overlapped : public OVERLAPPED
@@ -236,7 +216,7 @@ class PWin32Handle
     operator HANDLE() const { return m_handle; }
 
     bool Wait(DWORD timeout) const;
-    bool Duplicate(HANDLE h, DWORD flags = DUPLICATE_SAME_ACCESS);
+    bool Duplicate(HANDLE h, DWORD flags = DUPLICATE_SAME_ACCESS, DWORD access = 0);
 
   private:
     PWin32Handle(const PWin32Handle &) { }
@@ -272,13 +252,8 @@ class RegistryKey
     HKEY key;
 };
 
-#ifndef _WIN32_WCE
-  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
+#define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
     int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-#else
-  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
-    int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
-#endif
 extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 #if defined(_MSC_VER) && !defined(_WIN32)
@@ -310,38 +285,20 @@ typedef DWORD PProcessIdentifier;
 #include <mmsystem.h>
 
 
-#ifndef _WIN32_WCE
-
-  #ifdef _MSC_VER
-    #include <crtdbg.h>
-  #endif
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <errno.h>
-  #include <io.h>
-  #include <fcntl.h>
-  #include <direct.h>
-  #include <time.h>
-
-  #include <signal.h>
-  typedef void (__cdecl * PRunTimeSignalHandler)(int);
-  #define SIGRTMAX NSIG
-#else
-
-  #include <ptlib/wm/stdlibx.h>
-  #include <ptlib/wm/errno.h>
-  #include <ptlib/wm/sys/types.h>
-  #if _WIN32_WCE < 0x500
-    #include <ptlib/wm/time.h>
-  #else
-    #include <time.h>
-  #endif
-
-#ifndef MB_TASKMODAL
-  #define MB_TASKMODAL MB_APPLMODAL
+#ifdef _MSC_VER
+  #include <crtdbg.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <io.h>
+#include <fcntl.h>
+#include <direct.h>
+#include <time.h>
 
-#endif
+#include <signal.h>
+typedef void (__cdecl * PRunTimeSignalHandler)(int);
+#define SIGRTMAX NSIG
 
 // used by various modules to disable the winsock2 include to avoid header file problems
 #define _WINSOCK_DEPRECATED_NO_WARNINGS 1

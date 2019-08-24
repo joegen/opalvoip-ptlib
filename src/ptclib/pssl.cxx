@@ -840,6 +840,23 @@ PString PSSLCertificate::GetSubjectAltName() const
 }
 
 
+bool PSSLCertificate::CheckHostName(const PString & hostname, CheckHostFlags flags)
+{
+  int sslFlags = 0;
+  if (flags&CheckHostAlwaysUseSubject)
+    sslFlags |= X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
+  if (flags&CheckHostNoWildcards)
+    sslFlags |= X509_CHECK_FLAG_NO_WILDCARDS;
+  if (flags&CheckHostNoPartialWildcards)
+    sslFlags |= X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
+  if (flags&CheckHostMultiLabelWildcards)
+    sslFlags |= X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
+  if (flags&CheckHostSingleLabelDomains)
+    sslFlags |= X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
+  return X509_check_host(m_certificate, hostname, hostname.GetLength(), sslFlags, NULL) > 0;
+}
+
+
 PObject::Comparison PSSLCertificate::X509_Name::Compare(const PObject & other) const
 {
   int cmp = X509_NAME_cmp(m_name, dynamic_cast<const X509_Name &>(other).m_name);
@@ -1108,7 +1125,7 @@ bool PSSLCipherContext::SetAlgorithm(const PString & name)
 
 bool PSSLCipherContext::SetKey(const BYTE * keyPtr, PINDEX keyLen)
 {
-  PTRACE(4, "Setting key: " << hex << fixed << setfill('0') << PBYTEArray(keyPtr, keyLen, false));
+  PTRACE(4, "Setting key: " << PHexDump(keyPtr, keyLen));
 
   if (keyLen < (PINDEX)EVP_CIPHER_CTX_key_length(m_context)) {
     PTRACE(2, "Incorrect key length for encryption");
@@ -1767,6 +1784,12 @@ static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/
 }
 
 
+static unsigned long ThreadIdCallback()
+{
+  return PThread::GetCurrentUniqueIdentifier();
+}
+
+
 void PSSLInitialiser::OnStartup()
 {
   SSL_library_init();
@@ -1779,8 +1802,10 @@ void PSSLInitialiser::OnStartup()
   RAND_seed(seed, sizeof(seed));
 
   // set up multithread stuff
-  mutexes.resize(CRYPTO_num_locks());
+  for (int i = 0; i < CRYPTO_num_locks(); ++i)
+    mutexes.push_back(PMutex(PDebugLocation(__FILE__, __LINE__, "SSLMutex")));
   CRYPTO_set_locking_callback(::LockingCallback);
+  CRYPTO_set_id_callback(ThreadIdCallback);
 }
 
 
@@ -1788,6 +1813,7 @@ void PSSLInitialiser::OnShutdown()
 {
   CRYPTO_set_locking_callback(NULL);
   ERR_free_strings();
+  mutexes.clear();
 }
 
 
@@ -1880,15 +1906,15 @@ static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
 
 static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
 {
+  PSSLChannel::VerifyInfo info(ok, X509_STORE_CTX_get_current_cert(ctx), X509_STORE_CTX_get_error(ctx));
+
+  PSSLChannel * channel;
   SSL * ssl = reinterpret_cast<SSL *>(X509_STORE_CTX_get_app_data(ctx));
-  if (ssl != NULL) {
-    PSSLChannel * channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl));
-    if (channel != NULL)
-      ok = channel->OnVerify(ok, X509_STORE_CTX_get_current_cert(ctx));
-  }
+  if (ssl != NULL && (channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl))) != NULL)
+    channel->OnVerify(info);
 
   TraceVerifyCallback(ok, ctx);
-  return ok;
+  return info.m_ok;
 }
 
 
@@ -2007,9 +2033,45 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
   if (PAssertNULL(m_context) == NULL)
     return false;
 
-  PString caPath = caDir.Left(caDir.GetLength()-1);
+  if (caFile.IsEmpty())
+    return SetVerifyDirectory(caDir); // Directory can never be empty.
 
-  if (caFile.IsEmpty() && caPath.IsEmpty()) {
+  if (SSL_CTX_load_verify_locations(m_context, caFile, caDir)) {
+    PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifyDirectory(const PDirectory & caDir)
+{
+  if (SSL_CTX_load_verify_locations(m_context, NULL, caDir)) {
+    PTRACE(4, "Set context " << m_context << " verify directory \"" << caDir << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify directory \"" << caDir << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifyFile(const PFilePath & caFile)
+{
+  if (SSL_CTX_load_verify_locations(m_context, caFile, NULL)) {
+    PTRACE(4, "Set context " << m_context << " verify file \"" << caFile << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify locations file \"" << caFile << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifySystemDefault()
+{
 #if _WIN32
     HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
     if (hStore != NULL) {
@@ -2036,9 +2098,10 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
       if (count > 0) {
         SSL_CTX_set_cert_store(m_context, store);
         PTRACE(4, "Set context " << m_context << " to use " << count << " certificates from Windows Certificate Store");
+        return true;
       }
-      else
-        PTRACE(2, "No usable certificates in Windows System Certificate store for context " << m_context);
+
+      PTRACE(2, "No usable certificates in Windows System Certificate store for context " << m_context);
     }
     else
       PTRACE(2, "Could not open Windows System Certificate store for context " << m_context);
@@ -2056,16 +2119,6 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
 
     PTRACE(2, "Could not set context " << m_context << " to system certficate store.");
 #endif // _WIN32
-  }
-  else {
-    if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
-                                      caPath.IsEmpty() ? NULL : (const char *)caPath)) {
-      PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
-      return true;
-    }
-
-    PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
-  }
 
   return SSL_CTX_set_default_verify_paths(m_context);
 }
@@ -2211,11 +2264,11 @@ bool PSSLContext::SetCredentials(const PString & authority,
   if (!authority.IsEmpty()) {
     bool ok;
     if (authority == "*")
-      ok = SetVerifyLocations(PString::Empty(), PString::Empty());
+      ok = SetVerifySystemDefault();
     else if (PDirectory::Exists(authority))
-      ok = SetVerifyLocations(PString::Empty(), authority);
+      ok = SetVerifyDirectory(authority);
     else if (PFile::Exists(authority))
-      ok = SetVerifyLocations(authority, PString::Empty());
+      ok = SetVerifyFile(authority);
     else
       ok = SetVerifyCertificate(PSSLCertificate(authority));
     if (!ok) {
@@ -2466,6 +2519,10 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 
   flush();
 
+  /* OpenSSL claims to be thread safe if we use CRYPTO_set_locking_callback().
+     However, evidence is, that simultaneous writes are still ... bad. */
+  PWaitAndSignal lock(m_writeMutex);
+
   channelPointerMutex.StartRead();
 
   SetLastWriteCount(0);
@@ -2479,7 +2536,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
     writeChannel->SetWriteTimeout(writeTimeout);
 
     int writeResult = SSL_write(m_ssl, (const char *)buf, len);
-    returnValue = SetLastWriteCount(writeResult) >= len;
+    returnValue = writeResult >= 0 && SetLastWriteCount(writeResult) >= len;
     if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
       ConvertOSError(-1, LastWriteError);
   }
@@ -2516,9 +2573,19 @@ int PSSLChannel::BioWrite(const char * buf, int len)
 }
 
 
+PBoolean PSSLChannel::Shutdown(ShutdownValue value)
+{
+  if (value != ShutdownReadAndWrite)
+    return SetErrorValues(BadParameter, EINVAL);
+
+  bool ok = PAssertNULL(m_ssl) != NULL && SSL_shutdown(m_ssl);
+  return PIndirectChannel::Shutdown(value) && ok;
+}
+
+
 PBoolean PSSLChannel::Close()
 {
-  bool ok = PAssertNULL(m_ssl) != NULL && SSL_shutdown(m_ssl);
+  bool ok = Shutdown(ShutdownReadAndWrite);
   return PIndirectChannel::Close() && ok;
 }
 
@@ -2550,6 +2617,11 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
   DWORD osError = 0;
   if (m_ssl != NULL && SSL_get_error(m_ssl, (int)libcReturnValue) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
+    if (osError == 0x94090086) {
+      int certVerifyError = GetErrorNumber(LastGeneralError);
+      if ((certVerifyError & 0xc0000000) == 0xc0000000)
+        osError = certVerifyError;
+    }
     lastError = AccessDenied;
   }
 
@@ -2559,9 +2631,15 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
 
 PString PSSLChannel::GetErrorText(ErrorGroup group) const
 {
-  int err = GetErrorNumber(group);
+  unsigned err = GetErrorNumber(group);
   if ((err&0x80000000) == 0)
     return PIndirectChannel::GetErrorText(group);
+
+  if (err == 0xe0000000)
+    return "Certificate subject invalid for host";
+
+  if ((err & 0x40000000) != 0)
+    return X509_verify_cert_error_string(err&0x3fffffff);
 
   return PSSLError(err&0x7fffffff);
 }
@@ -2676,14 +2754,13 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode, const VerifyNotifier & notifier
 }
 
 
-bool PSSLChannel::OnVerify(bool ok, const PSSLCertificate & peerCertificate)
+void PSSLChannel::OnVerify(VerifyInfo & info)
 {
-  if (m_verifyNotifier.IsNULL())
-    return ok;
+  if (!m_verifyNotifier.IsNULL())
+    m_verifyNotifier(*this, info);
 
-  VerifyInfo info(ok, peerCertificate);
-  m_verifyNotifier(*this, info);
-  return info.m_ok;
+  if (info.m_errorCode != 0)
+    SetErrorValues(AccessDenied, 0xc0000000 | info.m_errorCode, LastGeneralError);
 }
 
 
@@ -2705,7 +2782,10 @@ bool PSSLChannel::GetPeerCertificate(PSSLCertificate & certificate, PString * er
       *error = "Peer did not offer certificate";
   }
 
-  return (SSL_get_verify_mode(m_ssl)&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0;
+  if (err == X509_V_OK && (SSL_get_verify_mode(m_ssl)&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0)
+    return true;
+
+  return SetErrorValues(AccessDenied, 0xc0000000 | err, LastGeneralError);
 }
 
 
@@ -2731,6 +2811,28 @@ long PSSLChannel::BioControl(int cmd, long num, void * /*ptr*/)
 
   // Other BIO commands, return 0
   return 0;
+}
+
+
+bool PSSLChannel::SetServerNameIndication(const PString & name)
+{
+  return m_ssl != NULL && SSL_set_tlsext_host_name(m_ssl, name.GetPointer());
+}
+
+
+bool PSSLChannel::CheckHostName(const PString & hostname, PSSLCertificate::CheckHostFlags flags)
+{
+  if (SSL_get_verify_mode(m_ssl) == 0)
+    return true;
+
+  PSSLCertificate certificate;
+  if (!GetPeerCertificate(certificate))
+    return false;
+
+  if (certificate.CheckHostName(hostname, flags))
+    return true;
+
+  return SetErrorValues(AccessDenied, 0xe0000000, LastGeneralError);
 }
 
 

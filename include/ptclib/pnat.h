@@ -193,11 +193,11 @@ class PNatMethod  : public PObject
 
     /**Get the current server address and port being used.
       */
-    virtual bool GetServerAddress(
+    bool GetServerAddress(
       PIPSocket::Address & address,   ///< Address of server
       WORD & port                     ///< Port server is using.
     ) const;
-    virtual bool GetServerAddress(
+    bool GetServerAddress(
       PIPSocketAddressAndPort & externalAddressAndPort 
     ) const;
 
@@ -251,10 +251,14 @@ class PNatMethod  : public PObject
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const;
 
+    /**Return the interface NAT router is using.
+      */
+    PString GetInterface() const;
+
     /**Open the NAT method.
       */
     virtual bool Open(
-      const PIPSocket::Address & ifaceAddr
+      const PIPSocket::Address & ifaceAddr  ///< The local interface address to use
     );
 
     /**Close the NAT method
@@ -339,17 +343,18 @@ class PNatMethod  : public PObject
 
   protected:
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context) = 0;
-    virtual void InternalUpdate() = 0;
+    virtual void InternalUpdate(bool externalAddressOnly) = 0;
+    virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const = 0;
 
     bool m_active;
 
     PIPSocket::PortRange m_singlePortRange;
     PIPSocket::PortRange m_pairedPortRange;
 
-    PNatMethod::NatTypes    m_natType;
-    PIPSocketAddressAndPort m_externalAddress;
-    PTime                   m_updateTime;
-    PMutex                  m_mutex;
+    PNatMethod::NatTypes m_natType;
+    PIPSocket::Address   m_externalAddress;
+    PTime                m_updateTime;
+    PDECLARE_MUTEX(      m_mutex);
 
   private:
     unsigned m_priority;
@@ -465,8 +470,9 @@ class PNatMethod_Fixed  : public PNatMethod
 
     virtual PString GetServer() const;
     virtual bool SetServer(const PString & str);
-    virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const;
-    virtual bool Open(const PIPSocket::Address & addr);
+    virtual bool GetInterfaceAddress(PIPSocket::Address & ifaceAddr) const;
+    virtual bool Open(const PIPSocket::Address & ifaceAddr);
+    virtual void Close();
     virtual bool IsAvailable(const PIPSocket::Address & binding, PObject * context);
 
     class Socket : public PNATUDPSocket
@@ -482,10 +488,36 @@ class PNatMethod_Fixed  : public PNatMethod
         PIPSocket::Address m_externalAddress;
     };
   protected:
+    virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
-    virtual void InternalUpdate();
+    virtual void InternalUpdate(bool);
 
+    PString            m_serverString;
     PIPSocket::Address m_interfaceAddress;
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+
+/** Fixed NAT for AWS support class.
+    This is similar to PNatMethod_Fixed, but obtains the external address
+    via the http://169.254.169.254/latest/meta-data/public-ipv4 API.
+  */
+class PNatMethod_AWS : public PNatMethod_Fixed
+{
+  PCLASSINFO(PNatMethod_AWS, PNatMethod_Fixed);
+  public:
+    PNatMethod_AWS(unsigned priority = DefaultPriority);
+
+    static const char * MethodName();
+    virtual PCaselessString GetMethodName() const;
+
+    virtual PString GetServer() const;
+    virtual bool SetServer(const PString & str);
+
+  protected:
+    virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
+    void InternalUpdate(bool);
 };
 
 /////////////////////////////////////////////////////////////

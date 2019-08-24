@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 
 PCREATE_PROCESS(DtmfTest);
@@ -41,7 +40,7 @@ static const PINDEX samplesPerMillisecond = 8;
 
 
 DtmfTest::DtmfTest()
-  : PProcess("Equivalence", "dtmftest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Equivalence", "dtmftest")
 {
 }
 

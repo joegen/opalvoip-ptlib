@@ -6,6 +6,7 @@ ptlib.pc
 ptlib_cfg.dxy
 revision.h
 aclocal.m4
+html/
 lib/
 obj/
 lib_*/
@@ -26,3 +27,4 @@ private/
 /src/ptlib/common/getdate.c
 /samples/vxmltest/cache/
 
+/tools/configure/Release

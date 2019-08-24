@@ -116,6 +116,46 @@ class PSimpleThread : public PThread
 };
 
 
+#define RELEASE_THREAD_LOCAL_STORAGE 1
+#if RELEASE_THREAD_LOCAL_STORAGE
+static class PThreadLocalStorageData : private std::set<PThread::LocalStorageBase*>
+{
+  PCriticalSection m_mutex;
+
+public:
+  ~PThreadLocalStorageData()
+  {
+    m_mutex.Wait();
+    for (iterator it = begin(); it != end(); ++it)
+      (*it)->DestroyStorage();
+    m_mutex.Signal();
+  }
+
+  void Construct(PThread::LocalStorageBase * data)
+  {
+    m_mutex.Wait();
+    insert(data);
+    m_mutex.Signal();
+  }
+
+  void Destroy(PThread::LocalStorageBase * data)
+  {
+    m_mutex.Wait();
+    erase(data);
+    m_mutex.Signal();
+  }
+
+  void Destroy(PThread & thread)
+  {
+    m_mutex.Wait();
+    for (iterator it = begin(); it != end(); ++it)
+      (*it)->ThreadDestroyed(thread);
+    m_mutex.Signal();
+  }
+} * s_ThreadLocalStorageData;
+#endif // RELEASE_THREAD_LOCAL_STORAGE
+
+
 #define new PNEW
 
 
@@ -161,6 +201,7 @@ public:
   PTimeInterval    m_startTick;
   PString          m_rolloverPattern;
   unsigned         m_lastRotate;
+  atomic<PINDEX>   m_maxLength;
 
 
 #if defined(_WIN32)
@@ -220,6 +261,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , m_startTick(PTimer::Tick())
     , m_rolloverPattern(DefaultRollOverPattern)
     , m_lastRotate(0)
+    , m_maxLength(10000)
   {
     InitMutex();
   }
@@ -243,6 +285,10 @@ PTHREAD_MUTEX_RECURSIVE_NP
     const char * optEnv = getenv("PWLIB_TRACE_OPTIONS");
     if (optEnv == NULL)
       optEnv = getenv("PTLIB_TRACE_OPTIONS");
+
+    const char * mutEnv = getenv("PTLIB_MUTEX_CTOR_DTOR_LOG");
+    if (mutEnv != NULL)
+      PTimedMutex::CtorDtorLogLevel = atoi(mutEnv);
 
     if (levelEnv != NULL || fileEnv != NULL || optEnv != NULL)
       InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel.load(),
@@ -306,7 +352,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   bool HasOption(unsigned options) const { return (m_options & options) != 0; }
 
-  void OpenTraceFile(const char * newFilename, bool outputFirstLog)
+  void OpenTraceFile(const char * newFilename, bool outputFirstLog, const PTime & now = PTime())
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
@@ -361,7 +407,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
       PString rollover;
       if ((m_options & RotateLogMask) != 0)
-        rollover = PTime().AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local));
+        rollover = now.AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local));
 
       fn.Replace("%D", rollover, true);
       fn.Replace("%N", PProcess::Current().GetName(), true);
@@ -417,7 +463,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       log << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
-             " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
+             " at " << now.AsString("yyyy/M/d h:mm:ss.uuu") << ","
              " level=" << m_thresholdLevel << ", to ";
       if ((m_options & RotateLogMask) == 0)
         log << '"' << m_filename;
@@ -605,6 +651,8 @@ void PTrace::Initialise(const PArgList & args,
         operation(options, ObjectInstance);
       else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
         operation(options, ContextIdentifier);
+      else if (optStr.NumCompare("single", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, SingleLine);
       else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
         operation(options, GMTTime);
       else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
@@ -695,6 +743,18 @@ void PTrace::SetFilename(const char * filename)
 const char * PTrace::GetFilename()
 {
   return PTraceInfo::Instance().m_filename;
+}
+
+
+void PTrace::SetMaxLength(PINDEX length)
+{
+  PTraceInfo::Instance().m_maxLength = std::max(PINDEX(50), length);
+}
+
+
+PINDEX PTrace::GetMaxLength()
+{
+  return PTraceInfo::Instance().m_maxLength;
 }
 
 
@@ -793,8 +853,70 @@ ostream & PTrace::End(ostream & paramStream)
 
 ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
-  *m_stream << '\n';
-  m_stream->flush();
+  PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
+
+  int currentLevel;
+
+  if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
+    PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
+    if (!PAssert(&paramStream == stackStream, PLogicError))
+      return paramStream;
+
+    *stackStream << ends << flush;
+
+    PINDEX tab = stackStream->Find('\t', threadInfo->m_prefixLength);
+    if (tab != P_MAX_INDEX) {
+      PINDEX len = tab - threadInfo->m_prefixLength;
+      if (len < 8)
+        stackStream->Splice("      ", tab, 0);
+    }
+
+    if (HasOption(SingleLine)) {
+        stackStream->Replace("\\", "\\\\", true);
+        stackStream->Replace("\r", "\\r", true);
+        stackStream->Replace("\n", "\\n", true);
+    }
+
+    if (stackStream->GetLength() > m_maxLength)
+      stackStream->Splice("...", m_maxLength - 4, P_MAX_INDEX);
+
+    Lock();
+
+    if (HasOption(SystemLogStream)) {
+      PSystemLog::OutputToTarget(PSystemLog::LevelFromInt(threadInfo->m_traceLevel), stackStream->GetPointer());
+      currentLevel = -1;
+    }
+    else {
+      *m_stream << *stackStream;
+      currentLevel = threadInfo->m_traceLevel;
+    }
+
+    delete stackStream;
+  }
+  else {
+    if (!PAssert(&paramStream == m_stream, PLogicError)) {
+      Unlock();
+      return paramStream;
+    }
+
+    currentLevel = m_currentLevel;
+    // Inherit lock from PTrace::Begin()
+  }
+
+  if (currentLevel >= 0) {
+    if (HasOption(SystemLogStream)) {
+      // Get the trace level for this message and set the stream width to that
+      // level so that the PSystemLog can extract the log level back out of the
+      // ios structure. There could be portability issues with this though it
+      // should work pretty universally.
+      m_stream->width(currentLevel + 1);
+    }
+    else
+      *m_stream << '\n';
+    m_stream->flush();
+  }
+
+  Unlock();
   return paramStream;
 }
 
@@ -957,6 +1079,8 @@ PTraceSaveContextIdentifier::~PTraceSaveContextIdentifier()
 
 #endif // PTRACING==2
 
+static struct PMutexLeakCheck : PCriticalSection, std::set<const PObject *> { } * s_MutexLeakCheck;
+
 #endif // PTRACING
 
 
@@ -987,6 +1111,26 @@ PDirectory::PDirectory(const PString & pathname)
 void PDirectory::CloneContents(const PDirectory * d)
 {
   CopyContents(*d);
+}
+
+
+PDirectory PDirectory::GetTemporary()
+{
+  const char * tmpdir = getenv("TMPDIR");
+  if (tmpdir == NULL) {
+    tmpdir = getenv("TMP");
+    if (tmpdir == NULL)
+      tmpdir = getenv("TEMP");
+  }
+
+  if (tmpdir != NULL && *tmpdir != '\0')
+    return tmpdir;
+
+#ifdef _WIN32
+  return PDirectory("C:\\");
+#else
+  return PDirectory("/tmp");
+#endif
 }
 
 
@@ -1794,7 +1938,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       m_parameterIndex.SetSize(param+1);
       m_parameterIndex[param++] = arg;
     }
-    else if (argStr == "--") {
+    else if (argStr.FindSpan("-") == P_MAX_INDEX) { // Nothing but dashes
       if (optionsBeforeParams) {
         ++arg;
         break;
@@ -1936,6 +2080,9 @@ PString PArgList::InternalGetOptionStringByIndex(size_t idx, const char * dflt) 
 PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 {
   PStringArray params;
+
+  if (m_parameterIndex.IsEmpty())
+    return params;
 
   if (last != P_MAX_INDEX)
     last += m_shift;
@@ -2121,7 +2268,7 @@ int PProcess::InternalMain(void *)
   try {
     Main();
   }
-  catch (std::exception & e) {
+  catch (const std::exception & e) {
     PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in process main, terminating"));
     std::terminate();
   }
@@ -2159,8 +2306,8 @@ void PProcess::PreInitialise(int c, char ** v)
 
 
 PProcess::PProcess(const char * manuf, const char * name,
-                   unsigned major, unsigned minor, CodeStatus stat, unsigned build,
-                   bool library, bool suppressStartup)
+                   unsigned major, unsigned minor, CodeStatus stat, unsigned patch,
+                   bool library, bool suppressStartup, unsigned oemVersion)
   : PThread(true)
   , m_library(library)
   , m_terminationValue(0)
@@ -2179,7 +2326,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   m_version.m_major = major;
   m_version.m_minor = minor;
   m_version.m_status = stat;
-  m_version.m_build = build;
+  m_version.m_patch = patch;
+  m_version.m_oem = oemVersion;
   m_version.m_svn = 0;
   m_version.m_git = NULL;
 
@@ -2192,6 +2340,10 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
+
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageData = new PThreadLocalStorageData;
+#endif
 
 #if PTRACING
   PTraceInfo::Instance().InitialiseFromEnvironment();
@@ -2273,6 +2425,17 @@ void PProcess::Startup()
       PTRACE(1, "Could not create startup factory " << *it);
     }
   }
+
+#if PTRACING
+  if (PTimedMutex::CtorDtorLogLevel != UINT_MAX)
+    s_MutexLeakCheck = new PMutexLeakCheck();
+#endif
+}
+
+
+bool PProcess::IsServiceProcess() const
+{
+  return false;
 }
 
 
@@ -2321,7 +2484,7 @@ void PProcess::HouseKeeping()
     }
 
     // m_autoDeleteThreads is inherently thread safe
-    PThread * thread;
+    PThread * thread = NULL;
     while (m_autoDeleteThreads.Dequeue(thread, 0))
       delete thread;
 
@@ -2362,7 +2525,7 @@ PProcess::~PProcess()
 
   // Clean up factories
   PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
-  for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it)
+  for (PProcessStartupFactory::KeyList_T::const_reverse_iterator it = list.rbegin(); it != list.rend(); ++it)
     PProcessStartupFactory::CreateInstance(*it)->OnShutdown();
 
   Sleep(100);  // Give threads time to die a natural death
@@ -2408,17 +2571,38 @@ PProcess::~PProcess()
 
   PlatformDestruct();
 
+  PFactoryBase::GetFactories().DestroySingletons();
+#if RELEASE_THREAD_LOCAL_STORAGE
+  PThreadLocalStorageData * tls = s_ThreadLocalStorageData;
+  s_ThreadLocalStorageData = NULL;
+  delete tls;
+#endif
+  PIPSocket::ClearNameCache();
+
+#if PTRACING
+  if (s_MutexLeakCheck != NULL) {
+    ostream & trace = PTRACE_BEGIN(PTimedMutex::CtorDtorLogLevel, NULL, "Mutex");
+    if (s_MutexLeakCheck->empty())
+      trace << "No mutex leaks.";
+    else {
+      trace << "Mutex Leaks:\n";
+      for (PMutexLeakCheck::iterator it = s_MutexLeakCheck->begin(); it != s_MutexLeakCheck->end(); ++it)
+        trace << "  " << **it << '\n';
+    }
+    trace << PTrace::End;
+  }
+#endif
+
   // Last chance to log anything ...
   PTRACE(4, PProcessInstance, "Completed process destruction.");
-
-  PFactoryBase::GetFactories().DestroySingletons();
-  PProcessInstance = NULL;
 
   // Can't do any more tracing after this ...
 #if PTRACING
   PTrace::SetStream(NULL);
   PTrace::SetLevel(0);
 #endif
+
+  PProcessInstance = NULL;
 }
 
 
@@ -2594,25 +2778,33 @@ void PProcess::InternalPostRunTimeSignal(int signal, PProcessIdentifier source)
 void PProcess::InternalHandleRunTimeSignal(const RunTimeSignalInfo & signalInfo)
 {
 #if PTRACING
-  if (PTrace::CanTrace(2)) {
-    ostream & trace = PTRACE_BEGIN(2);
-    trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal) << " from ";
-    if (signalInfo.m_source == GetCurrentProcessID())
-      trace << "self";
-    else if (signalInfo.m_source != 0) {
-      PFile proc(PSTRSTRM("/proc/" << signalInfo.m_source << "/cmdline"), PFile::ReadOnly);
-      if (!proc.IsOpen())
-        trace << "source=" << signalInfo.m_source;
+  unsigned level =
+#ifdef SIGPIPE
+                   signalInfo.m_signal == SIGPIPE ? 4 :
+#endif
+                   2;
+  if (PTrace::CanTrace(level)) {
+    ostream & trace = PTRACE_BEGIN(level);
+    trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal);
+    if (signalInfo.m_source != 0) {
+      trace << " from ";
+      if (signalInfo.m_source == GetCurrentProcessID())
+        trace << "self";
       else {
-        PString cmdline;
-        int c;
-        while ((c = proc.ReadChar()) >= 0) {
-          if (c == '\0')
-            cmdline += ' ';
-          else
-            cmdline += (char)c;
+        PFile proc(PSTRSTRM("/proc/" << signalInfo.m_source << "/cmdline"), PFile::ReadOnly);
+        if (!proc.IsOpen())
+          trace << "source=" << signalInfo.m_source;
+        else {
+          PString cmdline;
+          int c;
+          while ((c = proc.ReadChar()) >= 0) {
+            if (c == '\0')
+              cmdline += ' ';
+            else
+              cmdline += (char)c;
+          }
+          trace << "pid=" << signalInfo.m_source << ", cmdline=\"" << cmdline.RightTrim() << '"';
         }
-        trace << "pid=" << signalInfo.m_source << ", cmdline=\"" << cmdline.RightTrim() << '"';
       }
     }
     trace << PTrace::End;
@@ -2649,7 +2841,7 @@ void PProcess::HandleRunTimeSignal(int signal)
 const char * PProcess::GetRunTimeSignalName(int signal)
 {
   for (POrdinalToString::Initialiser const * name = InternalSigNames; name->key != 0; ++name) {
-    if (name->key == signal)
+    if ((int)name->key == signal)
       return name->value;
   }
 
@@ -2712,7 +2904,7 @@ PString PProcess::GetVersion(PBoolean full) const
 
 PString PProcess::GetLibVersion()
 {
-  static const VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, SVN_REVISION, GIT_COMMIT };
+  static const VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, PATCH_VERSION, OEM_VERSION, SVN_REVISION, GIT_COMMIT };
   return ver.AsString();
 }
 
@@ -2733,12 +2925,13 @@ PString PProcess::VersionInfo::AsString(bool full) const
         break;
 
       default:
-        if (m_build < 0x10000)
-          str << '.';
+        str << '.';
     }
 
-    if (m_build < 0x10000)
-      str << m_build;
+    str << m_patch;
+
+    if (m_oem > 0)
+      str << '-' << m_oem;
 
     if (m_git != NULL && *m_git != '\0')
       str << " (git:" << m_git << ')';
@@ -2857,7 +3050,7 @@ void PThread::InternalThreadMain()
     Main();
     process.OnThreadEnded(*this);
   }
-  catch (std::exception & e) {
+  catch (const std::exception & e) {
     PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in thread " << *this << ", terminating"));
     std::terminate();
   }
@@ -2931,6 +3124,14 @@ PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIden
   return psprintf(P_THREAD_ID_FMT, tid);
 }
 #endif
+
+
+PINDEX PThread::GetTotalCount()
+{
+    PProcess & process = PProcess::Current();
+    PWaitAndSignal mutex(process.m_threadMutex);
+    return process.m_activeThreads.size();
+}
 
 
 bool PThread::GetTimes(PThreadIdentifier id, Times & times)
@@ -3066,7 +3267,7 @@ PString PThread::GetThreadName() const
   return reply; 
 }
 
-#if defined(_MSC_VER) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER)
 
 static void SetOperatingSystemThreadName(DWORD threadId, const char * threadName)
 {
@@ -3102,7 +3303,7 @@ static void SetOperatingSystemThreadName(DWORD threadId, const char * threadName
 
 #define SetOperatingSystemThreadName(p1,p2)
 
-#endif // defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
+#endif // defined(_DEBUG) && defined(_MSC_VER)
 
 void PThread::SetThreadName(const PString & name)
 {
@@ -3226,12 +3427,6 @@ bool PThread::WaitAndDelete(PThread * & threadToDelete, const PTimeInterval & ma
 }
 
 
-#define RELEASE_THREAD_LOCAL_STORAGE 1
-#if RELEASE_THREAD_LOCAL_STORAGE
-static std::set<PThread::LocalStorageBase*> s_ThreadLocalStorage;
-static PCriticalSection s_ThreadLocalStorageMutex;
-#endif
-
 PThread::~PThread()
 {
   if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(1000)) {
@@ -3242,10 +3437,7 @@ PThread::~PThread()
   PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
 
 #if RELEASE_THREAD_LOCAL_STORAGE
-  s_ThreadLocalStorageMutex.Wait();
-  for (std::set<PThread::LocalStorageBase*>::iterator it = s_ThreadLocalStorage.begin(); it != s_ThreadLocalStorage.end(); ++it)
-    (*it)->ThreadDestroyed(*this);
-  s_ThreadLocalStorageMutex.Signal();
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Destroy(*this);
 #endif
 
   InternalDestroy();
@@ -3258,24 +3450,21 @@ PThread::~PThread()
 PThread::LocalStorageBase::LocalStorageBase()
 {
 #if RELEASE_THREAD_LOCAL_STORAGE
-  s_ThreadLocalStorageMutex.Wait();
-  s_ThreadLocalStorage.insert(this);
-  s_ThreadLocalStorageMutex.Signal();
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Construct(this);
 #endif
 }
 
 
-void PThread::LocalStorageBase::StorageDestroyed()
+void PThread::LocalStorageBase::DestroyStorage()
 {
 #if RELEASE_THREAD_LOCAL_STORAGE
-  s_ThreadLocalStorageMutex.Wait();
-  s_ThreadLocalStorage.erase(this);
-  s_ThreadLocalStorageMutex.Signal();
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Destroy(this);
 #endif
 
   m_mutex.Wait();
   for (DataMap::iterator it = m_data.begin(); it != m_data.end(); ++it)
     Deallocate(it->second);
+  m_data.clear();
   m_mutex.Signal();
 }
 
@@ -3342,13 +3531,18 @@ static PTimedMutex::DeadlockStackWalkModes InitialiseDeadlockStackWalkMode()
 PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = InitialiseDeadlockStackWalkMode();
 
 #if PTRACING
-static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool walkStack)
+
+unsigned PTimedMutex::CtorDtorLogLevel = UINT_MAX;
+
+static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool noSymbols)
 {
-  strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
-  if (walkStack)
-    PTrace::WalkStack(strm, tid, uid);
+  strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << ", name=\"" << PThread::GetThreadName(tid) << '"';
+  if (noSymbols)
+    strm << ", stack=";
+  PTrace::WalkStack(strm, tid, uid, noSymbols);
 }
-#endif
+
+#endif // PTRACING
 
 
 unsigned PTimedMutex::ExcessiveLockWaitTime;
@@ -3393,6 +3587,34 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo &
 }
 
 
+#if PTRACING
+void PMutexExcessiveLockInfo::Constructed(const PObject & mutex) const
+{
+  if (s_MutexLeakCheck == NULL)
+    return;
+
+  s_MutexLeakCheck->Wait();
+  bool ok = s_MutexLeakCheck->insert(&mutex).second;
+  s_MutexLeakCheck->Signal();
+
+  PTRACE(PTimedMutex::CtorDtorLogLevel, (ok ? "Constructed " : "Second construction of ") << mutex);
+}
+
+
+void PMutexExcessiveLockInfo::Destroyed(const PObject & mutex) const
+{
+  if (s_MutexLeakCheck == NULL)
+    return;
+
+  s_MutexLeakCheck->Wait();
+  bool ok = s_MutexLeakCheck->erase(&mutex) == 1; // If not there, probably constructed before s_MutexLeakCheck created
+  s_MutexLeakCheck->Signal();
+
+  PTRACE_IF(PTimedMutex::CtorDtorLogLevel, ok, "Destroyed " << mutex);
+}
+#endif // PTRACING
+
+
 void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
 {
   strm << " (" << m_location << ',' << m_excessiveLockTimeout << "ms)";
@@ -3430,8 +3652,18 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex,
           << " (" << heldDuration << "s),"
           << " in " << mutex;
     location.PrintOn(trace, " at ");
-    if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkOnPhantomRelease)
+    switch (PTimedMutex::DeadlockStackWalkMode) {
+    case PTimedMutex::DeadlockStackWalkOnPhantomRelease:
+    case PTimedMutex::DeadlockStackWalkEnabled:
       PTrace::WalkStack(trace);
+      break;
+    case PTimedMutex::DeadlockStackWalkNoSymbols :
+      trace << " stack: ";
+      PTrace::WalkStack(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
+      break;
+    default :
+      break;
+    }
     trace << PTrace::End;
 #else
     PAssertAlways(PSTRSTRM("Released phantom deadlock in mutex " << mutex));
@@ -3483,6 +3715,7 @@ void PTimedMutex::Construct()
   m_lastUniqueId = 0;
   m_lockCount = 0;
   PlatformConstruct();
+  PMUTEX_CONSTRUCTED();
 }
 
 
@@ -3529,20 +3762,40 @@ void PTimedMutex::InternalWait(const PDebugLocation * location)
 
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
     trace << "Assertion fail: Possible deadlock in " << *this;
-    if (DeadlockStackWalkMode != DeadlockStackWalkEnabled)
-      trace << ", ";
-    else {
+
+    switch (DeadlockStackWalkMode) {
+    case DeadlockStackWalkEnabled :
       trace << "\n  Blocked Thread";
-      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
+      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), false);
       trace << "\n  ";
+      break;
+    case DeadlockStackWalkNoSymbols :
+      trace << ", Blocked Thread:";
+      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
+      // do next case
+    default :
+      trace << ", ";
     }
-    trace << "Owner Thread ";
+
     if (lockerId != PNullThreadIdentifier)
-      OutputThreadInfo(trace, lockerId, lastUniqueId, DeadlockStackWalkMode == DeadlockStackWalkEnabled);
+      trace << "Owner Thread:";
     else {
-      trace << "no longer has lock, last owner:";
-      OutputThreadInfo(trace, lastLockerId, lastUniqueId, false);
+      trace << "Owner no longer has lock, last owner:";
+      lockerId = lastLockerId;
     }
+
+    switch (DeadlockStackWalkMode) {
+    case DeadlockStackWalkEnabled :
+      trace << '\n';
+      OutputThreadInfo(trace, lockerId, lastUniqueId, false);
+      break;
+    case DeadlockStackWalkNoSymbols :
+      OutputThreadInfo(trace, lockerId, lastUniqueId, true);
+      break;
+    default :
+      break;
+    }
+
     trace << PTrace::End;
 #else
     PAssertAlways(PSTRSTRM("Possible deadlock in " << *this));
@@ -3578,13 +3831,6 @@ bool PTimedMutex::InternalSignal(const PDebugLocation * location)
   ReleasedLock(*this, m_startHeldSamplePoint, false, location);
   m_lockerId = PNullThreadIdentifier;
   return false;
-}
-
-
-void PTimedMutex::PrintOn(ostream &strm) const
-{
-  strm << "mutex " << this;
-  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 
@@ -3784,7 +4030,7 @@ PReadWriteMutex::PReadWriteMutex()
   , m_writerCount(0)
 #endif
 {
-  PTRACE(5, "Created read/write mutex " << *this);
+  PMUTEX_CONSTRUCTED();
 }
 
 PReadWriteMutex::PReadWriteMutex(const PDebugLocation & location, unsigned timeout)
@@ -3806,14 +4052,12 @@ PReadWriteMutex::PReadWriteMutex(const PDebugLocation & location, unsigned timeo
   , m_writerCount(0)
 #endif
 {
-  PTRACE(5, "Created read/write mutex " << *this);
+  PMUTEX_CONSTRUCTED();
 }
 
 
 PReadWriteMutex::~PReadWriteMutex()
 {
-  PTRACE(5, "Destroying read/write mutex " << *this);
-
   EndNest(); // Destruction while current thread has a lock is OK
 
   /* There is a small window during destruction where another thread is on the
@@ -3831,6 +4075,8 @@ PReadWriteMutex::~PReadWriteMutex()
    */
   while (!m_nestedThreads.empty())
     PThread::Sleep(10);
+
+  PMUTEX_DESTROYED();
 }
 
 
@@ -3910,8 +4156,17 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync, const PDebugLocati
         " writers=" << it->second.m_writerCount;
       if (!it->second.m_waiting)
         trace << ", LOCKER";
-      if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkEnabled)
+      switch (PTimedMutex::DeadlockStackWalkMode) {
+      case PTimedMutex::DeadlockStackWalkEnabled:
         PTrace::WalkStack(trace, it->first, it->second.m_uniqueId);
+        break;
+      case PTimedMutex::DeadlockStackWalkNoSymbols:
+        trace << ", stack: ";
+        PTrace::WalkStack(trace, it->first, it->second.m_uniqueId, true);
+        break;
+      default:
+        break;
+      }
     }
     trace << PTrace::End;
   }
@@ -4238,22 +4493,8 @@ PFilePath::PFilePath(const char * prefix, const char * dir, const char * suffix)
   PStringStream path;
   if (dir != NULL)
     path << PDirectory(dir);
-  else {
-    PString tmpdir = getenv("TMPDIR");
-    if (tmpdir.IsEmpty()) {
-      tmpdir = getenv("TMP");
-      if (tmpdir.IsEmpty())
-        tmpdir = getenv("TEMP");
-    }
-    if (!tmpdir.IsEmpty())
-      path << PDirectory(tmpdir);
-    else
-#ifdef _WIN32
-      path << "C:\\";
-#else
-      path = "/tmp/";
-#endif
-  }
+  else
+    path << PDirectory::GetTemporary();
 
   PProcess & process = PProcess::Current();
   if (prefix != NULL)
@@ -4339,10 +4580,249 @@ void PFilePath::SetType(const PFilePathString & newType)
 }
 
 
+PFilePathString PFilePath::Sanitise(const PString & str, const PString & extra, char substitute)
+{
+  PFilePathString sanitised;
+  for (PINDEX i = 0; i < str.GetLength(); ++i) {
+    if (!PFilePath::IsValid(str[i]) || extra.Find(str[i]) != P_MAX_INDEX)
+      sanitised += substitute;
+    else
+      sanitised += str[i];
+  }
+  return sanitised;
+}
+
+
 void PFile::SetFilePath(const PString & newName)
 {
   Close();
   m_path = PFilePath::Canonicalise(newName, false);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#undef  PTraceModule
+#define PTraceModule() "FileRotate"
+
+
+const PString & PFile::RotateInfo::DefaultTimestamp() { static PConstString s("_yyyy_MM_dd_hh_mm"); return s; }
+
+
+PFile::RotateInfo::RotateInfo(const PDirectory & dir,
+                              const PString & prefix,
+                              const PString & suffix,
+                              const PString & timestamp,
+                              off_t maxSize,
+                              off_t freeDisk)
+  : m_directory(dir)
+  , m_prefix(prefix.IsEmpty() ? PProcess::Current().GetName() : prefix)
+  , m_timestamp(timestamp)
+#if PTRACING
+  , m_timeZone((PTrace::GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local)
+#else
+  , m_timeZone(PTime::Local)
+#endif
+  , m_suffix(suffix)
+  , m_maxSize(maxSize)
+  , m_freeDisk(freeDisk)
+  , m_period(SizeOnly)
+  , m_maxFileCount(0)
+  , m_lastTime(0)
+{
+}
+
+
+PFile::RotateInfo::RotateInfo(const RotateInfo & other)
+  : m_directory(other.m_directory)
+  , m_prefix(other.m_prefix)
+  , m_timestamp(other.m_timestamp)
+  , m_timeZone(other.m_timeZone)
+  , m_maxSize(other.m_maxSize)
+  , m_freeDisk(other.m_freeDisk)
+  , m_period(other.m_period)
+  , m_maxFileCount(other.m_maxFileCount)
+  , m_lastTime(0)
+{
+}
+
+
+PFile::RotateInfo & PFile::RotateInfo::operator=(const RotateInfo & other)
+{
+  m_directory = other.m_directory;
+  m_prefix = other.m_prefix;
+  m_timestamp = other.m_timestamp;
+  m_timeZone = other.m_timeZone;
+  m_maxSize = other.m_maxSize;
+  m_freeDisk = other.m_freeDisk;
+  m_period = other.m_period;
+  m_maxFileCount = other.m_maxFileCount;
+  return *this;
+}
+
+
+bool PFile::RotateInfo::CanRotate() const
+{
+  return m_maxSize > 0 && !m_timestamp.IsEmpty();
+}
+
+
+typedef std::multimap<PTime, PFilePath> FilesByTime;
+
+static void DeleteOne(PFile::RotateInfo & info, FilesByTime & rotatedFiles, const char * msg)
+{
+  FilesByTime::iterator itFile = rotatedFiles.begin();
+  PFilePath filePath = itFile->second;
+  if (PFile::Remove(filePath))
+    info.OnMessage(false, PSTRSTRM("Removed " << msg << " file \"" << filePath << '"'));
+  else
+    info.OnMessage(true, PSTRSTRM("Could not remove " << msg << " file \"" << filePath << '"'));
+  rotatedFiles.erase(itFile);
+}
+
+
+bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
+{
+  if (m_maxSize == 0 || m_timestamp.IsEmpty())
+    return false;
+
+  if (file.IsOpen() && file.GetLength() > m_maxSize) {
+    PTRACE(4, &file, "File greater than " << m_maxSize << " bytes");
+    force = true;
+  }
+
+  switch (m_period) {
+    case Hourly :
+      if (now.GetHour() != m_lastTime.GetHour())
+        force = true;
+      break;
+
+    case Daily :
+      if (now.GetDay() != m_lastTime.GetDay())
+        force = true;
+      break;
+
+    case Weekly :
+      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday)
+        force = true;
+      break;
+
+    case Monthly :
+      if (now.GetMonth() != m_lastTime.GetMonth())
+        force = true;
+      break;
+
+    default :
+      break;
+  }
+
+  if (!force)
+    return false;
+
+  PTRACE(4, &file, "Rotating:"
+         " last=" << m_lastTime.AsString(PTime::LoggingFormat, PTrace::GetTimeZone()) << ","
+         " period=" << m_period << ","
+         " maxFileCount=" << m_maxFileCount << ","
+         " maxFileAge=" << m_maxFileAge.AsString(0, PTimeInterval::IncludeDays) << ","
+         " freeDisk=" << m_freeDisk << ","
+         " dir=" << m_directory << ","
+         " prefix=" << m_prefix << ","
+         " suffix=" << m_suffix);
+
+  m_lastTime = now;
+
+  PFilePath rotatedFile;
+  PString timestamp = now.AsString(m_timestamp, m_timeZone);
+  PString tiebreak;
+  do {
+      rotatedFile = PSTRSTRM(m_directory << m_prefix << timestamp << tiebreak << m_suffix);
+      tiebreak = tiebreak.AsInteger()-1; // This appends "-1", "-2" etc
+  } while (PFile::Exists(rotatedFile));
+
+  if (file.IsOpen()) {
+    OnCloseFile(file, rotatedFile);
+    file.Close();
+  }
+  else {
+    if (file.GetFilePath().IsEmpty())
+      file.SetFilePath(m_directory + m_prefix + m_suffix);
+  }
+
+  bool badMove = file.Exists() && !PFile::Move(file.GetFilePath(), rotatedFile, false, true);
+
+  bool ok = OnOpenFile(file);
+
+  // Do the OnMessage for bad move after the reopen, in case it uses the newly reopened file.
+  if (badMove)
+    OnMessage(true, PSTRSTRM("Could not move file from " << file.GetFilePath() << " to " << rotatedFile));
+
+  if (m_maxFileCount > 0 || m_maxFileAge > 0 || m_freeDisk != 0) {
+    FilesByTime rotatedFiles;
+
+    PDirectory dir(m_directory);
+    if (dir.Open(PFileInfo::RegularFile)) {
+      PFileInfo info;
+      int failsafe = 10000;
+      do {
+        PFilePathString name = dir.GetEntryName();
+        if (  name != file.GetFilePath().GetFileName() &&
+              name.NumCompare(m_prefix, m_prefix.GetLength()) == EqualTo &&
+              name.NumCompare(m_suffix, m_suffix.GetLength(), name.GetLength() - m_suffix.GetLength()) == EqualTo &&
+              dir.GetInfo(info))
+          rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
+      } while (dir.Next() && --failsafe > 0);
+    }
+
+    if (m_maxFileCount > 0) {
+      while (rotatedFiles.size() > m_maxFileCount)
+        DeleteOne(*this, rotatedFiles, "excess");
+    }
+
+    if (m_maxFileAge > 0) {
+      PTime then = now - m_maxFileAge;
+      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then)
+        DeleteOne(*this, rotatedFiles, "aged");
+    }
+
+    if (m_freeDisk != 0) {
+      int64_t total, free;
+      DWORD cluster;
+      while (!rotatedFiles.empty() && dir.GetVolumeSpace(total, free, cluster)) {
+        int64_t limit = m_freeDisk > 0 ? m_freeDisk : (total * -m_freeDisk / 100);
+        PTRACE(4, &file, "Disk:"
+               " total=" << PString(PString::ScaleSI, total, 4) << "b,"
+               " free="  << PString(PString::ScaleSI, free,  4) << "b,"
+               " limit=" << PString(PString::ScaleSI, limit, 4) << 'b');
+        if (free > limit)
+          break;
+        DeleteOne(*this, rotatedFiles, "low disk space");
+      }
+    }
+  }
+
+  return ok;
+}
+
+
+void PFile::RotateInfo::OnCloseFile(PFile & file, const PFilePath & rotatedTo)
+{
+  OnMessage(false, PSTRSTRM("File renamed from \"" << file.GetFilePath() << "\" to \"" << rotatedTo << '"'));
+}
+
+
+bool PFile::RotateInfo::OnOpenFile(PFile & file)
+{
+  if (file.Open(PFile::WriteOnly))
+    return true;
+
+  OnMessage(true, PSTRSTRM("Could not re-open file \"" << file.GetFilePath() << "\" - " << file.GetErrorText()));
+  return false;
+}
+
+
+void PFile::RotateInfo::OnMessage(bool PTRACE_PARAM(error), const PString & PTRACE_PARAM(msg))
+{
+  PTRACE(error ? 2 : 3, NULL, PTraceModule(), msg);
 }
 
 

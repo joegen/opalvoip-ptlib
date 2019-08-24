@@ -1,7 +1,7 @@
 /*
- * pwavfiledev.cxx
+ * tonedev.cxx
  *
- * Implementation of sound file device
+ * Implementation of generated tones sound device
  *
  * Portable Windows Library
  *
@@ -45,42 +45,27 @@
 static const PConstCaselessString TonePrefix("Tones:");
 
 
-class PSoundChannel_Tones : public PSoundChannel
+class PSoundChannel_Tones : public PSoundChannelEmulation
 {
-    PCLASSINFO(PSoundChannel_Tones, PSoundChannel);
+    PCLASSINFO(PSoundChannel_Tones, PSoundChannelEmulation);
   public:
     PSoundChannel_Tones();
     ~PSoundChannel_Tones();
+
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
+
     bool Open(const Params & params);
     virtual PString GetName() const;
     PBoolean Close();
     PBoolean IsOpen() const;
-    PBoolean Write(const void * buf, PINDEX len);
-    PBoolean Read(void * buf, PINDEX len);
-    PBoolean SetFormat(unsigned numChannels,
-                   unsigned sampleRate,
-                   unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
-    PBoolean SetBuffers(PINDEX size, PINDEX count);
-    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-    PBoolean HasPlayCompleted();
-    PBoolean WaitForPlayCompletion();
-    PBoolean StartRecording();
-    PBoolean IsRecordBufferFull();
-    PBoolean AreAllRecordBuffersFull();
-    PBoolean WaitForRecordBufferFull();
-    PBoolean WaitForAllRecordBuffersFull();
 
 protected:
-    PString        m_descriptor;
-    PTones         m_tones;
-    PAdaptiveDelay m_Pacing;
-    bool           m_autoClose;
-    PINDEX         m_bufferSize;
-    PINDEX         m_bufferPosition;
+    virtual bool RawWrite(const void * data, PINDEX size);
+    virtual bool RawRead(void * data, PINDEX size);
+    virtual bool Rewind();
+
+    PString m_descriptor;
+    PTones  m_tones;
 };
 
 
@@ -108,10 +93,6 @@ PCREATE_SOUND_PLUGIN_EX(Tones, PSoundChannel_Tones,
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannel_Tones::PSoundChannel_Tones()
-  : m_Pacing(1000)
-  , m_autoClose(false)
-  , m_bufferSize(320)
-  , m_bufferPosition(0)
 {
 }
 
@@ -140,7 +121,6 @@ PStringArray PSoundChannel_Tones::GetDeviceNames(Directions dir)
 bool PSoundChannel_Tones::Open(const Params & params)
 {
   Close();
-  m_bufferPosition = 0;
 
   if (params.m_direction != Recorder || !SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample))
     return false;
@@ -152,49 +132,17 @@ bool PSoundChannel_Tones::Open(const Params & params)
   if (m_descriptor.IsEmpty())
     return false;
 
-  m_autoClose = m_descriptor[m_descriptor.GetLength()-1] == '$';
-  if (m_autoClose)
+  m_autoRepeat = m_descriptor[m_descriptor.GetLength()-1] != '$';
+  if (!m_autoRepeat)
     m_descriptor.Delete(m_descriptor.GetLength()-1, 1);
 
-  return m_tones.Generate(m_descriptor);
+  return m_tones.Generate(m_descriptor, m_sampleRate);
 }
 
 
 PBoolean PSoundChannel_Tones::IsOpen() const
 { 
   return !m_tones.IsEmpty();
-}
-
-
-PBoolean PSoundChannel_Tones::SetFormat(unsigned numChannels,
-                                        unsigned sampleRate,
-                                        unsigned bitsPerSample)
-{
-  if (numChannels != 1 || bitsPerSample != 16)
-    return false;
-
-  if (!IsOpen())
-    return true;
-
-  return m_tones.Generate(m_descriptor, sampleRate);
-}
-
-
-unsigned PSoundChannel_Tones::GetChannels() const
-{
-  return 1;
-}
-
-
-unsigned PSoundChannel_Tones::GetSampleRate() const
-{
-  return m_tones.GetSampleRate();
-}
-
-
-unsigned PSoundChannel_Tones::GetSampleSize() const
-{
-  return 16;
 }
 
 
@@ -209,88 +157,30 @@ PBoolean PSoundChannel_Tones::Close()
 }
 
 
-PBoolean PSoundChannel_Tones::SetBuffers(PINDEX size, PINDEX /*count*/)
-{
-  m_bufferSize = size;
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::GetBuffers(PINDEX & size, PINDEX & count)
-{
-  size = m_bufferSize;
-  count = 1;
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::Write(const void *, PINDEX)
+bool PSoundChannel_Tones::RawWrite(const void *, PINDEX)
 {
   return false;
 }
 
 
-PBoolean PSoundChannel_Tones::HasPlayCompleted()
+bool PSoundChannel_Tones::RawRead(void * data, PINDEX size)
 {
+  PINDEX samples = std::min(size/2, m_tones.GetSize() - m_bufferPos);
+  memcpy(data, &m_tones[m_bufferPos], SetLastReadCount(samples*sizeof(short)));
+
+  m_bufferPos += samples;
+  return m_bufferPos < m_tones.GetSize();
+}
+
+
+bool PSoundChannel_Tones::Rewind()
+{
+  m_bufferPos = 0;
   return true;
 }
 
 
-PBoolean PSoundChannel_Tones::WaitForPlayCompletion()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::StartRecording()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::Read(void * data, PINDEX size)
-{
-  PINDEX samples = std::min(size/2, m_tones.GetSize() - m_bufferPosition);
-  memcpy(data, &m_tones[m_bufferPosition], SetLastReadCount(samples*sizeof(short)));
-
-  m_bufferPosition += samples;
-  if (m_bufferPosition >= m_tones.GetSize()) {
-    if (m_autoClose)
-      Close();
-    else
-      m_bufferPosition = 0;
-  }
-
-  m_Pacing.Delay(1000*samples/GetSampleRate());
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::IsRecordBufferFull()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::AreAllRecordBuffersFull()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::WaitForRecordBufferFull()
-{
-  return true;
-}
-
-
-PBoolean PSoundChannel_Tones::WaitForAllRecordBuffersFull()
-{
-  return true;
-}
-
-
-#endif // P_WAVFILE
+#endif // P_DTMF
 
 
 // End of File ///////////////////////////////////////////////////////////////

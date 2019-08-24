@@ -70,5 +70,21 @@ void JSONTest::Main()
           "Test 1 pretty B\n" << setprecision(4) << json1 << "\n"
           "Test 1 pretty C\n" << setprecision(3) << setw(6) << json1
        << endl;
+
+#if P_SSL
+  PJWT jwt;
+  jwt.SetIssuer("Vox Lucida, Pty. Ltd.");
+  jwt.SetIssuedAt(1516239022);
+  jwt.SetPrivate("name", "Fred Nurk");
+  PString enc = jwt.Encode("secret");
+  bool good = enc == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MTYyMzkwMjIsImlzcyI6IlZveCBMdWNpZGEsIFB0eS4gTHRkLiIsIm5hbWUiOiJGcmVkIE51cmsifQ.FVEXKAMmqRiOIozsmAZcSoGsN1GbPl4iZ_wCHRGjMQU";
+  cout << "JWT: " << (good ? "(good) " : "(bad) ") << enc << endl;
+
+  PJWT dec(enc, "secret");
+  if (dec.IsValid())
+    cout << "Decoded:\n" << dec << endl;
+  else
+    cout << "Invalid JWT\n";
+#endif // P_SSL
 }
 

@@ -13,22 +13,53 @@
 #include <ptlib/pprocess.h>
 
 class PVXMLSession;
+class PVideoInputDevice;
+class PVideoOutputDevice;
 
-class Vxmltest : public PProcess
+
+class TestInstance
 {
-  PCLASSINFO(Vxmltest, PProcess)
+#if P_VXML
+  public:
+    TestInstance();
+    ~TestInstance();
+
+    bool Initialise(unsigned instance, const PArgList & args);
+    void SendInput(const PString & digits);
+
+  protected:
+    unsigned             m_instance;
+    PSoundChannel      * m_player;
+    PVideoInputDevice  * m_grabber;
+    PVideoOutputDevice * m_preview;
+    PVideoOutputDevice * m_viewer;
+    PVXMLSession       * m_vxml;
+
+    PThread * m_audioThread;
+    void CopyAudio();
+
+#if P_VXML_VIDEO
+    PThread * m_videoSenderThread;
+    void CopyVideoSender();
+
+    PThread * m_videoReceiverThread;
+    void CopyVideoReceiver();
+#endif // P_VXML_VIDEO
+#endif // P_VXML
+};
+
+
+class VxmlTest : public PProcess
+{
+  PCLASSINFO(VxmlTest, PProcess)
 
   public:
-    Vxmltest();
+    VxmlTest();
     void Main();
 
   protected:
-    PBoolean inputRunning;
-    PVXMLSession * vxml;
-
-#if P_EXPAT
-    PDECLARE_NOTIFIER(PThread, Vxmltest, InputThread);
-#endif
+    PDECLARE_NOTIFIER(PCLI::Arguments, VxmlTest, SimulateInput);
+    std::vector<TestInstance> m_tests;
 };
 
 

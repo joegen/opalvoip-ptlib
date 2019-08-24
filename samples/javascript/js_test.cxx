@@ -40,6 +40,9 @@ class MyProcess : public PProcess
     PCLASSINFO(MyProcess, PProcess)
   public:
     void Main();
+#if P_V8
+    PDECLARE_ScriptFunctionNotifier(MyProcess, TestFunction);
+#endif
 };
 
 PCREATE_PROCESS(MyProcess)
@@ -73,6 +76,10 @@ void MyProcess::Main()
   PTRACE_INITIALISE(args);
 
   PJavaScript jscript;
+  if (!jscript.SetFunction("TestFunction", PCREATE_NOTIFIER(TestFunction))) {
+      cerr << "Could not set TestFunction: " << jscript.GetLastErrorText() << endl;
+      return;
+  }
 
   PConstString const myString("before");
   jscript.SetString ("myString", myString);
@@ -99,6 +106,8 @@ void MyProcess::Main()
   jscript.SetNumber("Top.Middle.Bottom.Number", myNumber);
   cout << "Top.Middle.Bottom.Number = " << jscript.GetNumber("Top.Middle.Bottom.Number") << " expected " << myNumber  << endl;
 
+  jscript.Run("TestFunction('first', 2)");
+
   for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
     if (jscript.Run(args[arg]))
       cout << "Executed '" << args[arg] << "'" << endl;
@@ -106,6 +115,20 @@ void MyProcess::Main()
       cerr << jscript.GetLastErrorText() << " executing '" << args[arg] << "'" << endl;
   }
 }
+
+void MyProcess::TestFunction(PScriptLanguage&, PScriptLanguage::Signature & sig)
+{
+  cout << "Function: nargs=" << sig.m_arguments.size() << ", ";
+
+  for (size_t i = 0; i < sig.m_arguments.size(); ++i) {
+    if (i != 0)
+      cout << ", ";
+    cout << i << '=' << sig.m_arguments[i];
+  }
+
+  cout << endl; 
+}
+
 
 #else
 #pragma message("Cannot compile test program without JavaScript support!")

@@ -268,19 +268,14 @@ PINDEX PVideoInputDevice_BSDCAPTURE::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_BSDCAPTURE::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  m_pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer,bytesReturned);
-}
-
-
-PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
 
   // Hack time. It seems that the Start() and Stop() functions are not
   // actually called, so we will have to initialise the frame grabber
-  // here on the first pass through this GetFrameData() function
+  // here on the first pass through this InternalGetFrameData() function
 
   if (canMap < 0) {
 
@@ -324,12 +319,10 @@ PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX
   // in the image, but we will worry about that later
 
   if (converter != NULL)
-    return converter->Convert(videoBuffer, buffer, bytesReturned);
+    return converter->Convert(videoBuffer, buffer, &bytesReturned);
 
   memcpy(buffer, videoBuffer, frameBytes);
-
-  if (bytesReturned != NULL)
-    *bytesReturned = frameBytes;
+  bytesReturned = frameBytes;
 
   
   return true;

@@ -72,12 +72,12 @@ PSTUN::PSTUN()
 {
 }
 
-PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
-  PSTUNUDPSocket * socket, 
-  const PIPSocketAddressAndPort & serverAddress,
-  PIPSocketAddressAndPort & baseAddressAndPort, 
-  PIPSocketAddressAndPort & externalAddressAndPort
-)
+void PSTUN::DoRFC3489Discovery(PNatMethod::NatTypes & natType,
+                               PSTUNUDPSocket * socket,
+                               const PIPSocketAddressAndPort & serverAddress,
+                               PIPSocketAddressAndPort & baseAddressAndPort,
+                               PIPSocket::Address & externalAddress,
+                               bool externalAddressOnly)
 {  
   socket->SetReadTimeout(m_replyTimeout);
 
@@ -90,70 +90,99 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
      any flags set in the CHANGE-REQUEST attribute, and without the
      RESPONSE-ADDRESS attribute. This causes the server to send the response
      back to the address and port that the request came from. */
-  PSTUNMessage requestI(PSTUNMessage::BindingRequest);
-  //requestI.AddAttribute(PSTUNChangeRequest(false, false));
+  PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
+  requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
-  if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
+  if (responseI.Poll(*socket, requestI, m_pollRetries))
+    FinishRFC3489Discovery(natType, responseI, socket, externalAddress, externalAddressOnly);
+  else {
     PTRACE(2, "Server " << serverAddress << " did not respond.");
-    return PNatMethod::UnknownNat;
+    natType = PNatMethod::UnknownNat;
   }
-
-  return FinishRFC3489Discovery(responseI, socket, externalAddressAndPort);
 }
 
-PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
-  PSTUNMessage & responseI,
-  PSTUNUDPSocket * socket, 
-  PIPSocketAddressAndPort & externalAddressAndPort
-)
+
+void PSTUN::FinishRFC3489Discovery(PNatMethod::NatTypes & natType,
+                                   PSTUNMessage & responseI,
+                                   PSTUNUDPSocket * socket,
+                                   PIPSocket::Address & externalAddress,
+                                   bool externalAddressOnly)
 {
   // check if server returned "420 Unknown Attribute" - that probably means it cannot do CHANGE_REQUEST even with no changes
-  bool canDoChangeRequest = true;
+  bool cannotDoChangeRequest = false;
 
   PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
   if (errorAttribute != NULL) {
     bool ok = false;
     if (errorAttribute->GetErrorCode() == 420) {
       // try again without CHANGE request
-      PSTUNMessage request(PSTUNMessage::BindingRequest);
+      PSTUNMessage request(PSTUNMessage::BindingRequestRFC3489);
       ok = responseI.Poll(*socket, request, m_pollRetries);
       if (ok) { 
         errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
         ok = errorAttribute == NULL;
-        canDoChangeRequest = false;
+        PTRACE(3, "Server does not understand CHANGE request");
+        cannotDoChangeRequest = true;
       }
     }
     if (!ok) {
       PTRACE(2, "Server " << socket->GetSendAddress() << " returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
-      return PNatMethod::BlockedNat;
+      natType = PNatMethod::BlockedNat;
+      return;
     }
   }
 
+  // Check that response had the change that was requested
+  PIPSocketAddressAndPort secondaryServer;
+  {
+    PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
+    if (changedAddress == NULL)
+      changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
+    if (changedAddress != NULL) {
+      changedAddress->GetIPAndPort(secondaryServer);
+      if (secondaryServer == m_serverAddress) {
+        PTRACE(3, "Secondary server same as primary server");
+        cannotDoChangeRequest = true; // Does not support RFC3849 discovery
+      }
+    }
+    else {
+      PTRACE(3, "Server did not supply secondary server address");
+      cannotDoChangeRequest = true; // Does not support RFC3849 discovery
+    }
+  }
+
+  // Get the external NAT address
   PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
     mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL) {
       PTRACE(2, "Expected (XOR)mapped address attribute from " << m_serverAddress);
-      return PNatMethod::UnknownNat; // Protocol error
+      natType = PNatMethod::UnknownNat; // Protocol error
+      return;
     }
   }
 
+  PIPSocketAddressAndPort externalAddressAndPort;
   mappedAddress->GetIPAndPort(externalAddressAndPort);
+  externalAddress = externalAddressAndPort.GetAddress();
+
+  if (externalAddressOnly)
+    return;
 
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 
   // can only guess based on a single sample
-  if (!canDoChangeRequest) {
-    PNatMethod::NatTypes natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
-    PTRACE(3, "Server has only one address - best guess is that NAT is " << PNatMethod::GetNatTypeString(natType));
-    return natType;
+  if (cannotDoChangeRequest) {
+    natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
+    PTRACE(3, "Server badly configured or does not support RFC3849 discovery - best guess is " << PNatMethod::GetNatTypeString(natType));
+    return;
   }
 
   PTRACE(3, "Test I response received - sending test II (change port and address)");
 
   /* Test II - the client sends a Binding Request with both the "change IP"
      and "change port" flags from the CHANGE-REQUEST attribute set. */
-  PSTUNMessage requestII(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestII(PSTUNMessage::BindingRequestRFC3489);
   requestII.AddAttribute(PSTUNChangeRequest(true, true));
   PSTUNMessage responseII;
   bool testII = responseII.Poll(*socket, requestII, m_pollRetries);
@@ -161,37 +190,26 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   PTRACE(3, "Test II response " << (testII ? "" : "not ") << "received");
 
   if (notNAT) {
-    PNatMethod::NatTypes natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
+    natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
     // Is not NAT or symmetric firewall
     PTRACE(2, "Test I and II indicate nat is " << PNatMethod::GetNatTypeString(natType));
-    return natType;
+    return;
   }
 
-  if (testII)
-    return PNatMethod::ConeNat;
-
-  PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
-  if (changedAddress == NULL) {
-    changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
-    if (changedAddress == NULL) {
-      PTRACE(3, "Test II response indicates no alternate address in use - testing finished");
-      return PNatMethod::UnknownNat; // Protocol error
-    }
+  if (testII) {
+    natType = PNatMethod::ConeNat;
+    return;
   }
 
-  PTRACE(3, "Sending test I to alternate server");
-
-  // Send test I to another server, to see if restricted or symmetric
-  PIPSocket::Address secondaryServer = changedAddress->GetIP();
-  WORD secondaryPort = changedAddress->GetPort();
-  socket->PUDPSocket::InternalSetSendAddress(PIPSocketAddressAndPort(secondaryServer, secondaryPort));
-  PSTUNMessage requestI2(PSTUNMessage::BindingRequest);
+  PTRACE(3, "Sending test I to alternate server: " << secondaryServer);
+  socket->PUDPSocket::InternalSetSendAddress(secondaryServer);
+  PSTUNMessage requestI2(PSTUNMessage::BindingRequestRFC3489);
   requestI2.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI2;
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
-    PTRACE(3, "Poll of secondary server " << secondaryServer << ':' << secondaryPort
-           << " failed, NAT partially blocked by firewall rules.");
-    return PNatMethod::PartiallyBlocked;
+    PTRACE(3, "Poll of secondary server " << secondaryServer << " failed, NAT partially blocked by firewall rules.");
+    natType = PNatMethod::PartiallyBlocked;
+    return;
   }
 
   mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
@@ -199,26 +217,31 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL) {
       PTRACE(2, "Expected (XOR)mapped address attribute from " << m_serverAddress);
-      return PNatMethod::UnknownNat; // Protocol error
+      natType = PNatMethod::UnknownNat; // Protocol error
+      return;
     }
   }
 
   {
     PIPSocketAddressAndPort ipAndPort;
     mappedAddress->GetIPAndPort(ipAndPort);
-    if (ipAndPort != externalAddressAndPort)
-      return PNatMethod::SymmetricNat;
+    if (ipAndPort != externalAddressAndPort) {
+      natType = PNatMethod::SymmetricNat;
+      return;
+    }
   }
 
   socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-  PSTUNMessage requestIII(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestIII(PSTUNMessage::BindingRequestRFC3489);
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
 
-  return responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
+  PTRACE(3, "Sending test III to base server: " << m_serverAddress);
+  natType = responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
 }
 
 
+#if P_SSL
 void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
 {
   if (m_userName.IsEmpty() || m_password.IsEmpty())
@@ -371,6 +394,8 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
 
   return 0;
 }
+#endif // P_SSL
+
 
 void PSTUN::SetCredentials(const PString & username, const PString & password, const PString & realm)
 {
@@ -456,15 +481,14 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
 
   if (id != NULL)
     memcpy(hdr->transactionId, id, sizeof(hdr->transactionId));
-  else  {
+  else {
     // add magic number for RFC 5389 
-    PUInt32b * n = (PUInt32b *)&(hdr->transactionId);
-    *n = RFC5389_MAGIC_COOKIE;
-
-    for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
-       hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+    PUInt32b * magic = (PUInt32b *)&(hdr->transactionId);
+    *magic = newType == BindingRequestRFC3489 ? ~RFC5389_MAGIC_COOKIE : RFC5389_MAGIC_COOKIE;
+    PRandom::Octets(hdr->transactionId+4, sizeof(hdr->transactionId)-4);
   }
 }
+
 
 void PSTUNMessage::SetErrorType(int code, const BYTE * id, const char * reason)
 {
@@ -688,12 +712,11 @@ bool PSTUNMessage::Write(PUDPSocket & socket, const PIPSocketAddressAndPort & ap
   int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
   PUDPSocket::Slice slice(theArray, len);
   if (socket.PUDPSocket::InternalWriteTo(&slice, 1, ap)) {
-    PTRACE(5, "Writing " << *this << ", dst=" << ap << " if=" << socket.PUDPSocket::GetLocalAddress());
+    PTRACE(5, "Writing " << *this << " to " << ap << " on " << socket);
     return true;
   }
 
-  PTRACE(2, "Error writing to " << socket.GetSendAddress()
-         << " - " << socket.GetErrorText(PChannel::LastWriteError));
+  PTRACE(2, "Error writing to " << ap << " - " << socket.GetErrorText(PChannel::LastWriteError));
   return false;
 }
 
@@ -719,6 +742,7 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
 }
 
 
+#if P_SSL
 void PSTUNMessage::AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi)
 {
   if (credentialsHashPtr == NULL || credentialsHashLen == 0)
@@ -727,7 +751,7 @@ void PSTUNMessage::AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX c
   if (    mi != NULL ||
          (mi = FindAttributeAs<PSTUNMessageIntegrity>(PSTUNAttribute::MESSAGE_INTEGRITY)) != NULL ||
          (mi = (PSTUNMessageIntegrity *)AddAttribute(PSTUNMessageIntegrity())) != NULL)
-    CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, mi->m_hmac);
+    CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, mi->m_hmac, sizeof(mi->m_hmac));
 }
 
 
@@ -741,18 +765,14 @@ unsigned PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PI
   if (mi == NULL)
     return 401;
 
-#if P_SSL
-  BYTE hmac[PHMAC::KeyLength];
-  CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac);
-  return memcmp(hmac, mi->m_hmac, PHMAC::KeyLength) == 0 ? 0 : 431;
-#else
-  return 0;
-#endif
+  BYTE hmac[sizeof(mi->m_hmac)];
+  CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac, sizeof(hmac));
+  return memcmp(hmac, mi->m_hmac, sizeof(hmac)) == 0 ? 0 : 431;
 }
 
 
-#if P_SSL
-void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * checkHmac) const
+void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen,
+                                             PSTUNMessageIntegrity * mi, BYTE * hmacPtr, PINDEX hmacSize) const
 {
   // calculate hash up to, but not including, MESSAGE_INTEGRITY attribute itself
   // Note the value used for msgLength is prior to things like FINGERPRINT, so need to
@@ -762,22 +782,17 @@ void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PI
   WORD oldLength = hdr->msgLength;
   hdr->msgLength = checkLength - sizeof(PSTUNMessageHeader) + sizeof(PSTUNMessageIntegrity);
 
-  PHMAC_SHA1 hmac(credentialsHashPtr, credentialsHashLen);
+  PHMAC_SHA1 hmac;
+  hmac.SetKey(credentialsHashPtr, credentialsHashLen);
   PHMAC_SHA1::Result result;
   hmac.Process((BYTE *)theArray, checkLength, result);
 
   hdr->msgLength = oldLength;
 
   // copy the hash to the returned buffer
-  memcpy(checkHmac, result.GetPointer(), PHMAC::KeyLength);
+  memcpy(hmacPtr, result.GetPointer(), std::min(hmacSize, result.GetSize()));
 }
-#else
-void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * checkHmac) const
-{
-  PTRACE(2, "Cannot calculate HMAC-SHA1 for MESSAGE-INTEGRITY");
-  memset(checkHmac, 0, PHMAC::KeyLength);
-}
-#endif
+#endif // P_SSL
 
 
 void PSTUNMessage::AddFingerprint(PSTUNFingerprint * fp)
@@ -1072,7 +1087,7 @@ bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
   SetSendAddress(ap);
 
   // do a binding request to verify the server is there
-  PSTUNMessage request(PSTUNMessage::BindingRequest);
+  PSTUNMessage request(PSTUNMessage::BindingRequestRFC3489);
   PSTUNMessage response;
   SetReadTimeout(client.GetTimeout());
   if (!response.Poll(*this, request, client.GetRetries())) {
@@ -1198,6 +1213,12 @@ void PSTUNClient::Close()
 
 bool PSTUNClient::SetServer(const PString & server)
 {
+  if (server.IsEmpty()) {
+    m_serverName.MakeEmpty();
+    m_serverAddress = PIPSocketAddressAndPort();
+    return true;
+  }
+
 #if P_DNS_RESOLVER
   PIPSocketAddressAndPortVector addresses;
   if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses)) {
@@ -1244,7 +1265,7 @@ PString PSTUNClient::GetServer() const
 }
 
 
-bool PSTUNClient::GetServerAddress(PIPSocketAddressAndPort & serverAddress) const
+bool PSTUNClient::InternalGetServerAddress(PIPSocketAddressAndPort & serverAddress) const
 {
   PWaitAndSignal m(m_mutex);
 
@@ -1261,7 +1282,7 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) con
   PWaitAndSignal m(m_mutex);
 
   interfaceAddress = m_interface;
-  return true;
+  return interfaceAddress.IsValid();
 }
 
 
@@ -1271,7 +1292,7 @@ PNATUDPSocket * PSTUNClient::InternalCreateSocket(Component component, PObject *
 }
 
 
-void PSTUNClient::InternalUpdate()
+void PSTUNClient::InternalUpdate(bool externalAddressOnly)
 {  
   PWaitAndSignal m(m_mutex);
 
@@ -1284,7 +1305,7 @@ void PSTUNClient::InternalUpdate()
 
   if (m_socket != NULL) {
     PIPSocketAddressAndPort baseAddress;
-    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    DoRFC3489Discovery(m_natType, m_socket, m_serverAddress, baseAddress, m_externalAddress, externalAddressOnly);
     return;
   }
 
@@ -1302,7 +1323,7 @@ void PSTUNClient::InternalUpdate()
     m_socket->SetReadTimeout(m_replyTimeout);
 
     PIPSocketAddressAndPort baseAddress;
-    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    DoRFC3489Discovery(m_natType, m_socket, m_serverAddress, baseAddress, m_externalAddress, externalAddressOnly);
     return;
   }
 
@@ -1333,7 +1354,7 @@ void PSTUNClient::InternalUpdate()
   }
 
   // send binding request on all interfaces and wait for a reply
-  PSTUNMessage requestI(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
   requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
 
@@ -1386,7 +1407,7 @@ void PSTUNClient::InternalUpdate()
   PIPSocketAddressAndPort ap;
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();
-  m_natType = FinishRFC3489Discovery(responseI, m_socket, m_externalAddress);
+  FinishRFC3489Discovery(m_natType, responseI, m_socket, m_externalAddress, externalAddressOnly);
 }
 
 
@@ -1467,19 +1488,20 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
   // We try and get a port pair by blasting out to a range of sockets
   vector<PSTUNSocketPairInfo> socketInfo(m_numSocketsForPairing);
-  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
-    socketInfo[i].m_socket = (PSTUNUDPSocket *)InternalCreateSocket(eComponent_RTP, context);
-    if (!m_pairedPortRange.Listen(*socketInfo[i].m_socket, m_interface)) {
-      PTRACE(1, "Unable to open socket to " << *this);
-      return false;
-    }
+  vector<PIPSocket *> sockets(m_numSocketsForPairing);
+  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i)
+    sockets[i] = socketInfo[i].m_socket = (PSTUNUDPSocket *)InternalCreateSocket(eComponent_RTP, context);
+
+  if (!m_pairedPortRange.Listen(sockets.data(), m_numSocketsForPairing, m_interface)) {
+    PTRACE(1, "Unable to open " << m_numSocketsForPairing << " sockets to " << *this);
+    return false;
   }
 
   for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
     PSTUNSocketPairInfo & info = socketInfo[i];
     info.m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
     info.m_socket->SetReadTimeout(m_replyTimeout);
-    info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
+    info.m_request = PSTUNMessage(PSTUNMessage::BindingRequestRFC3489);
     if (!info.m_request.Write(*info.m_socket)) {
       PTRACE(1, "Socket write failed: " << info.m_socket->GetErrorText(PChannel::LastWriteError));
       return false;
@@ -1530,6 +1552,8 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
 //////////////////////////////////////////////////////////////////////
    
+#if P_TURN
+
 void PTURNRequestedTransport::Initialise(BYTE protocol)
 {
   m_protocol = protocol;
@@ -1712,10 +1736,10 @@ void PTURNUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr)
 }
 
 
-void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAndPort)
+bool PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAndPort, int mtuDiscovery)
 {
   if (!m_usingTURN)
-    return PUDPSocket::InternalSetSendAddress(ipAndPort);
+    return PUDPSocket::InternalSetSendAddress(ipAndPort, mtuDiscovery);
 
   // set permission on TURN server
   if (ipAndPort != m_peerIpAndPort) {
@@ -1739,12 +1763,14 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
 
     PIPSocketAddressAndPort ap;
     PUDPSocket::InternalGetSendAddress(ap);
-    PUDPSocket::InternalSetSendAddress(m_serverAddress);
+    if (!PUDPSocket::InternalSetSendAddress(m_serverAddress, mtuDiscovery))
+      return false;
 
     PSTUNMessage permissionResponse;
     bool stat = MakeAuthenticatedRequest(this, permissionRequest, permissionResponse) == 0;
 
-    PUDPSocket::InternalSetSendAddress(ap);
+    if (!PUDPSocket::InternalSetSendAddress(ap, mtuDiscovery))
+      return false;
 
     if (!stat) {
       PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)permissionResponse.FindAttribute(PSTUNAttribute::ERROR_CODE);
@@ -1754,6 +1780,8 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
         PTRACE(2, "ChannelBind failed with error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
     }
   }
+
+  return true;
 }
 
 
@@ -1997,6 +2025,8 @@ bool PTURNClient::RefreshAllocation(DWORD lifetime)
   return MakeAuthenticatedRequest(m_socket, request, response) == 0;
 }
 
+
+#endif // P_TURN
 
 #endif // P_STUN
 

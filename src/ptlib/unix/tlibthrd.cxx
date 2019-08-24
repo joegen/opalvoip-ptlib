@@ -68,39 +68,47 @@ static PINDEX const PThreadMinimumStack = 16*PTHREAD_STACK_MIN; // Set a decent 
 int PX_NewHandle(const char *, int);
 
 
-#define PAssertPTHREAD(func, args) \
+#define PAssertWithRetry(func, arg, ...) \
   { \
     unsigned threadOpRetry = 0; \
-    while (PAssertThreadOp(func args, threadOpRetry, #func, __FILE__, __LINE__)); \
+    while (PAssertThreadOp(func(arg, ##__VA_ARGS__), threadOpRetry, #func, reinterpret_cast<const void *>(arg), __FILE__, __LINE__)); \
   }
 
-static PBoolean PAssertThreadOp(int retval,
+
+static bool PAssertThreadOp(int retval,
                             unsigned & retry,
                             const char * funcname,
+                            const void * arg1,
                             const char * file,
                             unsigned line)
 {
   if (retval == 0) {
-    PTRACE_IF(2, retry > 0, "PTLib\t" << funcname << " required " << retry << " retries!");
+#if PTRACING
+    if (PTrace::CanTrace(2) && retry > 0)
+      PTrace::Begin(2, file, line, NULL, "PTLib") << funcname << '(' << arg1 << ") required " << retry << " retries!" << PTrace::End;
+#endif
     return false;
   }
 
-  switch (retval) {
-  case EPERM :
-    PTRACE(1, "PTLib\tNo permission to use " << funcname);
-    return false;
+  int err = retval < 0 ? errno : retval;
 
-  case EINTR :
-  case EAGAIN :
-    if (++retry < 1000) {
-      PThread::Sleep(10); // Basically just swap out thread to try and clear blockage
-      return true;   // Return value to try again
-    }
-    // Give up and assert
+  /* Retry on a temporary error. Technically an EINTR only happens on a signal,
+     and EAGAIN not at all for most of the functions, but expereince is that when
+     the system gets really busy, they do occur, lots. So we have to keep trying,
+     but still give up and assert after a suitably huge effort. */
+  if ((err == EINTR || err == EAGAIN) && ++retry < 1000) {
+    PThread::Sleep(10); // Basically just swap out thread to try and clear blockage
+    return true;        // Return value to try again
   }
 
+#if PTRACING || P_USE_ASSERTS
+  std::ostringstream msg;
+  msg << "Function " << funcname << '(' << arg1 << ") failed, errno=" << err << ' ' << strerror(err);
 #if P_USE_ASSERTS
-  PAssertFunc(PDebugLocation(file, line), psprintf("Function %s failed, errno=%i", funcname, retval));
+  PAssertFunc(PDebugLocation(file, line), msg.str().c_str());
+#else
+  PTrace::Begin(0, file, line, NULL, "PTLib") << msg.str() << PTrace::End;
+#endif
 #endif
   return false;
 }
@@ -140,12 +148,33 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
       return SCHED_OTHER;
   }
 
+#ifdef RLIMIT_RTPRIO
+  struct rlimit rl;
+  if (getrlimit(RLIMIT_RTPRIO, &rl) != 0) {
+    PTRACE(2, "PTLib", "Could not get Real Time thread priority limit - " << strerror(errno));
+    return SCHED_OTHER;
+  }
+
+  if ((int)rl.rlim_cur < (int)param.sched_priority) {
+    rl.rlim_max = rl.rlim_cur = param.sched_priority;
+    if (setrlimit(RLIMIT_RTPRIO, &rl) != 0) {
+      PTRACE(2, "PTLib", "Could not increase Real Time thread priority limit to " << rl.rlim_cur << " - " << strerror(errno));
+      param.sched_priority = 0;
+      return SCHED_OTHER;
+    }
+
+    PTRACE(4, "PTLib", "Increased Real Time thread priority limit to " << rl.rlim_cur);
+  }
+
+  return SCHED_RR;
+#else
   if (geteuid() == 0)
     return SCHED_RR;
 
   param.sched_priority = 0;
-  PTRACE(2, "PTLib\tNo permission to set priority level " << priority);
+  PTRACE(2, "PTLib", "No permission to set priority level " << priority);
   return SCHED_OTHER;
+#endif // RLIMIT_RTPRIO
 }
 #endif
 
@@ -378,14 +407,14 @@ void PThread::PX_StartThread()
 
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
-  PAssertPTHREAD(pthread_attr_setdetachstate, (&threadAttr, PTHREAD_CREATE_DETACHED));
+  PAssertWithRetry(pthread_attr_setdetachstate, &threadAttr, PTHREAD_CREATE_DETACHED);
 
-  PAssertPTHREAD(pthread_attr_setstacksize, (&threadAttr, m_originalStackSize));
+  PAssertWithRetry(pthread_attr_setstacksize, &threadAttr, m_originalStackSize);
 
 #if defined(P_LINUX)
   struct sched_param sched_params;
-  PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam((Priority)PX_priority.load(), sched_params)));
-  PAssertPTHREAD(pthread_attr_setschedparam,  (&threadAttr, &sched_params));
+  PAssertWithRetry(pthread_attr_setschedpolicy, &threadAttr, GetSchedParam((Priority)PX_priority.load(), sched_params));
+  PAssertWithRetry(pthread_attr_setschedparam,  &threadAttr, &sched_params);
 #elif defined(P_RTEMS)
   pthread_attr_setinheritsched(&threadAttr, PTHREAD_EXPLICIT_SCHED);
   pthread_attr_setschedpolicy(&threadAttr, SCHED_OTHER);
@@ -397,11 +426,11 @@ void PThread::PX_StartThread()
   PProcess & process = PProcess::Current();
 
   size_t checkSize = 0;
-  PAssertPTHREAD(pthread_attr_getstacksize, (&threadAttr, &checkSize));
+  PAssertWithRetry(pthread_attr_getstacksize, &threadAttr, &checkSize);
   PAssert(checkSize == (size_t)m_originalStackSize, "Stack size not set correctly");
 
   // create the thread
-  PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, &PThread::PX_ThreadMain, this));
+  PAssertWithRetry(pthread_create, &m_threadId, &threadAttr, &PThread::PX_ThreadMain, this);
 
   // put the thread into the thread list
   process.InternalThreadStarted(this);
@@ -475,7 +504,7 @@ void PX_SuspendSignalHandler(int)
 
 void PThread::Suspend(PBoolean susp)
 {
-  PAssertPTHREAD(pthread_mutex_lock, (&PX_suspendMutex));
+  PAssertWithRetry(pthread_mutex_lock, &PX_suspendMutex);
 
   // Check for start up condition, first time Resume() is called
   if (PX_state == PX_firstResume) {
@@ -488,7 +517,7 @@ void PThread::Suspend(PBoolean susp)
         PX_StartThread();
     }
 
-    PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
+    PAssertWithRetry(pthread_mutex_unlock, &PX_suspendMutex);
     return;
   }
 
@@ -503,7 +532,7 @@ void PThread::Suspend(PBoolean susp)
           pthread_kill(m_threadId, SUSPEND_SIG);
         }
         else {
-          PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
+          PAssertWithRetry(pthread_mutex_unlock, &PX_suspendMutex);
           PX_SuspendSignalHandler(SUSPEND_SIG);
           return;  // Mutex already unlocked
         }
@@ -518,7 +547,7 @@ void PThread::Suspend(PBoolean susp)
     }
   }
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
+  PAssertWithRetry(pthread_mutex_unlock, &PX_suspendMutex);
 }
 
 
@@ -530,9 +559,9 @@ void PThread::Resume()
 
 PBoolean PThread::IsSuspended() const
 {
-  PAssertPTHREAD(pthread_mutex_lock, (&PX_suspendMutex));
+  PAssertWithRetry(pthread_mutex_lock, &PX_suspendMutex);
   bool suspended = PX_state == PX_starting || (PX_suspendCount != 0 && !IsTerminated());
-  PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
+  PAssertWithRetry(pthread_mutex_unlock, &PX_suspendMutex);
   return suspended;
 }
 
@@ -593,7 +622,7 @@ void PThread::SetPriority(Priority priorityLevel)
 
 #if defined(P_LINUX)
   struct sched_param params;
-  PAssertPTHREAD(pthread_setschedparam, (m_threadId, GetSchedParam(priorityLevel, params), &params));
+  PAssertWithRetry(pthread_setschedparam, m_threadId, GetSchedParam(priorityLevel, params), &params);
 
 #elif defined(P_ANDROID)
   if (Current() != this) {
@@ -693,7 +722,7 @@ PThread::Priority PThread::GetPriority() const
   int policy;
   struct sched_param params;
   
-  PAssertPTHREAD(pthread_getschedparam, (m_threadId, &policy, &params));
+  PAssertWithRetry(pthread_getschedparam, m_threadId, &policy, &params);
   
   switch (policy)
   {
@@ -722,9 +751,9 @@ PThread::Priority PThread::GetPriority() const
 #ifndef P_HAS_SEMAPHORES
 void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 {
-  PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
+  PAssertWithRetry(pthread_mutex_lock, &PX_WaitSemMutex);
   PX_waitingSemaphore = sem;
-  PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
+  PAssertWithRetry(pthread_mutex_unlock, &PX_WaitSemMutex);
 }
 #endif
 
@@ -787,14 +816,14 @@ void PThread::Terminate()
     return;
 
 #ifndef P_HAS_SEMAPHORES
-  PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
+  PAssertWithRetry(pthread_mutex_lock, &PX_WaitSemMutex);
   if (PX_waitingSemaphore != NULL) {
-    PAssertPTHREAD(pthread_mutex_lock, (&PX_waitingSemaphore->mutex));
+    PAssertWithRetry(pthread_mutex_lock, &PX_waitingSemaphore->mutex);
     PX_waitingSemaphore->queuedLocks--;
-    PAssertPTHREAD(pthread_mutex_unlock, (&PX_waitingSemaphore->mutex));
+    PAssertWithRetry(pthread_mutex_unlock, &PX_waitingSemaphore->mutex);
     PX_waitingSemaphore = NULL;
   }
-  PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
+  PAssertWithRetry(pthread_mutex_unlock, &PX_WaitSemMutex);
 #endif
 
   if (m_threadId != PNullThreadIdentifier) {
@@ -1004,15 +1033,15 @@ PSemaphore::~PSemaphore()
 #if defined(P_HAS_SEMAPHORES)
   #if defined(P_HAS_NAMED_SEMAPHORES)
     if (m_namedSemaphore.ptr != NULL) {
-      PAssertPTHREAD(sem_close, (m_namedSemaphore.ptr));
+      PAssertWithRetry(sem_close, m_namedSemaphore.ptr);
     }
     else
   #endif
-      PAssertPTHREAD(sem_destroy, (&m_semaphore));
+      PAssertWithRetry(sem_destroy, &m_semaphore);
 #else
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-  PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
-  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+  PAssertWithRetry(pthread_mutex_destroy, &mutex);
+  PAssertWithRetry(pthread_cond_destroy, &condVar);
 #endif
 }
 
@@ -1037,7 +1066,7 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
       // the same semaphore. Therefore, the static mutex is used to
       // prevent this.
       static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
-      PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
+      PAssertWithRetry(pthread_mutex_lock, &semCreationMutex);
 
       if (!m_name.IsEmpty())
         m_namedSemaphore.ptr = sem_open(m_name, (O_CREAT | O_EXCL), 700, m_initial);
@@ -1048,19 +1077,19 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
         m_namedSemaphore.ptr = sem_open(generatedName, (O_CREAT | O_EXCL), 700, m_initial);
       }
   
-      PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
+      PAssertWithRetry(pthread_mutex_unlock, &semCreationMutex);
   
       if (!PAssert(m_namedSemaphore.ptr != SEM_FAILED, "Couldn't create named semaphore"))
         m_namedSemaphore.ptr = NULL;
     }
   #else
     if (m_name.IsEmpty())
-      PAssertPTHREAD(sem_init, (&m_semaphore, 0, m_initial));
+      PAssertWithRetry(sem_init, &m_semaphore, 0, m_initial);
   #endif
 #else
   if (m_name.IsEmpty()) {
-    PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-    PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+    PAssertWithRetry(pthread_mutex_init, &mutex, NULL);
+    PAssertWithRetry(pthread_cond_init, &condVar, NULL);
     currentCount = initial;
   }
   else
@@ -1073,12 +1102,12 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
 void PSemaphore::Wait() 
 {
 #if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_wait, (GetSemPtr()));
+  PAssertWithRetry(sem_wait, GetSemPtr());
 #else
   if (currentCount == INT_MAX)
     return;
 
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
 
   queuedLocks++;
   PThread::Current()->PXSetWaitingSemaphore(this);
@@ -1095,7 +1124,7 @@ void PSemaphore::Wait()
 
   currentCount--;
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
 #endif
 }
 
@@ -1161,7 +1190,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
 
   PPROFILE_PRE_SYSTEM();
 
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
 
   PThread * thread = PThread::Current();
   thread->PXSetWaitingSemaphore(this);
@@ -1184,7 +1213,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   if (ok)
     currentCount--;
 
-  PAssertPTHREAD(pthread_mutex_unlock, ((pthread_mutex_t *)&mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
 
   PPROFILE_POST_SYSTEM();
 
@@ -1196,17 +1225,17 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
 void PSemaphore::Signal()
 {
 #if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_post, (GetSemPtr()));
+  PAssertWithRetry(sem_post, GetSemPtr());
 #else
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
 
   if (currentCount < m_maximum)
     currentCount++;
 
   if (queuedLocks > 0) 
-    PAssertPTHREAD(pthread_cond_signal, (&condVar));
+    PAssertWithRetry(pthread_cond_signal, &condVar);
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
 #endif
 }
 
@@ -1267,6 +1296,15 @@ PTimedMutex::~PTimedMutex()
 #ifdef _DEBUG
   PAssert(result == 0, "Error destroying mutex");
 #endif
+
+  PMUTEX_DESTROYED();
+}
+
+
+void PTimedMutex::PrintOn(ostream &strm) const
+{
+  strm << "timed mutex " << this;
+  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 
@@ -1358,7 +1396,7 @@ void PTimedMutex::PlatformSignal(const PDebugLocation * location)
 
 #endif
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &m_mutex);
 }
 
 
@@ -1366,32 +1404,32 @@ void PTimedMutex::PlatformSignal(const PDebugLocation * location)
 
 PSyncPoint::PSyncPoint()
 {
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+  PAssertWithRetry(pthread_mutex_init, &mutex, NULL);
+  PAssertWithRetry(pthread_cond_init, &condVar, NULL);
   signalled = false;
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
 {
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+  PAssertWithRetry(pthread_mutex_init, &mutex, NULL);
+  PAssertWithRetry(pthread_cond_init, &condVar, NULL);
   signalled = false;
 }
 
 PSyncPoint::~PSyncPoint()
 {
-  PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
-  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+  PAssertWithRetry(pthread_mutex_destroy, &mutex);
+  PAssertWithRetry(pthread_cond_destroy, &condVar);
 }
 
 void PSyncPoint::Wait()
 {
   PPROFILE_PRE_SYSTEM();
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
   while (!signalled)
     pthread_cond_wait(&condVar, &mutex);
   signalled = false;
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
   PPROFILE_POST_SYSTEM();
 }
 
@@ -1400,7 +1438,7 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
 {
   PPROFILE_PRE_SYSTEM();
 
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
 
   PTime finishTime;
   finishTime += waitTime;
@@ -1422,7 +1460,7 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
   if (err == 0)
     signalled = false;
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
 
   PPROFILE_POST_SYSTEM();
 
@@ -1432,10 +1470,10 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
 
 void PSyncPoint::Signal()
 {
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertWithRetry(pthread_mutex_lock, &mutex);
   signalled = true;
-  PAssertPTHREAD(pthread_cond_signal, (&condVar));
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertWithRetry(pthread_cond_signal, &condVar);
+  PAssertWithRetry(pthread_mutex_unlock, &mutex);
 }
 
 

@@ -17,7 +17,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>E-Mail Test</ProjectName>
     <ProjectGuid>{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">

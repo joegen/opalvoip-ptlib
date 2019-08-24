@@ -36,7 +36,7 @@ class MyProcess : public PProcess
   public:
     void Main();
 #if P_LUA
-    PDECLARE_LuaFunctionNotifier(MyProcess, LuaTestFunction);
+    PDECLARE_ScriptFunctionNotifier(MyProcess, TestFunction);
 #endif
 };
 
@@ -71,11 +71,11 @@ class MyClass : public PObject {
       : m_instance(str)
     {
       if (!lua.CreateTable(m_instance) ||
-          !lua.SetFunction(m_instance + "." LUA_TO_C_FUNCTION, PCREATE_NOTIFIER(LuaTestFunction)))
+          !lua.SetFunction(m_instance + "." LUA_TO_C_FUNCTION, PCREATE_NOTIFIER(TestFunction)))
         cerr << lua.GetLastErrorText() << endl;
     }
 
-    PDECLARE_LuaFunctionNotifier(MyClass, LuaTestFunction);
+    PDECLARE_ScriptFunctionNotifier(MyClass, TestFunction);
 
   protected:
     const PString m_instance;
@@ -101,7 +101,7 @@ void MyProcess::Main()
 #endif
 
   PLua lua;
-  if (!lua.SetFunction(LUA_TO_C_FUNCTION, PCREATE_NOTIFIER(LuaTestFunction))) {
+  if (!lua.SetFunction(LUA_TO_C_FUNCTION, PCREATE_NOTIFIER(TestFunction))) {
     cerr << lua.GetLastErrorText() << endl;
     return;
   }
@@ -176,16 +176,16 @@ static void TestOutput(const PLua::Signature & sig)
 }
 
 
-void MyProcess::LuaTestFunction(PLua&, PLua::Signature & sig)
+void MyProcess::TestFunction(PScriptLanguage&, PScriptLanguage::Signature & sig)
 {
-  cout << "Global:";
+  cout << "Global callback:";
   TestOutput(sig);
 }
 
 
-void MyClass::LuaTestFunction(PLua&, PLua::Signature & sig)
+void MyClass::TestFunction(PScriptLanguage&, PScriptLanguage::Signature & sig)
 {
-  cout << "Member: instance=" << m_instance << ',';
+  cout << "Member callback: instance=" << m_instance << ',';
   TestOutput(sig); 
 }
 

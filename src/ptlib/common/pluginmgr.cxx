@@ -35,9 +35,7 @@
 
 
 #ifndef P_DEFAULT_PLUGIN_DIR
-#  if defined (_WIN32_WCE)
-#    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
-#  elif defined (_WIN32)
+#  if defined (_WIN32)
 #    if _WIN64
 #      define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
 #    else
@@ -163,12 +161,17 @@ void PPluginManager::LoadDirectory(const PDirectory & directory)
     PTRACE(4, "PLUGIN\tCannot open plugin directory " << dir);
     return;
   }
-  PTRACE(4, "PLUGIN\tEnumerating plugin directory " << dir);
+
+  PTRACE(3, "PLUGIN", "Enumerating plugin directory " << dir
+         << (directory.IsRoot() ? " - not recursing" : ""));
+
   do {
     PString entry = dir + dir.GetEntryName();
     PDirectory subdir = entry;
-    if (subdir.Open())
-      LoadDirectory(entry);
+    if (subdir.Open()) {
+      if (!directory.IsRoot())
+        LoadDirectory(entry);
+    }
     else {
       PFilePath fn(entry);
       for (PStringList::iterator it = m_suffixes.begin(); it != m_suffixes.end(); ++it) {

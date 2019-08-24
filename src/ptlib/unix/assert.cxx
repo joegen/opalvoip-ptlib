@@ -91,15 +91,24 @@
 #endif // P_MACOSX
 
 
-  static void InternalWalkStack(ostream & strm, unsigned framesToSkip, void * const * addresses, unsigned addressCount)
+  static void InternalWalkStack(ostream & strm, unsigned framesToSkip, const vector<void *> addresses, bool noSymbols)
   {
-    DEBUG_CERR("InternalWalkStack: count=" << addressCount << ", framesToSkip=" << framesToSkip);
-    if (addressCount <= framesToSkip) {
-      strm << "\n\tStack back trace empty, possibly corrupt.";
+    DEBUG_CERR("InternalWalkStack: count=" << addresses.size() << ", framesToSkip=" << framesToSkip);
+    if (addresses.size() <= framesToSkip) {
+      strm << "\tStack back trace empty, possibly corrupt.";
       return;
     }
 
-    std::vector<std::string> lines(addressCount);
+    if (noSymbols) {
+      for (unsigned i = framesToSkip; i < addresses.size(); ++i) {
+        if (i > framesToSkip)
+          strm << ' ';
+        strm << addresses[i];
+      }
+      return;
+    }
+
+    std::vector<std::string> lines(addresses.size());
 
 #ifndef P_MACOSX
     {
@@ -107,7 +116,7 @@
       {
         std::stringstream cmd;
         cmd << "addr2line -e \"" << PProcess::Current().GetFile() << '"';
-        for (unsigned i = framesToSkip; i < addressCount; ++i)
+        for (unsigned i = framesToSkip; i < addresses.size(); ++i)
           cmd << ' ' << addresses[i];
         std::string cmdstr = cmd.str();
         DEBUG_CERR("InternalWalkStack: before " << cmdstr);
@@ -115,7 +124,7 @@
       }
       DEBUG_CERR("InternalWalkStack: addr2line pipe=" << pipe);
       if (pipe != NULL) {
-        for (unsigned i = framesToSkip; i < addressCount; ++i) {
+        for (unsigned i = framesToSkip; i < addresses.size(); ++i) {
           std::string & line = lines[i];
           if (!fgetstr(line, pipe)) {
             DEBUG_CERR("InternalWalkStack: fgetstr error: " << line);
@@ -135,9 +144,9 @@
 
 
     DEBUG_CERR("InternalWalkStack: before backtrace_symbols");
-    char ** symbols = backtrace_symbols(addresses, addressCount);
+    char ** symbols = backtrace_symbols(addresses.data(), addresses.size());
     DEBUG_CERR("InternalWalkStack: after backtrace_symbols");
-    for (unsigned i = framesToSkip; i < addressCount; ++i) {
+    for (unsigned i = framesToSkip; i < addresses.size(); ++i) {
       strm << "\n\t";
 
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
@@ -200,7 +209,7 @@
           pthread_cond_init(&m_condVar, NULL);
         }
 
-        void WalkOther(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
+        void WalkOther(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool noSymbols)
         {
           DEBUG_CERR("WalkOther: " << PThread::GetIdentifiersAsString(tid, uid));
 
@@ -262,7 +271,7 @@
           else if (err != 0)
             strm << "\n\tError " << err << " getting stack trace for " << PThread::GetIdentifiersAsString(tid, uid);
           else
-            InternalWalkStack(strm, OtherThreadSkip, m_addresses.data(), m_addressCount);
+            InternalWalkStack(strm, OtherThreadSkip, m_addresses, noSymbols);
 
           m_threadId = PNullThreadIdentifier;
           m_uniqueId = 0;
@@ -293,9 +302,10 @@
           }
 
           int addressCount = backtrace(m_addresses.data(), m_addresses.size());
+          m_addresses.resize(addressCount < 0 ? 0 : addressCount);
 
           pthread_mutex_lock(&m_condMutex);
-          m_addressCount = addressCount < 0 ? 0 : addressCount;
+          m_addressCount = m_addresses.size();
           pthread_cond_signal(&m_condVar);
           pthread_mutex_unlock(&m_condMutex);
         }
@@ -303,7 +313,7 @@
     #else // P_PTHREADS
       struct PWalkStackInfo
       {
-        void WalkOther(ostream &, PThreadIdentifier) { }
+        void WalkOther(ostream &, PThreadIdentifier, bool) { }
         void OthersWalk() { }
       };
     #endif // P_PTHREADS
@@ -311,13 +321,13 @@
     static PWalkStackInfo s_otherThreadStack;
 
 
-    void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip)
+    void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip, bool noSymbols)
     {
       if (!PProcess::IsInitialised())
         return;
 
       if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId())
-        s_otherThreadStack.WalkOther(strm, id, uid);
+        s_otherThreadStack.WalkOther(strm, id, uid, noSymbols);
       else {
         DEBUG_CERR("PPlatformWalkStack: id=0x" << hex << id << dec);
         // Allow for some bizarre optimisation when called from PTrace::WalkStack()
@@ -325,7 +335,8 @@
           framesToSkip = 0;
         const size_t maxStackWalk = InternalMaxStackWalk + framesToSkip;
         vector<void *> addresses(maxStackWalk);
-        InternalWalkStack(strm, framesToSkip, addresses.data(), backtrace(addresses.data(), maxStackWalk));
+        addresses.resize(backtrace(addresses.data(), maxStackWalk));
+        InternalWalkStack(strm, framesToSkip, addresses, noSymbols);
       }
     }
 
@@ -337,7 +348,7 @@
 
 #else
 
-  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned skip)
+  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned skip, bool noSymbols)
   {
   }
 
@@ -471,10 +482,8 @@ void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const ch
   OUTPUT_MESSAGE();
 
   // DO default action is specified
-  if (defaultAction != '\0') {
-    AssertAction(defaultAction, msg);
+  if (defaultAction != '\0' && !AssertAction(defaultAction, msg))
     return;
-  }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {

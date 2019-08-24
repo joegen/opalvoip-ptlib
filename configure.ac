@@ -8,7 +8,7 @@ AC_INIT([PTLib], m4_esyscmd([sed -n \
                              -e "s/ *#define *BUILD_TYPE *AlphaCode/alpha/p" \
                              -e "s/ *#define *BUILD_TYPE *BetaCode/beta/p" \
                              -e "s/ *#define *BUILD_TYPE *ReleaseCode/./p" \
-                             -e "s/ *#define *BUILD_NUMBER *\\(.*\\)/\\1/p" \
+                             -e "s/ *#define *PATCH_VERSION *\\(.*\\)/\\1/p" \
                              version.h | tr -d '\n']))
 
 AC_PREREQ([2.66])
@@ -18,7 +18,7 @@ AC_CONFIG_AUX_DIR(make)
 AC_CONFIG_SRCDIR([include/ptlib.h])
 
 m4_include(make/ptlib.m4)
-m4_include(make/m4_ax_pthread.m4)
+m4_include(make/ax_pthread.m4)
 
 
 dnl ########################################################################
@@ -148,8 +148,12 @@ case "$target_os" in
    Darwin )
       OS_TAG="P_MACOSX" 
       dnl Where "port" libraries live
-      CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-      LIBS="-L/opt/local/lib $LIBS"
+      if test -d /opt/local/include; then
+        CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+      fi
+      if test -d /opt/local/lib; then
+        LIBS="-L/opt/local/lib $LIBS"
+      fi
    ;;
 
    iPhone* )
@@ -202,7 +206,7 @@ fi
 if test "x$INTERNAL_PTLIBDIR" != "x"; then
    libdir+=_$target
    datarootdir="\${exec_prefix}"
-   makedir="\${exec_prefix}/make"
+   makedir="\${datarootdir}/make"
    VERSION_DIR="$INTERNAL_PTLIBDIR"
 else
    makedir="\${datarootdir}/ptlib/make"
@@ -217,7 +221,8 @@ dnl extract the PTLib version
 dnl MSWIN_DISPLAY version,Version
 dnl MSWIN_VERSION version,PTLIB_MAJOR=MAJOR_VERSION
 dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
-dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
+dnl MSWIN_VERSION version,PTLIB_PATCH=PATCH_VERSION
+dnl MSWIN_VERSION version,PTLIB_OEM=OEM_VERSION
 dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
 MY_VERSION_FILE([$VERSION_DIR/version.h], [PTLIB])
@@ -312,44 +317,6 @@ if test "${enable_deprecated}" = "no" ; then
       [],
       [],
       [CPPFLAGS="$CPPFLAGS -Wno-deprecated-declarations"]
-   )
-fi
-
-
-AC_ARG_ENABLE(sanitize-address, AS_HELP_STRING([--enable-sanitize-address],[Enable GCC/clang Address Sanitizer]))
-
-if test "${enable_sanitize_address}" = "yes" ; then
-   MY_COMPILE_IFELSE(
-      [compiler -fsanitize=address],
-      [-fsanitize=address],
-      [],
-      [],
-      [
-         AC_SUBST(HAS_ADDRESS_SANITIZER, 1)
-         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
-         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
-         LDFLAGS="-fsanitize=address $LDFLAGS"
-         MEMORY_CHECKER="GCC AddressSanitizer"
-      ]
-   )
-fi
-
-
-AC_ARG_ENABLE(sanitize-thread, AS_HELP_STRING([--enable-sanitize-thread],[Enable GCC/clang Thread Sanitizer]))
-
-if test "${enable_sanitize_thread}" = "yes" ; then
-   MY_COMPILE_IFELSE(
-      [compiler -fsanitize=thread],
-      [-fsanitize=thread],
-      [],
-      [],
-      [
-         AC_SUBST(HAS_THREAD_SANITIZER, 1)
-         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
-         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
-         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
-         LDFLAGS="-fsanitize=thread $LDFLAGS"
-      ]
    )
 fi
 
@@ -505,7 +472,7 @@ dnl ########################################################################
 MY_ARG_ENABLE(
    [pindex_is_size_t],
    [enable PINDEX set to size_t],
-   [no],
+   [yes],
    [AC_DEFINE(P_PINDEX_IS_SIZE_T, 1)]
 )
 
@@ -1191,17 +1158,6 @@ PTLIB_SUBST(BACKTRACE)
 
 
 dnl ########################################################################
-dnl look for MEMORY_CHECK enabled.
-
-AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
-AC_MSG_NOTICE(Memory checking... $enable_memcheck)
-if test "$enable_memcheck" = "yes" ; then
-   AC_DEFINE(PMEMORY_CHECK, 1)
-   MEMORY_CHECKER="Internal"
-fi
-
-
-dnl ########################################################################
 dnl check for tracing
 dnl
 
@@ -1396,6 +1352,7 @@ dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
 dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg32,%FFMPEGDIR%\
+dnl MSWIN_CHECK_DIR  ffmpeg32,..\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
@@ -1404,6 +1361,7 @@ dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
 dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg64,%FFMPEG64DIR%\
+dnl MSWIN_CHECK_DIR  ffmpeg64,..\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
@@ -1485,22 +1443,42 @@ dnl ########################################################################
 dnl check for ImageMagick
 
 dnl MSWIN_DISPLAY    imagemagick,ImageMagick support
-dnl MSWIN_CHECK_FILE imagemagick,include\MagickWand\MagickWand.h,P_IMAGEMAGICK=2
+dnl MSWIN_CHECK_FILE imagemagick,include\MagickWand\MagickWand.h,P_IMAGEMAGICK=7
 dnl MSWIN_DIR_SYMBOL imagemagick,IMAGEMAGICK_DIR
 dnl MSWIN_CHECK_DIR  imagemagick,%IMAGEMAGICKDIR%\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,..\external\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,%ProgramFiles%\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,%ProgramW6432%\ImageMagick*
 
-PTLIB_MODULE_OPTION(
+MY_MODULE_OPTION(
    [IMAGEMAGICK],
    [imagemagick],
-   [ImageMagick support],
+   [ImageMagick v6 support],
    [MagickWand],
    [],
    [],
    [#include <wand/MagickWand.h>],
-   [MagickWandGenesis()]
+   [MagickWandGenesis()],
+   [
+      AC_SUBST(HAS_IMAGEMAGICK,1)
+      AC_DEFINE(P_IMAGEMAGICK,6)
+      PTLIB_IMAGEMAGICK="yes (before v7)"
+   ],
+   [MY_MODULE_OPTION(
+      [IMAGEMAGICK],
+      [imagemagick],
+      [ImageMagick v7 support],
+      [MagickWand],
+      [],
+      [],
+      [#include <MagickWand/MagickWand.h>],
+      [MagickWandGenesis()],
+      [
+         AC_SUBST(HAS_IMAGEMAGICK,1)
+         AC_DEFINE(P_IMAGEMAGICK,7)
+         PTLIB_IMAGEMAGICK="yes (after v7)"
+      ]
+   )]
 )
 
 
@@ -1681,7 +1659,9 @@ dnl MSWIN_DEFINE     openssl,P_SSL_SRTP
 dnl MSWIN_DIR_SYMBOL openssl,SSL_WIN32_DIR
 dnl MSWIN_CHECK_DIR  openssl,%OPENSSLDIR%\
 dnl MSWIN_CHECK_DIR  openssl,..\openssl\
+dnl MSWIN_CHECK_DIR  openssl,..\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
+dnl MSWIN_CHECK_DIR  openssl,..\external\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramW6432%\OpenSSL-Win32\
@@ -1696,7 +1676,9 @@ dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
 dnl MSWIN_DEFINE     openssl64,P_SSL_SRTP
 dnl MSWIN_CHECK_DIR  openssl64,%OPENSSL64DIR%\
 dnl MSWIN_CHECK_DIR  openssl64,..\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,..\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,..\external\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,..\external\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,\libs\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL-Win64\
@@ -1709,7 +1691,7 @@ PTLIB_MODULE_OPTION(
    [OPENSSL], 
    [openssl],
    [OpenSSL support],
-   [openssl], 
+   [openssl < 1.1], 
    [],[],
    [#include <openssl/ssl.h>],
    [TLSv1_method()],
@@ -1792,24 +1774,31 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
 dnl MSWIN_CHECK_DIR  expat,%EXPATDIR%\expat
+dnl MSWIN_CHECK_DIR  expat,..\expat\
+dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,..\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,C:\Work\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,c:\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\Expat\expat\
 
-dnl MSWIN_DISPLAY    expat32,Expat XML (precompiled)
+dnl MSWIN_DISPLAY    expat32,Expat XML (32 bit)
 dnl MSWIN_CHECK_FILE expat32,Source\lib\expat.h,P_EXPAT_WIN32=1
 dnl MSWIN_DIR_SYMBOL expat32,EXPAT_WIN32_DIR
 dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
+dnl MSWIN_CHECK_DIR  expat32,..\expat\
+dnl MSWIN_CHECK_DIR  expat32,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat32,%ProgramFiles%\Expat 2.*
 dnl MSWIN_CHECK_DIR  expat32,%ProgramW6432%\Expat 2.*
 
-dnl MSWIN_DISPLAY    expat64,Expat XML (Win-Builds)
-dnl MSWIN_CHECK_FILE expat64,include\expat.h,P_EXPAT_WIN64=1
+dnl MSWIN_DISPLAY    expat64,Expat XML (64 bit)
+dnl MSWIN_CHECK_FILE expat64,Source\lib\expat.h,P_EXPAT_WIN64=1
 dnl MSWIN_DIR_SYMBOL expat64,EXPAT_WIN64_DIR
-dnl MSWIN_FIND_FILE  expat64,P_EXPAT_LIBRARY,libexpat.dll.a,lib64
-dnl MSWIN_CHECK_DIR  expat64,%WINBUILDSDIR%\
+dnl MSWIN_FIND_FILE  expat64,P_EXPAT_LIBRARY,libexpatMT.lib,bin
+dnl MSWIN_CHECK_DIR  expat64,..\expat\
+dnl MSWIN_CHECK_DIR  expat64,..\external\expat\
+dnl MSWIN_CHECK_DIR  expat64,%ProgramFiles%\Expat 2.*
+dnl MSWIN_CHECK_DIR  expat64,%ProgramW6432%\Expat 2.*
 
 PTLIB_MODULE_OPTION(
    [EXPAT],
@@ -1907,19 +1896,34 @@ dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_RELEASE32,icuuc.lib,out.gn/ia32.release/...
 dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_DEBUG64,icuuc.lib,out.gn/x64.debug/...
 dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_RELEASE64,icuuc.lib,out.gn/x64.release/...
 
+oldCXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS $CPLUSPLUS_STD"
+ 
+AS_VAR_IF([target_os], [Darwin],
+   [
+      V8_EXTRA_CFLAGS="-I/usr/local/include/node"
+      V8_EXTRA_LIBS="-lv8_libplatform -lv8_libbase"
+   ]
+)
+
 PTLIB_MODULE_OPTION(
    [V8],
    [v8],
    [V8 Javascript script support],
    [v8],
-   [],
-   [-lv8],
-   [#include <v8.h>],
+   [$V8_EXTRA_CFLAGS],
+   [-lv8 $V8_EXTRA_LIBS],
    [
-      v8::Isolate * isolate;
-      isolate->SetEventLogger(NULL);
+      #include <v8.h>
+      #include <libplatform/libplatform.h>
+   ],
+   [
+      int ver = V8_MAJOR_VERSION;
+      v8::platform::CreateDefaultPlatform();
    ]
 )
+ 
+CXXFLAGS="$oldCXXFLAGS"
 
 
 dnl ########################################################################
@@ -2067,7 +2071,12 @@ dnl MSWIN_DEFINE     vxml,P_VXML
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat32
 
+dnl MSWIN_DISPLAY    vxmlvideo,VXML (video) Support
+dnl MSWIN_DEFINE     vxmlvideo,P_VXML_VIDEO
+dnl MSWIN_IF_FEATURE vxmlvideo,vxml
+
 PTLIB_SIMPLE_OPTION([vxml], [VXML], [VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
+PTLIB_SIMPLE_OPTION([vxmlvideo], [VXML_VIDEO], [VXML (video) support], [HAS_VXML])
 
 dnl ########################################################################
 dnl XMLRPC
@@ -2110,10 +2119,13 @@ dnl ########################################################################
 dnl check for enabling STUN support
 dnl MSWIN_DISPLAY    stun,STUN Support
 dnl MSWIN_DEFINE     stun,P_STUN
+dnl MSWIN_DISPLAY    turn,TURN support
+dnl MSWIN_DEFINE     turn,P_TURN
 dnl MSWIN_DISPLAY    stunsrv,STUN server support
 dnl MSWIN_DEFINE     stunsrv,P_STUNSRVR
  
 PTLIB_SIMPLE_OPTION([stun],     [STUN],     [STUN support],        [HAS_NAT])
+PTLIB_SIMPLE_OPTION([turn],     [TURN],     [TURN support],        [HAS_STUN], [HAS_OPENSSL])
 PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [STUN server support], [HAS_NAT])
 
 dnl ########################################################################
@@ -2827,6 +2839,59 @@ if test "x$enable_plugins" != "xno" ; then
    dnl end of test for video
 
 fi # enable_plugins
+
+
+dnl ########################################################################
+dnl Address and thread sanitizers as part of GNU compiler, must be last thing in configuration
+
+AC_ARG_ENABLE(sanitize-address, AS_HELP_STRING([--enable-sanitize-address],[Enable GCC/clang Address Sanitizer]))
+
+if test "${enable_sanitize_address}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=address],
+      [-fsanitize=address],
+      [],
+      [],
+      [
+         AC_SUBST(HAS_ADDRESS_SANITIZER, 1)
+         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
+         LDFLAGS="-fsanitize=address $LDFLAGS"
+         MEMORY_CHECKER="GCC AddressSanitizer"
+      ]
+   )
+fi
+
+
+AC_ARG_ENABLE(sanitize-thread, AS_HELP_STRING([--enable-sanitize-thread],[Enable GCC/clang Thread Sanitizer]))
+
+if test "${enable_sanitize_thread}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=thread],
+      [-fsanitize=thread],
+      [],
+      [],
+      [
+         AC_SUBST(HAS_THREAD_SANITIZER, 1)
+         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
+         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
+         LDFLAGS="-fsanitize=thread $LDFLAGS"
+      ]
+   )
+fi
+
+dnl ########################################################################
+dnl look for MEMORY_CHECK enabled.
+
+if test "$HAS_ADDRESS_SANITIZER" -ne 1 ; then
+   AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
+   AC_MSG_NOTICE(Memory checking... $enable_memcheck)
+   if test "$enable_memcheck" = "yes" ; then
+      AC_DEFINE(PMEMORY_CHECK, 1)
+      MEMORY_CHECKER="Internal"
+   fi
+fi
 
 
 dnl #########################################################################

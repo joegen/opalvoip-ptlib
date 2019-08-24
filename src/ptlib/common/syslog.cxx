@@ -75,7 +75,7 @@ static struct PSystemLogTargetGlobal
     m_targetMutex.Signal();
   }
 
-  PMutex             m_targetMutex;
+  PCriticalSection   m_targetMutex;
   PSystemLogTarget * m_targetPointer;
   bool               m_targetAutoDelete;
 } g_SystemLogTarget;
@@ -283,7 +283,7 @@ void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 ///////////////////////////////////////////////////////////////
 
 PSystemLogToFile::PSystemLogToFile(const PFilePath & filename)
-  : m_rotateInfo(filename.GetDirectory())
+  : m_rotateInfo(filename.GetDirectory(), filename.GetTitle(), filename.GetType())
   , m_outputting(false)
 {
   m_file.SetFilePath(filename);
@@ -299,7 +299,7 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 
   m_outputting = true;
 
-  if (InternalOpen()) {
+  if (m_rotateInfo.OnOpenFile(m_file)) {
       OutputToStream(m_file, level, msg, m_rotateInfo.m_timeZone);
       Rotate(false);
   }
@@ -340,85 +340,32 @@ void PSystemLogToFile::SetRotateInfo(const RotateInfo & info, bool force)
 bool PSystemLogToFile::Rotate(bool force)
 {
   PWaitAndSignal mutex(m_mutex);
-
-  if (!m_rotateInfo.CanRotate())
-    return false;
-
-  if (!force && m_file.GetLength() < m_rotateInfo.m_maxSize)
-    return false;
-
-  PFilePath rotatedFile;
-  PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp, m_rotateInfo.m_timeZone);
-  PString tiebreak;
-  do {
-      rotatedFile = PSTRSTRM(m_rotateInfo.m_directory <<
-                             m_rotateInfo.m_prefix <<
-                             timestamp << tiebreak <<
-                             m_rotateInfo.m_suffix);
-      tiebreak = tiebreak.AsInteger()-1;
-  } while (PFile::Exists(rotatedFile));
-
-  if (m_file.IsOpen()) {
-    OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile, m_rotateInfo.m_timeZone);
-    m_file.Close();
-  }
-
-  bool ok = PFile::Move(m_file.GetFilePath(), rotatedFile, false, true);
-  InternalOpen();
-
-  if (m_rotateInfo.m_maxFileCount > 0 || m_rotateInfo.m_maxFileAge > 0) {
-    std::multimap<PTime, PFilePath> rotatedFiles;
-    PDirectory dir(m_rotateInfo.m_directory);
-    if (dir.Open(PFileInfo::RegularFile)) {
-      int failsafe = 10000;
-      do {
-        PString name = dir.GetEntryName();
-        PFileInfo info;
-        if (m_rotateInfo.m_prefix == name.Left(m_rotateInfo.m_prefix.GetLength()) &&
-            m_rotateInfo.m_suffix == name.Right(m_rotateInfo.m_suffix.GetLength()) &&
-            dir.GetInfo(info))
-          rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
-      } while (dir.Next() && --failsafe > 0);
-    }
-
-    if (m_rotateInfo.m_maxFileCount > 0) {
-      while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
-        PFilePath filePath = rotatedFiles.begin()->second;
-        if (PFile::Remove(filePath))
-          OutputToStream(m_file, PSystemLog::Info, "Removed excess rotated log " + filePath, m_rotateInfo.m_timeZone);
-        else
-          OutputToStream(m_file, PSystemLog::Warning, "Could not remove excess rotated log " + filePath, m_rotateInfo.m_timeZone);
-        rotatedFiles.erase(rotatedFiles.begin());
-      }
-    }
-
-    if (m_rotateInfo.m_maxFileAge > 0) {
-      PTime then = PTime() - m_rotateInfo.m_maxFileAge;
-      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
-        PFilePath filePath = rotatedFiles.begin()->second;
-        if (PFile::Remove(filePath))
-          OutputToStream(m_file, PSystemLog::Info, "Removed aged rotated log " + filePath, m_rotateInfo.m_timeZone);
-        else
-          OutputToStream(m_file, PSystemLog::Warning, "Could not remove aged rotated log " + filePath, m_rotateInfo.m_timeZone);
-        rotatedFiles.erase(rotatedFiles.begin());
-      }
-    }
-  }
-
-  return ok;
+  return m_rotateInfo.Rotate(m_file, force);
 }
 
 
-bool PSystemLogToFile::InternalOpen()
+void PSystemLogToFile::RotateInfo::OnCloseFile(PFile & file, const PFilePath & rotatedTo)
 {
-  if (m_file.IsOpen())
+  PSystemLogToFile * log = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
+  if (log)
+    log->OutputToStream(file, PSystemLog::StdError, "Log rotated to " + rotatedTo, m_timeZone);
+}
+
+
+bool PSystemLogToFile::RotateInfo::OnOpenFile(PFile & file)
+{
+  if (file.IsOpen())
     return true;
 
   // Make sure directory exists, don't care if Create() fails, which is nearly all the time
-  m_file.GetFilePath().GetDirectory().Create(PFileInfo::DefaultDirPerms, true);
+  file.GetFilePath().GetDirectory().Create(PFileInfo::DefaultDirPerms, true);
 
-  if (!m_file.Open(PFile::WriteOnly))
+  if (!file.Open(PFile::WriteOnly))
     return false;
+
+  PSystemLogToFile * logToFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
+  if (!logToFile)
+    return true;
 
   PProcess & process = PProcess::Current();
   PStringStream log;
@@ -429,8 +376,8 @@ bool PSystemLogToFile::InternalOpen()
       << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
       << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
          " with PTLib (v" << PProcess::GetLibVersion() << ")"
-         " to \"" << m_file.GetFilePath() << "\", ";
-  switch (m_rotateInfo.m_timeZone) {
+         " to \"" << file.GetFilePath() << "\", ";
+  switch (m_timeZone) {
     case PTime::GMT :
       log << "GMT";
       break;
@@ -438,26 +385,16 @@ bool PSystemLogToFile::InternalOpen()
       log << "Local Time";
       break;
     default :
-      log << "Time Zone: " << setw(4) << setfill('0') << showpos << m_rotateInfo.m_timeZone;
+      log << "Time Zone: " << setw(4) << setfill('0') << showpos << m_timeZone;
   }
-  OutputToStream(m_file, PSystemLog::StdError, log, m_rotateInfo.m_timeZone);
+  logToFile->OutputToStream(file, PSystemLog::StdError, log, m_timeZone);
   return true;
 }
 
 
-PSystemLogToFile::RotateInfo::RotateInfo(const PDirectory & dir)
-  : m_directory(dir)
-  , m_prefix(PProcess::Current().GetName())
-  , m_timestamp("_yyyy_MM_dd_hh_mm")
-#if PTRACING
-  , m_timeZone((PTrace::GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local)
-#else
-  , m_timeZone(PTime::Local)
-#endif
-  , m_suffix(".log")
-  , m_maxSize(0)
-  , m_maxFileCount(0)
+void PSystemLogToFile::RotateInfo::OnMessage(bool error, const PString & msg)
 {
+  PSystemLog::OutputToTarget(error ? PSystemLog::Warning : PSystemLog::Info, msg);
 }
 
 

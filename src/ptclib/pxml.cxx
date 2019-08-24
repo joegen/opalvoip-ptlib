@@ -132,7 +132,7 @@ static void PXML_EntityDeclHandler(void *userData,
 }
 
 
-PXMLParserBase::PXMLParserBase(PXMLBase::Options options)
+PXMLParserBase::PXMLParserBase(PXMLBase::Options options, const char * encoding)
   : m_parsing(true)
   , m_total(0)
   , m_consumed(0)
@@ -141,9 +141,9 @@ PXMLParserBase::PXMLParserBase(PXMLBase::Options options)
   , m_expandEntities(options & PXMLBase::ExpandEntities)
 {
   if (options & PXMLBase::WithNS)
-    m_context = XML_ParserCreateNS(NULL, '|');
+    m_context = XML_ParserCreateNS(encoding, '|');
   else
-    m_context = XML_ParserCreate(NULL);
+    m_context = XML_ParserCreate(encoding);
 
   XML_SetUserData(MY_CONTEXT, this);
 
@@ -250,7 +250,7 @@ bool PXMLParserBase::Parse(istream & strm)
 
 PXMLParser::PXMLParser(PXML & doc, Options options, off_t progressTotal)
   : PXMLBase(options)
-  , PXMLParserBase(options)
+  , PXMLParserBase(options, doc.m_encoding.IsEmpty() ? (const char *)NULL : (const char *)doc.m_encoding)
   , m_document(doc)
   , m_currentElement(NULL)
   , m_lastData(NULL)
@@ -397,8 +397,9 @@ void PXMLParserBase::Entity(const char * /*entityName*/,
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-PXML::PXML(Options options, const char * noIndentElementsParam)
+PXML::PXML(Options options, const char * noIndentElementsParam, const char * defaultEncoding)
   : PXMLBase(options)
+  , m_encoding(defaultEncoding)
   , m_standAlone(UninitialisedStandAlone)
   , m_rootElement(NULL)
   , m_errorLine(0)
@@ -500,9 +501,11 @@ bool PXML::LoadFile(const PFilePath & fn)
 }
 
 
-bool PXML::Load(const PString & data, PXML::Options options)
+bool PXML::Load(const PString & data, PXML::Options options, const char * defaultEncoding)
 {
   m_options = options;
+  if (defaultEncoding != NULL)
+    m_encoding = defaultEncoding;
   return Load(data);
 }
 
@@ -1223,6 +1226,25 @@ PXMLObject * PXMLData::Clone() const
 }
 
 
+#if PTRACING
+ostream & operator<<(ostream & strm, const PXMLObject::PrintTraceClass & ptc)
+{
+  if (ptc.m_object == NULL)
+    return strm << "(null)";
+
+  ptc.m_object->InternalPrintTrace(strm);
+  return strm;
+}
+
+void PXMLData::InternalPrintTrace(ostream & strm) const
+{
+  strm << "XMLData";
+  if (m_lineNumber != 0)
+    strm << " [" << m_lineNumber << ',' << m_column << ']';
+}
+#endif
+
+
 ///////////////////////////////////////////////////////
 
 PXMLElement::PXMLElement(const char * name, const char * data)
@@ -1459,6 +1481,16 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
   if (newLine)
     strm << endl;
 }
+
+
+#if PTRACING
+void PXMLElement::InternalPrintTrace(ostream & strm) const
+{
+  strm << '<' << GetName() << '>';
+  if (m_lineNumber != 0)
+    strm << " [" << m_lineNumber << ',' << m_column << ']';
+}
+#endif
 
 
 PXMLObject * PXMLElement::AddSubObject(PXMLObject * obj, bool setDirty)

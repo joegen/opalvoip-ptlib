@@ -223,14 +223,17 @@ class PIPSocket : public PSocket
         bool IsSubNet(const Address & network, const Address & mask) const;
 
         /** Check if the remote address is a private address.
-            For IPV4 this is specified RFC 1918 as the following ranges:
-            \li    10.0.0.0 - 10.255.255.255.255
-            \li  172.16.0.0 - 172.31.255.255
-            \li 192.168.0.0 - 192.168.255.255
+            For IPV4 this is specified as the following ranges:
+            \li 10.0.0.0/8      (RFC1918)
+            \li 100.64.0.0/10   (RFC6598)
+            \li 169.254.0.0/16  (RFC3927)
+            \li 172.16.0.0/12   (RFC1918)
+            \li 192.168.0.0/24  (RFC1918)
 
             For IPV6 this is specified as any address having "1111 1110 1" for the first nine bits.
         */
-        bool IsRFC1918() const ;
+        bool IsPrivate() const;
+        P_DEPRECATED bool IsRFC1918() const { return IsPrivate(); }
 
 #if P_HAS_IPV6
         /// Check for v4 mapped in v6 address ::ffff:a.b.c.d.
@@ -343,6 +346,15 @@ class PIPSocket : public PSocket
     };
 
 
+    //**@name Overrides from class PObject */
+    //@{
+    /**Output the contents of the URL to the stream as a string.
+     */
+    virtual void PrintOn(
+      ostream &strm   ///< Stream to print the object into.
+    ) const;
+    //@}
+
     //**@name Overrides from class PChannel */
     //@{
     /**Get the platform and I/O channel type name of the channel. For an IP
@@ -441,7 +453,7 @@ class PIPSocket : public PSocket
         WORD GetMax() const { return m_max; }
 
       protected:
-        PMutex m_mutex;
+        PDECLARE_MUTEX(m_mutex);
         WORD   m_base;
         WORD   m_max;
     };

@@ -593,7 +593,10 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXMLElement & pdu)
 
     PINDEX i = 0;
     PXMLElement * item;
-    PBoolean uid = false, pwd = false, digest = false, res = false;
+    bool uid = false, pwd = false, res = false;
+#if P_SSL
+    bool digest = false;
+#endif
 
     while ((item = elem->GetElement(i++)) != NULL) {
       PString name = item->GetName();
@@ -602,8 +605,10 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXMLElement & pdu)
         uid = true;
       else if (name *= "password")
         pwd = true;
+#if P_SSL
       else if (name *= "digest")
         digest = true;
+#endif
       else if (name *= "resource")
         res = true;
     }

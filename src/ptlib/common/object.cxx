@@ -40,7 +40,7 @@
 #include <limits>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
-#if defined(_MSC_VER) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER)
 #include <crtdbg.h>
 #endif
 #elif defined(__NUCLEUS_PLUS__)
@@ -147,16 +147,15 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 #else
 
-static PCriticalSection s_AssertMutex;
+static PCriticalSection & GetAssertMutex() { static PCriticalSection cs; return cs; }
 extern void PPlatformAssertFunc(const PDebugLocation & location, const char * msg, char defaultAction);
-extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip);
+extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip, bool noSymbols);
 
 #if PTRACING
-  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
+  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, bool noSymbols)
   {
-    s_AssertMutex.Wait();
-    PPlatformWalkStack(strm, id, uid, 1); // 1 means skip reporting PTrace::WalkStack
-    s_AssertMutex.Signal();
+    PWaitAndSignal lock(GetAssertMutex());
+    PPlatformWalkStack(strm, id, uid, 1, noSymbols); // 1 means skip reporting PTrace::WalkStack
   }
 #endif // PTRACING
 
@@ -172,19 +171,7 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
   int errorCode = errno;
 #endif
 
-  const char * env;
-#if P_EXCEPTIONS
-  //Throw a runtime exception if the environment variable is set
-  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
-  if (env == NULL)
-    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
-  if (env != NULL) {
-    throw std::runtime_error(msg);
-    return;
-  }
-#endif
-
-  PWaitAndSignal lock(s_AssertMutex);
+  PWaitAndSignal lock(GetAssertMutex());
   static bool s_RecursiveAssert = false;
   if (s_RecursiveAssert)
     return;
@@ -204,22 +191,30 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
       strm << ", class " << location.m_extra;
     if (errorCode != 0)
       strm << ", error=" << errorCode;
-    strm << ", when=" << PTime().AsString(PTime::LoggingFormat
-#if PTRACING
-                                          , PTrace::GetTimeZone()
-#endif
-                                          );
+    strm << ", when=" << PTime().AsString(PTime::LoggingFormat PTRACE_PARAM(, PTrace::GetTimeZone()));
     if (PAssertWalksStack)
-      PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
+      PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2, true); // 2 means skip reporting InternalAssertFunc & PAssertFunc
     strm << ends;
     str = strm.str();
   }
 
-  env = ::getenv("PTLIB_ASSERT_ACTION");
+  const char * env;
+#if P_EXCEPTIONS
+  //Throw a runtime exception if the environment variable is set
+  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  if (env != NULL)
+    env = "T";
+  else
+#endif
+    env = ::getenv("PTLIB_ASSERT_ACTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = PProcess::Current().IsServiceProcess() ? "i" : "";
 
-  PPlatformAssertFunc(location, str.c_str(), env != NULL ? *env : '\0');
+  PPlatformAssertFunc(location, str.c_str(), *env);
 
   s_RecursiveAssert = false;
 }
@@ -383,7 +378,9 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 #undef realloc
 #undef free
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void * operator new(size_t nSize)
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new(size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new(size_t nSize)
@@ -393,7 +390,9 @@ void * operator new(size_t nSize)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void * operator new[](size_t nSize)
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new[](size_t nSize)
@@ -403,7 +402,9 @@ void * operator new[](size_t nSize)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void operator delete(void * ptr) noexcept
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete(void * ptr) throw()
 #else
 void operator delete(void * ptr)
@@ -413,7 +414,9 @@ void operator delete(void * ptr)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void operator delete[](void * ptr) noexcept
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete[](void * ptr) throw()
 #else
 void operator delete[](void * ptr)
@@ -1019,7 +1022,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #else // PMEMORY_CHECK
 
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER) && defined(_DEBUG)
 
 static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
 static bool hadCrtDumpLeak = false;
@@ -1160,30 +1163,6 @@ void PMemoryHeap::SetAllocationBreakpoint(alloc_t objectNumber)
   _CrtSetBreakAlloc(objectNumber);
 }
 
-
-#else // defined(_MSC_VER) && defined(_DEBUG)
-
-#if !defined(P_VXWORKS) && !defined(_WIN32_WCE) && !defined(P_ANDROID)
-
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
-void * operator new[](size_t nSize) throw (std::bad_alloc)
-#else
-void * operator new[](size_t nSize)
-#endif
-{
-  return malloc(nSize);
-}
-
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
-void operator delete[](void * ptr) throw ()
-#else
-void operator delete[](void * ptr)
-#endif
-{
-  free(ptr);
-}
-
-#endif // !P_VXWORKS
 
 #endif // defined(_MSC_VER) && defined(_DEBUG)
 

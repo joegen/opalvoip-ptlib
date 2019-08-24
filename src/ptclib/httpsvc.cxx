@@ -57,7 +57,7 @@ static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);
 
 PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   : PServiceProcess(inf.manufacturerName, inf.productName,
-                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber)
+                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.patchVersion, inf.oemVersion)
   , m_macroKeyword("macro")
   , m_productKey(inf.productKey)
   , m_securedKeys(inf.securedKeyCount, inf.securedKeys)
@@ -175,6 +175,8 @@ PHTTPServiceProcess::Params::Params(const char * configPageName, const char * se
   , m_levelKey("Log Level")
   , m_fileKey("Log File")
   , m_rotateDirKey("Log Rotate Directory")
+  , m_rotatePrefixKey("Log Rotate Prefix")
+  , m_rotateTemplateKey("Log Rotate Template")
   , m_rotateSizeKey("Log Rotate Size")
   , m_rotateCountKey("Log Rotate File Count")
   , m_rotateAgeKey("Log Rotate File Age")
@@ -211,13 +213,14 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
 
 
   PSystemLog::Level level;
-  PString fileName;
+  PFilePath oldLogFileName, newLogFileName;
   PSystemLogToFile::RotateInfo info(GetHomeDirectory());
 
   PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
-
-  if (logFile != NULL)
+  if (logFile != NULL) {
+    oldLogFileName = logFile->GetFilePath();
     info = logFile->GetRotateInfo();
+  }
 
   if (params.m_configPage != NULL) {
     params.m_configPage->AddStringField(params.m_usernameKey, 25, params.m_authority.GetUserName(), "User name to access HTTP user interface for server.");
@@ -228,10 +231,14 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
                                                PSystemLog::Fatal, PSystemLog::NumLogLevels-1,
                                                GetLogLevel(),
                                                "0=Fatal only, 1=Errors, 2=Warnings, 3=Info, 4=Debug, 5=Detailed"));
-    fileName = params.m_configPage->AddStringField(params.m_fileKey, 0, logFile != NULL ? logFile->GetFilePath() : PString::Empty(),
+    newLogFileName = params.m_configPage->AddStringField(params.m_fileKey, 0, oldLogFileName,
                                              "File for logging output, empty string disables logging", 1, 80);
     info.m_directory = params.m_configPage->AddStringField(params.m_rotateDirKey, 0, info.m_directory,
                                                      "Directory path for log file rotation", 1, 80);
+    info.m_prefix = params.m_configPage->AddStringField(params.m_rotatePrefixKey, 0, info.m_prefix,
+                                                     "Prefix for log file rotation", 1, 40);
+    info.m_timestamp = params.m_configPage->AddStringField(params.m_rotateTemplateKey, 0, info.m_timestamp,
+                                                     "Time template for log file rotation", 1, 40);
     info.m_maxSize = params.m_configPage->AddIntegerField(params.m_rotateSizeKey, 0, INT_MAX, info.m_maxSize / 1000,
                                                     "kb", "Size of log file to trigger rotation, zero disables")*1000;
     info.m_maxFileCount = params.m_configPage->AddIntegerField(params.m_rotateCountKey, 0, 10000, info.m_maxFileCount,
@@ -244,28 +251,33 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   // HTTP Port number to use.
     params.m_httpPort = (WORD)params.m_configPage->AddIntegerField(params.m_httpPortKey, 1, 65535, params.m_httpPort,
                                                                    "", "Port for HTTP user interface for server.");
+    params.m_httpInterfaces = params.m_configPage->AddStringField(params.m_httpInterfacesKey, 30, params.m_httpInterfaces,
+                                                                 "Local network interface(s) for HTTP user interface for server.");
   }
   else {
     level = cfg.GetEnum(params.m_levelKey, GetLogLevel());
-    fileName = cfg.GetString(params.m_fileKey);
+    newLogFileName = cfg.GetString(params.m_fileKey, oldLogFileName);
     info.m_directory = cfg.GetString(params.m_rotateDirKey, info.m_directory);
+    info.m_prefix = cfg.GetString(params.m_rotatePrefixKey, info.m_prefix);
+    info.m_timestamp = cfg.GetString(params.m_rotateTemplateKey, info.m_timestamp);
     info.m_maxSize = cfg.GetInteger(params.m_rotateSizeKey, info.m_maxSize / 1000) * 1000;
     info.m_maxFileCount = cfg.GetInteger(params.m_rotateCountKey, info.m_maxFileCount);
     info.m_maxFileAge.SetInterval(0, 0, 0, 0, cfg.GetInteger(params.m_rotateAgeKey, info.m_maxFileAge.GetDays()));
     params.m_httpPort = (WORD)cfg.GetInteger(params.m_httpPortKey, params.m_httpPort);
+    params.m_httpInterfaces = cfg.GetString(params.m_httpInterfacesKey, params.m_httpInterfaces);
   }
 
   SetLogLevel(level);
 
-  if (fileName.IsEmpty()) {
+  if (newLogFileName.IsEmpty()) {
     if (logFile != NULL) {
       logFile = NULL;
       PSystemLog::SetTarget(new PSystemLogToNowhere);
     }
   }
   else {
-    if (logFile == NULL || logFile->GetFilePath() != fileName) {
-      logFile = new PSystemLogToFile(fileName);
+    if (logFile == NULL || oldLogFileName != newLogFileName) {
+      logFile = new PSystemLogToFile(newLogFileName);
       PSystemLog::SetTarget(logFile);
     }
   }
@@ -1006,9 +1018,9 @@ PString PServiceHTML::CalculateSignature(const PString & outStr,
 
   // encode it
   PTEACypher cypher(sig);
-  BYTE buf[sizeof(md5)+7];
-  memcpy(buf, &md5, sizeof(md5));
-  memset(&buf[sizeof(md5)], 0, sizeof(buf)-sizeof(md5));
+  BYTE buf[PMessageDigest5::DigestLength+7];
+  memcpy(buf, md5, PMessageDigest5::DigestLength);
+  memset(&buf[PMessageDigest5::DigestLength], 0, sizeof(buf)-PMessageDigest5::DigestLength);
   return cypher.Encode(buf, sizeof(buf));
 }
 

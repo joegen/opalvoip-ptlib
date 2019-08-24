@@ -401,27 +401,11 @@ static void RGBtoYUV420PSameSize (const BYTE * rgb,
 }
 
 
-PBoolean PVideoInputDevice_Shm::GetFrame(PBYTEArray & frame)
+bool PVideoInputDevice_Shm::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-	PINDEX returned;
-	if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-		return false;
-	
-	frame.SetSize(returned);
-	return true;
-}
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
 
-PBoolean
-PVideoInputDevice_Shm::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{    
-  m_pacing.Delay(1000/GetFrameRate());
-
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
-PBoolean
-PVideoInputDevice_Shm::GetFrameDataNoDelay (BYTE *buffer, PINDEX *bytesReturned)
-{
   long *bufPtr = (long *)shmPtr;
 
   unsigned width = 0;
@@ -439,7 +423,7 @@ PVideoInputDevice_Shm::GetFrameDataNoDelay (BYTE *buffer, PINDEX *bytesReturned)
       RGBtoYUV420PSameSize ((BYTE *)(bufPtr+3), buffer, rgbIncrement, false, 
 			    width, height);
 	  
-	  *bytesReturned = videoFrameSize;
+	  bytesReturned = videoFrameSize;
       return true;
     }
   }

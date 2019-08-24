@@ -348,6 +348,9 @@ class PDirectory : public PFilePathString
     static bool Remove(
       const PString & path   ///< Directory file path.
     );
+
+    /// Get the OS temporary directory
+    static PDirectory GetTemporary();
   //@}
 
   /**@name Directory listing functions */

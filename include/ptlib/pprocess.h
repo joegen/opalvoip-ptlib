@@ -59,16 +59,6 @@ extern "C" {\
        exit( instance.InternalMain() ); \
      } \
 }
-#elif defined(_WIN32_WCE)
-#define PCREATE_PROCESS(cls) \
-  PDEFINE_WINMAIN(hInstance, , lpCmdLine, ) \
-    { \
-      cls *pInstance = new cls(); \
-      pInstance->GetArguments().SetArgs(lpCmdLine); \
-      int terminationValue = pInstance->InternalMain(hInstance); \
-      delete pInstance; \
-      return terminationValue; \
-    }
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char * argv[]) \
@@ -134,9 +124,10 @@ class PProcess : public PThread
       unsigned majorVersion = 1,       ///< Major version number of the product
       unsigned minorVersion = 0,       ///< Minor version number of the product
       CodeStatus status = ReleaseCode, ///< Development status of the product
-      unsigned buildNumber = 1,        ///< Build number of the product
+      unsigned patchVersion = 1,       ///< Patch version number of the product
       bool library = false,            ///< PProcess is a library rather than an application
-      bool suppressStartup = false     ///< Do not execute Startup()
+      bool suppressStartup = false,    ///< Do not execute Startup()
+      unsigned oemVersion = 0          ///< OEM version number of the product
     );
   //@}
 
@@ -565,7 +556,8 @@ class PProcess : public PThread
       unsigned     m_major;
       unsigned     m_minor;
       CodeStatus   m_status;
-      unsigned     m_build;
+      unsigned     m_patch;
+      unsigned     m_oem;
       unsigned     m_svn;
       const char * m_git;
 
@@ -666,6 +658,7 @@ class PProcess : public PThread
     };
   //@}
 
+    virtual bool IsServiceProcess() const;
     bool SignalTimerChange();
 
   protected:

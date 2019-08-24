@@ -248,17 +248,16 @@ extern "C" {
 };
 #endif
 
-#if PTRACING
-  static PMutex s_waterMarkMutex;
-  static int s_highWaterMark = 0;
-#endif
-
 int PX_NewHandle(const char * clsName, int fd)
 {
 #if PTRACING
   if (fd < 0 || !PProcess::IsInitialised())
     return fd;
 
+#if PTRACING
+  static PCriticalSection s_waterMarkMutex;
+  static int s_highWaterMark = 0;
+#endif
   s_waterMarkMutex.Wait();
 
   bool newHigh = fd > s_highWaterMark;
@@ -735,28 +734,25 @@ PStringArray PDirectory::GetPath() const
 //
 
 bool PFile::InternalOpen(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
-
 {
   Close();
   clear();
 
-  if (opt > 0)
-    m_removeOnClose = (opt & Temporary) != 0;
+  if (opt != ModeDefault)
+    m_removeOnClose = opt & Temporary;
 
   if (m_path.IsEmpty()) {
-    char templateStr[3+6+1];
-    strcpy(templateStr, "PWLXXXXXX");
+    m_path = PDirectory::GetTemporary() + "PTLXXXXXX";
 #ifndef P_VXWORKS
 #ifdef P_RTEMS
     _reent _reent_data;
     memset(&_reent_data, 0, sizeof(_reent_data));
-    os_handle = _mkstemp_r(&_reent_data, templateStr);
+    os_handle = _mkstemp_r(&_reent_data, m_path.GetPointerAndSetLength(m_path.GetLength())); // Shouldn't change length
 #else
-    os_handle = mkstemp(templateStr);
+    os_handle = mkstemp(m_path.GetPointerAndSetLength(m_path.GetLength())); // Shouldn't change length
 #endif // P_RTEMS
     if (!ConvertOSError(os_handle))
       return false;
-    m_path = templateStr;
   } else {
 #else
     static int number = 0;
@@ -969,13 +965,13 @@ bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permis
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
-PBoolean PFilePath::IsValid(char c)
+bool PFilePath::IsValid(char c)
 {
   return c != '/';
 }
 
 
-PBoolean PFilePath::IsValid(const PString & str)
+bool PFilePath::IsValid(const PString & str)
 {
   return str.Find('/') == P_MAX_INDEX;
 }
@@ -1090,7 +1086,7 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
     return SetErrorValues(Miscellaneous, EINVAL);
 
 #if P_CURSES==1
-  if ((localEcho ? echo() : noecho()) == OK)
+  if (stdscr != NULL && (localEcho ? echo() : noecho()) == OK)
     return true;
 #endif
 
@@ -1115,7 +1111,7 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
     return SetErrorValues(Miscellaneous, EINVAL);
 
 #if P_CURSES==1
-  if ((lineBuffered ? nocbreak() : cbreak()) == OK) {
+  if (stdscr != NULL && (lineBuffered ? nocbreak() : cbreak()) == OK) {
     keypad(stdscr, !lineBuffered); // Enable special keys (arrows, keypad etc)
     return true;
   }
@@ -1139,7 +1135,7 @@ bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
     return false;
 
 #if P_CURSES==1
-  if (stdscr) {
+  if (stdscr != NULL) {
     getmaxyx(stdscr, rows, columns);
     return rows > 0 && columns > 0;
   }

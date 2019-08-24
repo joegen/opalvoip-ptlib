@@ -106,10 +106,10 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
 
     /**Retrieve a list of Device Capabilities
       */
-    bool GetDeviceCapabilities(
+    virtual bool GetDeviceCapabilities(
       Capabilities * /*caps*/         ///< List of supported capabilities
     );
-    static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
+    static PBoolean GetInputDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
 
     /**Start the video device I/O.
       */
@@ -166,26 +166,12 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
       */
     virtual PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
     virtual bool SetCaptureMode(unsigned mode);
-    virtual int GetCaptureMode() const { return useVideoMode; }
+    virtual int GetCaptureMode() const { return m_useVideoMode; }
 
 
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
     PBoolean VerifyHardwareFrameSize(unsigned width, unsigned height);
 
     PDECLARE_NOTIFIER(PThread, PVideoInputDevice_VideoForWindows, HandleCapture);
@@ -196,19 +182,19 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     LRESULT HandleVideo(LPVIDEOHDR vh);
     PBoolean InitialiseCapture();
 
-    PThread     * captureThread;
-    PSyncPoint    threadStarted;
+    PThread      * m_captureThread;
+    PSyncPoint     m_threadStarted;
 
-    HWND          hCaptureWindow;
-    PMutex        operationMutex;
+    HWND           m_hCaptureWindow;
+    PDECLARE_MUTEX(m_operationMutex);
 
-    PSyncPoint    frameAvailable;
-    bool          useVideoMode;
-    LPBYTE        lastFrameData;
-    unsigned      lastFrameSize;
-    PMutex        lastFrameMutex;
-    bool          isCapturingNow;
-    PAdaptiveDelay m_Pacing;
+    PSyncPoint     m_frameAvailable;
+    bool           m_useVideoMode;
+    LPBYTE         m_lastFrameData;
+    unsigned       m_lastFrameSize;
+    PDECLARE_MUTEX(m_lastFrameMutex);
+    bool           m_isCapturingNow;
+    PAdaptiveDelay m_pacing;
 };
 
 
@@ -378,28 +364,26 @@ PCapStatus::PCapStatus(HWND hWnd)
 PCREATE_VIDINPUT_PLUGIN(VideoForWindows);
 
 PVideoInputDevice_VideoForWindows::PVideoInputDevice_VideoForWindows()
+  : m_captureThread(NULL)
+  , m_hCaptureWindow(NULL)
+  , m_lastFrameSize(0)
+  , m_isCapturingNow(false)
+  , m_useVideoMode(false)
+  , m_lastFrameData(NULL)
 {
-  captureThread = NULL;
-  hCaptureWindow = NULL;
-  lastFrameSize = 0;
-  isCapturingNow = false;
-
-  useVideoMode    = false;
-  lastFrameData   = NULL;
 }
 
 
 PVideoInputDevice_VideoForWindows::~PVideoInputDevice_VideoForWindows()
 {
-  if(lastFrameData)
-    delete[] lastFrameData;
+  delete m_lastFrameData;
   Close();
 }
 
 
 bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
 {
-  useVideoMode = mode != 0;
+  m_useVideoMode = mode != 0;
 
   // Do nothing if we are currently capturing (we don't support switching between picture- and video-mode during a capture).
   if(IsCapturing())
@@ -407,10 +391,10 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
 
   // Set the callback function for complete frames
   BOOL result;
-  if (useVideoMode)
-    result = capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler);
+  if (m_useVideoMode)
+    result = capSetCallbackOnVideoStream(m_hCaptureWindow, VideoHandler);
   else
-    result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
+    result = capSetCallbackOnFrame(m_hCaptureWindow, VideoHandler);
 
   if (!result) {
     m_lastError = ::GetLastError();
@@ -420,14 +404,14 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
 
   CAPTUREPARMS parms;
   memset(&parms, 0, sizeof(parms));
-  if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+  if (!capCaptureGetSetup(m_hCaptureWindow, &parms, sizeof(parms))) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capCaptureGetSetup: failed - " << m_lastError);
     return false;
   }
 
   // For video mode we must tell VfW to work in a separate background thread, or our application will lock otherwise.
-  if (useVideoMode) {
+  if (m_useVideoMode) {
     parms.fYield = TRUE;
     parms.dwIndexSize = 324000;
   }
@@ -436,7 +420,7 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
     parms.dwIndexSize = 0;
   }
 
-  if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+  if (!capCaptureSetSetup(m_hCaptureWindow, &parms, sizeof(parms))) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capCaptureSetSetup: failed - " << m_lastError);
     return false;
@@ -450,20 +434,20 @@ PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoole
 {
   Close();
 
-  operationMutex.Wait();
+  m_operationMutex.Wait();
 
   m_deviceName = devName;
 
-  captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), "VidIn");
+  m_captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), "VidIn");
 
-  operationMutex.Signal();
-  threadStarted.Wait();
+  m_operationMutex.Signal();
+  m_threadStarted.Wait();
 
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
-  if (hCaptureWindow == NULL) {
-    delete captureThread;
-    captureThread = NULL;
+  if (m_hCaptureWindow == NULL) {
+    delete m_captureThread;
+    m_captureThread = NULL;
     return false;
   }
 
@@ -476,23 +460,23 @@ PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoole
 
 PBoolean PVideoInputDevice_VideoForWindows::IsOpen() 
 {
-  return hCaptureWindow != NULL;
+  return m_hCaptureWindow != NULL;
 }
 
 
 PBoolean PVideoInputDevice_VideoForWindows::Close()
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!IsOpen())
     return false;
  
   Stop();
 
-  ::PostThreadMessage(captureThread->GetThreadId(), WM_QUIT, 0, 0L);
+  ::PostThreadMessage(m_captureThread->GetThreadId(), WM_QUIT, 0, 0L);
 
   // Some brain dead drivers may hang so we provide a timeout.
-  if (!captureThread->WaitForTermination(5000))
+  if (!PThread::WaitAndDelete(m_captureThread, 5000))
   {
       // Two things may happen if we are forced to terminate the capture thread:
       // 1. As the VIDCAP window is associated to that thread the OS itself will 
@@ -500,19 +484,15 @@ PBoolean PVideoInputDevice_VideoForWindows::Close()
       // 2. the driver will not be released and we will not have video until we 
       //    terminate the process
       // Any of the two ios better than just hanging
-      captureThread->Terminate();
-      hCaptureWindow = NULL;
+      m_hCaptureWindow = NULL;
       PTRACE(1, "Capture thread failed to stop. Terminated");
   }
-
-  delete captureThread;
-  captureThread = NULL;
 
   return true;
 }
 
 
-PBoolean PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(const PString & deviceName,
+PBoolean PVideoInputDevice_VideoForWindows::GetInputDeviceCapabilities(const PString & deviceName,
                                                                   Capabilities * capabilities)
 {
   PVideoInputDevice_VideoForWindows instance;
@@ -523,12 +503,12 @@ PBoolean PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(const PString 
 bool PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(Capabilities * caps)
 {
   for (PINDEX prefFormatIdx = 0; FormatTable[prefFormatIdx].colourFormat != NULL; prefFormatIdx++) {
-    PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
+    PVideoDeviceBitmap bi(m_hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
     bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
     for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
       bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
       bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
-      if (bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]) && caps != NULL) {
+      if (bi.ApplyFormat(m_hCaptureWindow, FormatTable[prefFormatIdx]) && caps != NULL) {
         PVideoFrameInfo frameInfo;
         frameInfo.SetFrameSize(winTestResTable[prefResizeIdx].device_width,
                                winTestResTable[prefResizeIdx].device_height);
@@ -542,24 +522,24 @@ bool PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(Capabilities * cap
 
 PBoolean PVideoInputDevice_VideoForWindows::Start()
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (IsCapturing())
     return true;
 
-  if (!useVideoMode) {
-    isCapturingNow = true;
-    return capGrabFrameNoStop(hCaptureWindow);
+  if (!m_useVideoMode) {
+    m_isCapturingNow = true;
+    return capGrabFrameNoStop(m_hCaptureWindow);
   }
 
-  if (capCaptureSequenceNoFile(hCaptureWindow)) {
-    PCapStatus status(hCaptureWindow);
-    isCapturingNow = status.fCapturingNow;
+  if (capCaptureSequenceNoFile(m_hCaptureWindow)) {
+    PCapStatus status(m_hCaptureWindow);
+    m_isCapturingNow = status.fCapturingNow;
 
     // As initializing the camera takes some time, and video-mode runs in a background thread, we need to wait for the first frame here.
-    // Otherwise "GetFrameDataNoDelay" might time-out.
-    frameAvailable.Wait();
-    return isCapturingNow;
+    // Otherwise "InternalGetFrameData" might time-out.
+    m_frameAvailable.Wait();
+    return m_isCapturingNow;
   }
 
   m_lastError = ::GetLastError();
@@ -570,18 +550,18 @@ PBoolean PVideoInputDevice_VideoForWindows::Start()
 
 PBoolean PVideoInputDevice_VideoForWindows::Stop()
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!IsCapturing())
     return false;
-  isCapturingNow = false;
+  m_isCapturingNow = false;
 
   // If using the picture mode, we just need to wait for the very next frame ...
-  if (!useVideoMode)
-    return IsOpen() && frameAvailable.Wait(1000);
+  if (!m_useVideoMode)
+    return IsOpen() && m_frameAvailable.Wait(1000);
 
   // ... otherwise we need to explicitely stop capturing.
-  if (capCaptureStop(hCaptureWindow))
+  if (capCaptureStop(m_hCaptureWindow))
     return true;
 
   m_lastError = ::GetLastError();
@@ -592,13 +572,13 @@ PBoolean PVideoInputDevice_VideoForWindows::Stop()
 
 PBoolean PVideoInputDevice_VideoForWindows::IsCapturing()
 {
-  return isCapturingNow;
+  return m_isCapturingNow;
 }
 
 
 PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFmt)
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!IsOpen())
     return PVideoDevice::SetColourFormat(colourFmt); // Not open yet, just set internal variables
@@ -616,7 +596,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
   while (FormatTable[i].colourFormat != NULL && !(colourFmt *= FormatTable[i].colourFormat))
     i++;
 
-  PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[i].bitCount);
+  PVideoDeviceBitmap bi(m_hCaptureWindow, FormatTable[i].bitCount);
 
   if (FormatTable[i].colourFormat != NULL)
     bi->bmiHeader.biCompression = FormatTable[i].compression;
@@ -631,7 +611,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
   // set frame width and height
   bi->bmiHeader.biWidth = m_frameWidth;
   bi->bmiHeader.biHeight = m_frameHeight;
-  if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
+  if (!bi.ApplyFormat(m_hCaptureWindow, FormatTable[i])) {
     m_lastError = ::GetLastError();
     PVideoDevice::SetColourFormat(oldFormat);
     return false;
@@ -649,7 +629,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
 
 PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!PVideoDevice::SetFrameRate(rate))
     return false;
@@ -664,7 +644,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
   CAPTUREPARMS parms;
   memset(&parms, 0, sizeof(parms));
 
-  if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+  if (!capCaptureGetSetup(m_hCaptureWindow, &parms, sizeof(parms))) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capCaptureGetSetup: failed - " << m_lastError);
     return false;
@@ -681,7 +661,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
   parms.fAbortRightMouse = false;
   parms.fLimitEnabled = false;
 
-  if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+  if (!capCaptureSetSetup(m_hCaptureWindow, &parms, sizeof(parms))) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capCaptureSetSetup: failed - " << m_lastError);
     return false;
@@ -696,7 +676,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 
 PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned height)
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!IsOpen())
     return PVideoDevice::SetFrameSize(width, height); // Not open yet, just set internal variables
@@ -705,7 +685,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
   if (running)
     Stop();
 
-  PVideoDeviceBitmap bi(hCaptureWindow); 
+  PVideoDeviceBitmap bi(m_hCaptureWindow); 
   PTRACE(5, "Changing frame size from "
          << bi->bmiHeader.biWidth << 'x' << bi->bmiHeader.biHeight << " to " << width << 'x' << height);
 
@@ -715,7 +695,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
 
   bi->bmiHeader.biWidth = width;
   bi->bmiHeader.biHeight = height;
-  if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
+  if (!bi.ApplyFormat(m_hCaptureWindow, FormatTable[i])) {
     m_lastError = ::GetLastError();
     return false;
   }
@@ -746,7 +726,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
 //  width reported by driver is equal to current frame width
 PBoolean PVideoInputDevice_VideoForWindows::VerifyHardwareFrameSize(unsigned width, unsigned height)
 {
-  PCapStatus status(hCaptureWindow);
+  PCapStatus status(m_hCaptureWindow);
 
   if (!status.IsOK())
     return false;
@@ -781,50 +761,53 @@ PStringArray PVideoInputDevice_VideoForWindows::GetInputDeviceNames()
 
 PINDEX PVideoInputDevice_VideoForWindows::GetMaxFrameBytes()
 {
-  PWaitAndSignal mutex(operationMutex);
+  PWaitAndSignal mutex(m_operationMutex);
 
   if (!IsOpen())
     return 0;
 
-  return GetMaxFrameBytesConverted(PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage);
+  return GetMaxFrameBytesConverted(PVideoDeviceBitmap(m_hCaptureWindow)->bmiHeader.biSizeImage);
 }
 
 
-PBoolean PVideoInputDevice_VideoForWindows::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_VideoForWindows::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  // Some camera drivers ignore the frame rate set in the CAPTUREPARMS structure,
-  // so we have a fail safe delay here.
-  m_Pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
+  if (wait) {
+    // Wait for frame to be available
+    if (!m_frameAvailable.Wait(1000)) {
+      PTRACE(1, "Timeout waiting for frame grab!");
+      return false;
+    }
 
+    // Some camera drivers ignore the frame rate set in the CAPTUREPARMS structure,
+    // so we have a fail safe delay here.
+    m_pacing.Delay(1000 / GetFrameRate());
+  }
 
-PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
-  if (!frameAvailable.Wait(1000)) {
-    PTRACE(1, "Timeout waiting for frame grab!");
-    return false;
+  if (!m_frameAvailable.Wait(0)) {
+    bytesReturned = 0;
+    keyFrame = false;
+    return true;
   }
 
   bool retval = false;
 
-  lastFrameMutex.Wait();
+  m_lastFrameMutex.Wait();
 
-  if (lastFrameData != NULL) {
+  if (m_lastFrameData != NULL) {
     if (NULL != m_converter)
-      retval = m_converter->Convert(lastFrameData, buffer, bytesReturned);
+      retval = m_converter->Convert(m_lastFrameData, buffer, &bytesReturned);
     else {
-      memcpy(buffer, lastFrameData, lastFrameSize);
-      if (bytesReturned != NULL)
-        *bytesReturned = lastFrameSize;
+      memcpy(buffer, m_lastFrameData, m_lastFrameSize);
+      bytesReturned = m_lastFrameSize;
       retval = true;
     }
   }
 
-  lastFrameMutex.Signal();
+  m_lastFrameMutex.Signal();
 
-  if (!useVideoMode && isCapturingNow)
-    capGrabFrameNoStop(hCaptureWindow);
+  if (!m_useVideoMode && m_isCapturingNow)
+    capGrabFrameNoStop(m_hCaptureWindow);
 
   return retval;
 }
@@ -858,7 +841,7 @@ LRESULT CALLBACK PVideoInputDevice_VideoForWindows::VideoHandler(HWND hWnd, LPVI
 LRESULT PVideoInputDevice_VideoForWindows::HandleVideo(LPVIDEOHDR vh)
 {
   if ((vh->dwFlags&(VHDR_DONE|VHDR_KEYFRAME)) != 0) {
-    lastFrameMutex.Wait();
+    m_lastFrameMutex.Wait();
 
     /**
     * As in video mode VfW captures in background, and hence might override the buffer of the current frame,
@@ -867,22 +850,21 @@ LRESULT PVideoInputDevice_VideoForWindows::HandleVideo(LPVIDEOHDR vh)
 
     // If the size of the current frame is same as of the old ...
     //    -> ... simply copy the data of the new frame into the buffer ...
-    if(lastFrameSize == vh->dwBytesUsed)
-      memcpy(lastFrameData, vh->lpData, lastFrameSize);
+    if (m_lastFrameSize == vh->dwBytesUsed)
+      memcpy(m_lastFrameData, vh->lpData, m_lastFrameSize);
     else {
       // ... otherwise delete the old buffer ...
-      if (lastFrameSize)
-        delete[] lastFrameData;
+      delete m_lastFrameData;
 
       // ... and allocate a new one.
-      lastFrameSize = vh->dwBytesUsed;
-      lastFrameData = new BYTE[lastFrameSize];
+      m_lastFrameSize = vh->dwBytesUsed;
+      m_lastFrameData = new BYTE[m_lastFrameSize];
 
-      memcpy(lastFrameData, vh->lpData, lastFrameSize);
+      memcpy(m_lastFrameData, vh->lpData, m_lastFrameSize);
     }
 
-    lastFrameMutex.Signal();
-    frameAvailable.Signal();
+    m_lastFrameMutex.Signal();
+    m_frameAvailable.Signal();
   }
 
   return true;
@@ -891,25 +873,25 @@ LRESULT PVideoInputDevice_VideoForWindows::HandleVideo(LPVIDEOHDR vh)
 
 PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 {
-  if ((hCaptureWindow = capCreateCaptureWindow("Capture Window",
-                                               WS_POPUP | WS_CAPTION,
-                                               CW_USEDEFAULT, CW_USEDEFAULT,
-                                               m_frameWidth + GetSystemMetrics(SM_CXFIXEDFRAME),
-                                               m_frameHeight + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
-                                               (HWND)0,
-                                               0)) == NULL) {
+  if ((m_hCaptureWindow = capCreateCaptureWindow("Capture Window",
+                                                 WS_POPUP | WS_CAPTION,
+                                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                                 m_frameWidth + GetSystemMetrics(SM_CXFIXEDFRAME),
+                                                 m_frameHeight + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
+                                                 (HWND)0,
+                                                 0)) == NULL) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capCreateCaptureWindow failed - " << m_lastError);
     return false;
   }
 
-  capSetCallbackOnError(hCaptureWindow, ErrorHandler);
+  capSetCallbackOnError(m_hCaptureWindow, ErrorHandler);
 
   BOOL result = FALSE;
-  if (useVideoMode)
-    result = capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler);
+  if (m_useVideoMode)
+    result = capSetCallbackOnVideoStream(m_hCaptureWindow, VideoHandler);
   else
-    result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
+    result = capSetCallbackOnFrame(m_hCaptureWindow, VideoHandler);
 
   if (!result) {
     m_lastError = ::GetLastError();
@@ -945,10 +927,10 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
     }
   }
 
-  capSetUserData(hCaptureWindow, this);
+  capSetUserData(m_hCaptureWindow, this);
 
   // Use first driver available.
-  if (!capDriverConnect(hCaptureWindow, devId)) {
+  if (!capDriverConnect(m_hCaptureWindow, devId)) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capDriverConnect failed - " << m_lastError);
     return false;
@@ -956,7 +938,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 
   CAPDRIVERCAPS driverCaps;
   memset(&driverCaps, 0, sizeof(driverCaps));
-  if (!capDriverGetCaps(hCaptureWindow, &driverCaps, sizeof(driverCaps))) {
+  if (!capDriverGetCaps(m_hCaptureWindow, &driverCaps, sizeof(driverCaps))) {
     m_lastError = ::GetLastError();
     PTRACE(1, "capGetDriverCaps failed - " << m_lastError);
     return false;
@@ -980,18 +962,18 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   }
 */
    
-  capPreview(hCaptureWindow, false);
+  capPreview(m_hCaptureWindow, false);
 
 #if PTRACING
   if (PTrace::CanTrace(6)) {
     // Display log for every format set
     for (PINDEX prefFormatIdx = 0; FormatTable[prefFormatIdx].colourFormat != NULL; prefFormatIdx++) {
-      PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
+      PVideoDeviceBitmap bi(m_hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
       bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
       for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
         bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
         bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
-        bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]);
+        bi.ApplyFormat(m_hCaptureWindow, FormatTable[prefFormatIdx]);
       }
     }
   }
@@ -1006,7 +988,7 @@ void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, P_INT_PTR)
   PBoolean initSucceeded = InitialiseCapture();
 
   if (initSucceeded) {
-    threadStarted.Signal();
+    m_threadStarted.Signal();
 
     MSG msg;
     while (::GetMessage(&msg, NULL, 0, 0))
@@ -1014,19 +996,19 @@ void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, P_INT_PTR)
   }
 
   PTRACE(5, "Disconnecting driver");
-  capDriverDisconnect(hCaptureWindow);
-  capSetUserData(hCaptureWindow, NULL);
+  capDriverDisconnect(m_hCaptureWindow);
+  capSetUserData(m_hCaptureWindow, NULL);
 
-  capSetCallbackOnError(hCaptureWindow, NULL);
-  capSetCallbackOnVideoStream(hCaptureWindow, NULL);
+  capSetCallbackOnError(m_hCaptureWindow, NULL);
+  capSetCallbackOnVideoStream(m_hCaptureWindow, NULL);
 
   PTRACE(5, "Destroying VIDCAP window");
-  DestroyWindow(hCaptureWindow);
-  hCaptureWindow = NULL;
+  DestroyWindow(m_hCaptureWindow);
+  m_hCaptureWindow = NULL;
 
   // Signal the other thread we have completed, even if have error
   if (!initSucceeded)
-    threadStarted.Signal();
+    m_threadStarted.Signal();
 }
 
 #endif // P_VFW_CAPTURE
@@ -1191,7 +1173,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     bool       m_mouseEnabled;
     bool       m_hidden;
     PThread  * m_thread;
-    PMutex     m_openCloseMutex;
+    PDECLARE_MUTEX(m_openCloseMutex);
     PSyncPoint m_started;
     BITMAPINFO m_bitmap;
     bool       m_flipped;
@@ -1313,12 +1295,12 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
     return false;
   }
 
-  m_lastPosition.x = ParseDeviceNameTokenInt("X=", CW_USEDEFAULT);
-  m_lastPosition.y = ParseDeviceNameTokenInt("Y=", CW_USEDEFAULT);
-  m_fixedSize.cx   = ParseDeviceNameTokenInt("WIDTH=", 0);
-  m_fixedSize.cy   = ParseDeviceNameTokenInt("HEIGHT=", 0);
-  m_bgColour       = ParseDeviceNameTokenInt("BACKGROUND=", 0);
-  m_rotation       = ParseDeviceNameTokenInt("ROTATION=", 0);
+  m_lastPosition.x = ParseDeviceNameTokenInt("X", CW_USEDEFAULT);
+  m_lastPosition.y = ParseDeviceNameTokenInt("Y", CW_USEDEFAULT);
+  m_fixedSize.cx   = ParseDeviceNameTokenInt("WIDTH", 0);
+  m_fixedSize.cy   = ParseDeviceNameTokenInt("HEIGHT", 0);
+  m_bgColour       = ParseDeviceNameTokenInt("BACKGROUND", 0);
+  m_rotation       = ParseDeviceNameTokenInt("ROTATION", 0);
 
   m_mouseEnabled = m_deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
   m_hidden = !startImmediate || m_deviceName.Find("HIDE") != P_MAX_INDEX;
@@ -1741,11 +1723,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
         h = rect.bottom;
       }
 
-#ifdef _WIN32_WCE
-      SetStretchBltMode(hDC, COLORONCOLOR);
-#else
       SetStretchBltMode(hDC, STRETCH_DELETESCANS);
-#endif
       result = StretchDIBits(hDC,
                              x, y, w, h,
                              0, 0, imageWidth, imageHeight,
@@ -1806,11 +1784,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 void PVideoOutputDevice_Window::CreateDisplayWindow()
 {
-#ifndef _WIN32_WCE
   static char const wndClassName[] = "PVideoOutputDevice_Window";
-#else
-  static LPCWSTR const wndClassName = L"PVideoOutputDevice_Window";
-#endif
 
   static bool needRegistration = true;
   if (needRegistration) {

@@ -37,6 +37,7 @@
 
 #include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
+#include <ptclib/delaychan.h>
 #include <list>
 
 class PColourConverter;
@@ -200,21 +201,21 @@ class PVideoFrameInfo : public PObject
 
        Default behaviour returns the value of the colourFormat variable.
     */
-    virtual const PString & GetColourFormat() const;
+    virtual PString GetColourFormat() const;
 
     /**Set the resize mode to be used.
     */
-    void SetResizeMode(
+    virtual void SetResizeMode(
       ResizeMode mode
     ) { if (m_resizeMode < eMaxResizeMode) m_resizeMode = mode; }
 
     /**Get the resize mode to be used.
     */
-    ResizeMode GetResizeMode() const { return m_resizeMode; }
+    virtual ResizeMode GetResizeMode() const { return m_resizeMode; }
 
     /** Get the number of bytes of an image, given a particular width, height and colour format.
       */
-    PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat); }
+    virtual PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat); }
     static PINDEX CalculateFrameBytes(
       unsigned width,               ///< Width of frame
       unsigned height,              ///< Height of frame
@@ -234,7 +235,7 @@ class PVideoFrameInfo : public PObject
 
         Note no spaces are allowed in the descriptor.
       */
-    bool Parse(
+    virtual bool Parse(
       const PString & str   ///< String to parse
     );
 
@@ -402,7 +403,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Get the device name of the open device.
       */
-    const PString & GetDeviceName() const
+    virtual PString GetDeviceName() const
       { return m_deviceName; }
 
     /**Get a list of all of the drivers available.
@@ -580,18 +581,6 @@ class PVideoDevice : public PVideoFrameInfo
       ResizeMode resizeMode = eMaxResizeMode ///< Mode to use if resizing is required.
     );
 
-    /**Set the frame size to be used, trying converters if available.
-       Function used for Backward compatibility only.
-       If the device does not support the size, a set of alternate resolutions
-       are attempted.  A converter is setup if possible.
-    */
-    virtual PBoolean SetFrameSizeConverter(
-      unsigned width,                   ///< New width of frame
-      unsigned height,                  ///< New height of frame
-    PBoolean  /*bScaleNotCrop*/           ///< Not used.
-    )  { return SetFrameSizeConverter(width,height,eScale); }
-
-
     /**Set the nearest available frame size to be used.
 
        Note that devices may not be able to produce the requested size, so
@@ -632,7 +621,7 @@ class PVideoDevice : public PVideoFrameInfo
        is returned, not the underlying physical device. If you wish the
        physical device colout format use PVideoFrameInfo::GetColourFormat().
       */
-    virtual const PString& GetColourFormat() const;
+    virtual PString GetColourFormat() const;
 
     /**Get the maximum frame size in bytes.
        This gets the maximum of the physical device or the converted frame
@@ -647,7 +636,7 @@ class PVideoDevice : public PVideoFrameInfo
     
     /**Get the last error code. This is a platform dependent number.
       */
-    int GetLastError() const { return m_lastError; }
+    virtual int GetLastError() const { return m_lastError; }
 
 
     /** Is the device a camera, and obtain video
@@ -678,12 +667,12 @@ class PVideoDevice : public PVideoFrameInfo
     /**Set preferred native colour format from video capture device.
        Note empty == no preference.
      */
-    void SetPreferredColourFormat(const PString & colourFmt) { m_preferredColourFormat = colourFmt; }
+    virtual void SetPreferredColourFormat(const PString & colourFmt) { m_preferredColourFormat = colourFmt; }
 
     /**Get preferred native colour format from video capture device.
        Returns empty == no preference
      */
-    const PString & GetPreferredColourFormat() { return m_preferredColourFormat; }
+    virtual PString GetPreferredColourFormat() { return m_preferredColourFormat; }
     
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
@@ -714,6 +703,7 @@ class PVideoDevice : public PVideoFrameInfo
     P_REMOVE_VIRTUAL(int, GetHue(), 0);
     P_REMOVE_VIRTUAL(PBoolean, SetHue(unsigned), false);
     P_REMOVE_VIRTUAL(PBoolean, GetParameters(int *, int *, int *, int *, int *), false);
+    P_REMOVE_VIRTUAL(PBoolean, SetFrameSizeConverter(unsigned, unsigned, PBoolean), false);
 };
 
 
@@ -806,36 +796,46 @@ class PVideoOutputDevice : public PVideoDevice
      */
     virtual PBoolean CanCaptureVideo() const;
 
+    struct FrameData
+    {
+      unsigned      x;               ///< Horizontal position in frame where data is put
+      unsigned      y;               ///< Vertical position in frame where data is put
+      unsigned      width;           ///< Width of area in frame where data is put
+      unsigned      height;          ///< Height of area in frame where data is put
+      unsigned      sarWidth;        ///< Aspect ratio width of area in frame where data is put
+      unsigned      sarHeight;       ///< Aspect ratio height of area in frame where data is put
+      PTimeInterval sampleTime;      ///< Sampling time for the frame
+      const BYTE  * pixels;          ///< Data to put into the video frame store
+      bool          partialFrame;    ///< Indicate partial video frame
+      bool        * keyFrameNeeded;  ///< Indicates bad video and a new key frame is required
+      void        * mark;            // For backward compatibility, not sure what it is for ...
+
+      FrameData() : x(0), y(0), width(0), height(0), sarWidth(0), sarHeight(0), pixels(NULL), partialFrame(false), keyFrameNeeded(NULL), mark(NULL) { }
+    };
+
     /**Set a section of the output frame buffer.
       */
     virtual PBoolean SetFrameData(
-      unsigned x,               ///< Horizontal position in frame where data is put
-      unsigned y,               ///< Vertical position in frame where data is put
-      unsigned width,           ///< Width of area in frame where data is put
-      unsigned height,          ///< Height of area in frame where data is put
-      const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame = true  ///< Indicate no more data for this video frame
+      const FrameData & frameData   ///< Data for frame output
     ) = 0;
-    virtual PBoolean SetFrameData(
+
+    // For backward compatibility
+    bool SetFrameData(
       unsigned x,               ///< Horizontal position in frame where data is put
       unsigned y,               ///< Vertical position in frame where data is put
       unsigned width,           ///< Width of area in frame where data is put
       unsigned height,          ///< Height of area in frame where data is put
       const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame,        ///< Indicate no more data for this video frame
-      bool & keyFrameNeeded     ///< Indicates bad video and a new key frame is required
+      bool endFrame = true      ///< Indicate no more data for this video frame
     );
-    virtual PBoolean SetFrameData(
+    bool SetFrameData(
       unsigned x,               ///< Horizontal position in frame where data is put
       unsigned y,               ///< Vertical position in frame where data is put
       unsigned width,           ///< Width of area in frame where data is put
       unsigned height,          ///< Height of area in frame where data is put
-      unsigned sarWidth,        ///< Aspect ratio width of area in frame where data is put
-      unsigned sarHeight,       ///< Aspect ratio height of area in frame where data is put
       const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame,        ///< Indicate no more data for this video frame
-      bool & keyFrameNeeded,    ///< Indicates bad video and a new key frame is required
-      const void * mark
+      bool endFrame,            ///< Indicate no more data for this video frame
+      bool & keyFrameNeeded     ///< Indicates bad video and a new key frame is required
     );
 
     /**Allow the outputdevice decide whether the 
@@ -921,68 +921,18 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
-    );
+    virtual PBoolean SetFrameData(const FrameData & frameData);
 
     /**Indicate frame may be displayed.
       */
     virtual PBoolean FrameComplete() = 0;
 
   protected:
-    PMutex m_mutex;
-    PINDEX m_bytesPerPixel;
-    PINDEX m_scanLineWidth;
-    bool   m_swappedRedAndBlue;
+    PDECLARE_MUTEX(m_mutex);
+    PINDEX         m_bytesPerPixel;
+    PINDEX         m_scanLineWidth;
+    bool           m_swappedRedAndBlue;
 };
-
-
-#ifdef SHOULD_BE_MOVED_TO_PLUGIN
-
-/**This class defines a video output device which outputs to a series of PPM files.
- */
-class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
-{
-  PCLASSINFO(PVideoOutputDevicePPM, PVideoOutputDeviceRGB);
-
-  public:
-    /** Create a new video output device.
-     */
-    PVideoOutputDevicePPM();
-
-    /**Open the device given the device name.
-      */
-    virtual PBoolean Open(
-      const PString & deviceName,   ///< Device name (filename base) to open
-      PBoolean startImmediate = true    ///< Immediately start device
-    );
-
-    /**Determine if the device is currently open.
-      */
-    virtual PBoolean IsOpen();
-
-    /**Close the device.
-      */
-    virtual PBoolean Close();
-
-    /**Get a list of all of the drivers available.
-      */
-    virtual PStringArray GetDeviceNames() const;
-
-    /**Indicate frame may be displayed.
-      */
-    virtual PBoolean EndFrame();
-
-  protected:
-    unsigned   frameNumber;
-};
-
-#endif // SHOULD_BE_MOVED_TO_PLUGIN
 
 
 /**This class defines a video input device.
@@ -1102,6 +1052,9 @@ class PVideoInputDevice : public PVideoDevice
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
+    static PBoolean GetInputDeviceCapabilities(const PString &, Capabilities *)
+      { return false; }
+
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
@@ -1133,36 +1086,51 @@ class PVideoInputDevice : public PVideoDevice
     );
 
     /**Grab a frame.
+       If \p wait is false, and no frame is available, then the function
+       still returns true, but the \p bytesReturned will be zero.
       */
+    bool GetFrame(
+      BYTE * buffer,          ///< Buffer to receive frame
+      PINDEX & bytesReturned, ///< Bytes returned.
+      bool & keyFrame,        /**< On input, forces generation of key frame,
+                                   On return indicates key frame generated */
+      bool wait = true        ///< Wait for frame to become available
+    );
     virtual PBoolean GetFrame(
       PBYTEArray & frame
     );
+    virtual PBoolean GetFrame(
+      PBYTEArray & frame,
+      unsigned & width,
+      unsigned & height
+    );
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    virtual PBoolean GetFrameData(
+    /// For backward compatibility
+    bool GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned,        ///< Optional bytes returned.
       bool & keyFrame         /**< On input, forces generation of key frame,
                                    On return indicates key frame generated */
     );
-    virtual PBoolean GetFrameData(
+    /// For backward compatibility
+    bool GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned = NULL  ///< Optional bytes returned.
-    ) = 0;
+    );
 
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
+    /// For backward compatibility
+    bool GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned,       ///< Optional bytes returned.
       bool & keyFrame         /**< On input, forces generation of key frame,
                                    On return indicates key frame generated */
     );
-    virtual PBoolean GetFrameDataNoDelay(
+
+    /// For backward compatibility
+    bool GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned = NULL  ///< Optional bytes returned.
-    ) = 0;
+    );
 
     /**Pass data to the inputdevice for flowControl determination.
       */
@@ -1198,6 +1166,14 @@ class PVideoInputDevice : public PVideoDevice
     virtual const PVideoControlInfo & GetControlInfo(PVideoControlInfo::Types type) const { return m_controlInfo[type]; }
 
   protected:
+    virtual bool InternalGetFrameData(
+      BYTE * buffer,          ///< Buffer to receive frame
+      PINDEX & bytesReturned, ///< Bytes returned.
+      bool & keyFrame,        /**< On input, forces generation of key frame,
+                                   On return indicates key frame generated */
+      bool wait
+    ) = 0;
+
     PVideoControlInfo m_controlInfo[PVideoControlInfo::NumTypes];
 
   private:
@@ -1205,6 +1181,159 @@ class PVideoInputDevice : public PVideoDevice
     P_REMOVE_VIRTUAL(PBoolean, GetFrameDataNoDelay(BYTE *, PINDEX *, unsigned &), false);
 };
 
+
+/**This class defines a video input device which is actually another video inpuit device.
+ */
+class PVideoInputDeviceIndirect : public PVideoInputDevice
+{
+  PCLASSINFO(PVideoInputDeviceIndirect, PVideoInputDevice);
+
+  public:
+    explicit PVideoInputDeviceIndirect(PVideoInputDevice * device = NULL, bool autoDelete = true)
+      : m_actualDevice(device), m_autoDeleteActualDevice(autoDelete) { }
+    ~PVideoInputDeviceIndirect() { SetActualDevice(NULL); }
+
+    virtual void SetActualDevice(PVideoInputDevice * actualDevice, bool autoDelete = true);
+    virtual PVideoInputDevice * GetActualDevice() const;
+
+    virtual Comparison Compare(const PObject & obj) const;
+    virtual void PrintOn(ostream & strm) const;
+    virtual PBoolean SetFrameSize(unsigned width, unsigned height);
+    virtual PBoolean SetFrameSar(unsigned width, unsigned height);
+    virtual PBoolean SetFrameRate(unsigned rate);
+    virtual PBoolean SetColourFormat(const PString & colourFormat);
+    virtual void SetResizeMode(ResizeMode mode);
+    virtual PINDEX CalculateFrameBytes() const;
+    virtual bool Parse(const PString & str);
+    virtual PString GetDeviceName() const;
+    virtual PStringArray GetDeviceNames() const;
+    virtual PBoolean OpenFull(const OpenArgs & args, PBoolean startImmediate = true);
+    virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate = true);
+    virtual PBoolean IsOpen();
+    virtual PBoolean Close();
+    virtual PBoolean Start();
+    virtual PBoolean Stop();
+    virtual PBoolean SetVideoFormat(VideoFormat videoFormat);
+    virtual int GetNumChannels();
+    virtual PStringArray GetChannelNames();
+    virtual PBoolean SetChannel(int channelNumber);
+    virtual int GetChannel() const;
+    virtual PBoolean SetVFlipState(PBoolean newVFlipState);
+    virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight);
+    virtual PBoolean SetNearestFrameSize(unsigned width, unsigned height);
+    virtual bool SetFrameInfoConverter(const PVideoFrameInfo & info);
+    virtual PBoolean SetColourFormatConverter(const PString & colourFormat);
+    virtual PBoolean SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode = eMaxResizeMode);
+    virtual int GetLastError() const;
+    virtual bool GetAttributes(Attributes & attributes);
+    virtual bool SetAttributes(const Attributes & attributes);
+    virtual PBoolean SetVideoChannelFormat(int channelNumber, VideoFormat videoFormat);
+    virtual bool GetDeviceCapabilities(Capabilities * capabilities) const;
+    virtual PBoolean IsCapturing();
+    virtual bool FlowControl(const void * flowData);
+    virtual bool SetCaptureMode(unsigned mode);
+    virtual int GetCaptureMode() const;
+    virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
+
+  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+    PDECLARE_MUTEX(     m_actualDeviceMutex);
+    PVideoInputDevice * m_actualDevice;
+    bool                m_autoDeleteActualDevice;
+};
+
+
+class PVideoInputEmulatedDevice : public PVideoInputDevice
+{
+  PCLASSINFO(PVideoInputEmulatedDevice, PVideoInputDevice);
+  public:
+    explicit PVideoInputEmulatedDevice();
+    ~PVideoInputEmulatedDevice();
+
+    /**Start the video device I/O.
+      */
+    PBoolean Start();
+
+    /**Stop the video device I/O capture.
+      */
+    PBoolean Stop();
+
+    /**Determine if the video device I/O capture is in progress.
+      */
+    PBoolean IsCapturing();
+
+    /**Set the colour format to be used.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual PBoolean SetColourFormat(
+      const PString & colourFormat   // New colour format for device.
+    );
+    
+    enum {
+      Channel_PlayAndClose,
+      Channel_PlayAndRepeat,
+      Channel_PlayAndKeepLast,
+      Channel_PlayAndShowBlack,
+      Channel_PlayAndShowWhite,
+      ChannelCount
+    };
+
+    /**Get the number of video channels available on the device.
+        0 (default) = play file and close device
+        1           = play file and repeat
+        2           = play file and replay last frame
+        3           = play file and display black frame
+
+       Default behaviour returns 4.
+    */
+    virtual int GetNumChannels();
+
+    /**Get the names of video channels available on the device.
+    */
+    virtual PStringArray GetChannelNames();
+
+    /**Get the minimum & maximum size of a frame on the device.
+
+       Default behaviour returns the value 1 to UINT_MAX for both and returns
+       false.
+    */
+    virtual PBoolean GetFrameSizeLimits(
+      unsigned & minWidth,   /// Variable to receive minimum width
+      unsigned & minHeight,  /// Variable to receive minimum height
+      unsigned & maxWidth,   /// Variable to receive maximum width
+      unsigned & maxHeight   /// Variable to receive maximum height
+    ) ;
+
+    /**Set the video frame rate to be used on the device.
+
+       Default behaviour sets the value of the frameRate variable and then
+       return the IsOpen() status.
+    */
+    virtual PBoolean SetFrameRate(
+      unsigned rate  /// Frames per second
+    );
+         
+    /**Set the frame size to be used.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns the IsOpen() status.
+    */
+    virtual PBoolean SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
+
+  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+    virtual bool InternalReadFrameData(BYTE * frame) = 0;
+
+    PAdaptiveDelay m_pacing;
+    unsigned       m_fixedFrameRate;
+    unsigned       m_frameRateAdjust;
+    unsigned       m_frameNumber;
+};
 
 ////////////////////////////////////////////////////////
 //
@@ -1216,7 +1345,7 @@ PCREATE_PLUGIN_DEVICE(PVideoInputDevice);
 #define PCREATE_VIDINPUT_PLUGIN_EX(name, extra) \
     PCREATE_PLUGIN(name, PVideoInputDevice, PVideoInputDevice_##name, PPlugin_PVideoInputDevice, \
       virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoInputDevice_##name::GetInputDeviceNames(); } \
-      virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const { return PVideoInputDevice_##name::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); } \
+      virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const { return PVideoInputDevice_##name::GetInputDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); } \
       extra)
 
 #define PCREATE_VIDINPUT_PLUGIN(name) PCREATE_VIDINPUT_PLUGIN_EX(name, )
@@ -1230,6 +1359,7 @@ PCREATE_PLUGIN_DEVICE(PVideoInputDevice);
 #define P_FAKE_VIDEO_SOLID_COLOUR   P_FAKE_VIDEO_PREFIX"SolidColour"
 #define P_FAKE_VIDEO_TEXT           P_FAKE_VIDEO_PREFIX"Text"
 #define P_FAKE_VIDEO_NTSC           P_FAKE_VIDEO_PREFIX"NTSCTest"
+#define P_FAKE_VIDEO_BLACK          P_FAKE_VIDEO_PREFIX"Black"
 
 PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 

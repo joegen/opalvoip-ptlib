@@ -565,6 +565,26 @@ void PBYTEArray::ReadFrom(istream &strm)
 }
 
 
+void PHexDump::PrintOn(ostream & strm) const
+{
+  char oldFill = strm.fill('0');
+  std::streamsize oldPrec = strm.precision();
+  ios::fmtflags oldFlags = strm.setf(ios::hex, ios::basefield);
+
+  if (m_compact) {
+    strm.precision(0);
+    strm.setf(ios::fixed, ios::floatfield);
+    strm.width(GetSize());
+  }
+
+  PBYTEArray::PrintOn(strm);
+
+  strm.flags(oldFlags);
+  strm.precision(oldPrec);
+  strm.fill(oldFill);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PBitArray::PBitArray(PINDEX initialSize)
@@ -936,19 +956,19 @@ static const char siTable[][2] = { "f", "p", "n", "u", "m", "", "k", "M", "G", "
 static const size_t siCount = sizeof(siTable)/2;
 static const size_t siZero = siCount/2;
 
-static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArray)
+static PINDEX InternalConvertScaleSI(PInt64 value, unsigned precision, char * theArray)
 {
   // Scale it according to SI multipliers
   if (value > -1000 && value < 1000)
     return p_signed2string<PInt64, PUInt64>(value, 10, theArray);
 
-  if (param > 4)
-    param = 4;
+  if (precision > 21)
+    precision = 21;
 
   PInt64 absValue = value;
   if (absValue < 0) {
     absValue = -absValue;
-    ++param;
+    ++precision;
   }
 
   PINDEX length = 0;
@@ -957,13 +977,13 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
     multiplier *= 1000;
     if (absValue < multiplier*1000) {
       length = p_signed2string<PInt64, PUInt64>(value/multiplier, 10, theArray);
-      param -= length;
-      if (param > 0 && absValue%multiplier != 0) {
+      precision -= length;
+      if (precision > 0 && absValue%multiplier != 0) {
         theArray[length++] = '.';
         do {
           multiplier /= 10;
           theArray[length++] = (absValue/multiplier)%10 + '0';
-        } while (--param > 0 && absValue%multiplier != 0);
+        } while (--precision > 0 && absValue%multiplier != 0);
       }
       theArray[length++] = siTable[i][0];
       break;
@@ -977,12 +997,13 @@ template <typename S, typename U>
   PINDEX p_convert(PString::ConversionType type, S value, unsigned param, char * theArray)
 {
 #define GetClass() NULL
-  PAssert(param != 1 && param <= 36, PInvalidParameter);
   switch (type) {
     case PString::Signed :
+      PAssert(param != 1 && param <= 36, PInvalidParameter);
       return p_signed2string<S, U>(value, param, theArray);
 
     case PString::Unsigned :
+      PAssert(param != 1 && param <= 36, PInvalidParameter);
       return p_unsigned2string<U>(value, param, theArray);
 
     case PString::ScaleSI :
@@ -2398,7 +2419,7 @@ streambuf::int_type PStringStream::Buffer::overflow(int_type c)
 
     size_t gpos = gptr() - eback();
     size_t ppos = pptr() - pbase();
-    char * newptr = string.GetPointer(string.GetSize() + 32);
+    char * newptr = string.GetPointer(string.GetSize()*2);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
     setg(newptr, newptr + gpos, newptr + ppos);

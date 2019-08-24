@@ -30,7 +30,7 @@
     <ProjectName>vidtest</ProjectName>
     <ProjectGuid>{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}</ProjectGuid>
     <RootNamespace>vidtest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">
@@ -386,7 +386,6 @@
   <ItemGroup>
     <ClInclude Include="main.h" />
     <ClInclude Include="precompile.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ptlib\msos\PTLib_2017.vcxproj">

@@ -57,7 +57,8 @@ class PServiceProcess : public PProcess
       unsigned majorVersion,  ///< Major version number of the product
       unsigned minorVersion,  ///< Minor version number of the product
       CodeStatus status,      ///< Development status of the product
-      unsigned buildNumber    ///< Build number of the product
+      unsigned patchVersion,  ///< Patch version number of the product
+      unsigned oemVersion = 0 ///< OEM version number of the product
     );
   //@}
 
@@ -144,6 +145,9 @@ class PServiceProcess : public PProcess
        <code>main()</code>. The user should never call this function.
      */
     virtual int InternalMain(void * arg = NULL);
+
+
+    virtual bool IsServiceProcess() const;
 
 
   protected:

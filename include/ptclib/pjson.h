@@ -62,6 +62,8 @@ class PJSON : public PObject
 
     class Array;
 
+    typedef long double NumberType;
+
     class Object : public Base, public std::map<PString, Base *>
     {
       public:
@@ -91,8 +93,10 @@ class PJSON : public PObject
 
         PString GetString(const PString & name) const;
         int GetInteger(const PString & name) const;
+        int64_t GetInteger64(const PString & name) const;
         unsigned GetUnsigned(const PString & name) const;
-        double GetNumber(const PString & name) const;
+        uint64_t GetUnsigned64(const PString & name) const;
+        NumberType GetNumber(const PString & name) const;
         bool GetBoolean(const PString & name) const;
 
         bool Set(const PString & name, Types type);
@@ -101,8 +105,10 @@ class PJSON : public PObject
         Object & SetObject(const PString & name);
         Array & SetArray(const PString & name);
         bool SetString(const PString & name, const PString & value);
-        bool SetNumber(const PString & name, double value);
+        bool SetNumber(const PString & name, NumberType value);
         bool SetBoolean(const PString & name, bool value);
+
+        bool Remove(const PString & name);
 
       private:
         Object(const Object &) { }
@@ -130,8 +136,10 @@ class PJSON : public PObject
 
         PString GetString(size_t index) const;
         int GetInteger(size_t index) const;
+        int64_t GetInteger64(size_t index) const;
         unsigned GetUnsigned(size_t index) const;
-        double GetNumber(size_t index) const;
+        uint64_t GetUnsigned64(size_t index) const;
+        NumberType GetNumber(size_t index) const;
         bool GetBoolean(size_t index) const;
 
         void Append(Types type);
@@ -140,8 +148,10 @@ class PJSON : public PObject
         Object & AppendObject();
         Array & AppendArray();
         void AppendString(const PString & value);
-        void AppendNumber(double value);
+        void AppendNumber(NumberType value);
         void AppendBoolean(bool value);
+
+        bool Remove(size_t index);
 
       private:
         Array(const Array &) { }
@@ -163,16 +173,16 @@ class PJSON : public PObject
     class Number : public Base
     {
       protected:
-        double m_value;
+        NumberType m_value;
       public:
-        explicit Number(double value = 0);
+        explicit Number(NumberType value = 0);
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
         virtual Base * DeepClone() const;
-        Number & operator=(double value) { m_value = value; return *this; }
-        void SetValue(double value) { m_value = value; }
-        double GetValue() const { return m_value; }
+        Number & operator=(NumberType value) { m_value = value; return *this; }
+        void SetValue(NumberType value) { m_value = value; }
+        NumberType GetValue() const { return m_value; }
     };
 
     class Boolean : public Base
@@ -243,5 +253,70 @@ class PJSON : public PObject
     bool   m_valid;
 };
 
+
+#if P_SSL
+
+/** Encode/Decode JSON payload as a JSON Web Token.
+    The JSON is always of Object type.
+  */
+class PJWT : public PJSON
+{
+    PCLASSINFO(PJWT, PJSON);
+  public:
+    /// Construct empty Object type JSON
+    PJWT();
+
+    /** Create and decode the JWT.
+        Use IsValid() afterward to cerify if decode was successful.
+     */
+    explicit PJWT(
+      const PString & str,
+      const PString & secret = PString::Empty(),
+      const PTime & verifyTime = PTime(0)
+    );
+
+    /// Available token algorithms 
+    P_DECLARE_STREAMABLE_ENUM(Algorithm,
+      none,
+      HS256,  // HMAC SHA-256
+      HS384,  // HMAC SHA-384
+      HS512   // HMAC SHA-512
+    );
+
+    /**Encode the JWT using the shared secret and algorithm.
+      */
+    PString Encode(
+      const PString & secret = PString::Empty(),  ///< Shared secret
+      const Algorithm algorithm = HS256           ///< Algorithm
+    );
+
+    /**Decode the JWT using the shared secret and algorithm.
+      */
+    bool Decode(
+      const PString & str,                        ///< Encoded JWT string
+      const PString & secret = PString::Empty(),  ///< Shared secret
+      const PTime & verifyTime = PTime(0)         ///< Optional time to use for verification
+    );
+
+    void SetIssuer(const PString & str);
+    PString GetIssuer() const;
+    void SetSubject(const PString & str);
+    PString GetSubject() const;
+    void SetAudience(const PString & str);
+    PString GetAudience() const;
+    void SetExpiration(const PTime & when);
+    PTime GetExpiration() const;
+    void SetNotBefore(const PTime & when);
+    PTime GetNotBefore() const;
+    void SetIssuedAt(const PTime & when);
+    PTime GetIssuedAt() const;
+    void SetTokenId(const PString & str);
+    PString GetTokenId() const;
+
+    void SetPrivate(const PString & key, const PString & str);
+    PString GetPrivate(const PString & key) const;
+};
+
+#endif // P_SSL
 
 #endif  // PTLIB_PJSON_H

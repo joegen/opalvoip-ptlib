@@ -33,7 +33,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 PCREATE_PROCESS(SafeTest);
 
@@ -43,7 +42,7 @@ PCREATE_PROCESS(SafeTest);
 
 
 SafeTest::SafeTest()
-  : PProcess("Derek Smithies code factory", "safetest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Derek Smithies code factory", "safetest")
 {
 }
 

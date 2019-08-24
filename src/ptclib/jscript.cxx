@@ -34,6 +34,8 @@
 #if P_V8
 
 #include <ptlib/pprocess.h>
+#include <ptlib/notifier_ext.h>
+
 
 /*
 Requires Google's V8 version 6 or later
@@ -86,7 +88,14 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 
 #include <iomanip>
 
+#define V8_DEPRECATION_WARNINGS 1
+#define V8_IMMINENT_DEPRECATION_WARNINGS 1
 #include <v8.h>
+
+#ifndef V8_MAJOR_VERSION
+  #error "Unsupported V8 version!"
+#endif
+
 #include <libplatform/libplatform.h>
 
 
@@ -148,9 +157,6 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 static PConstString const JavaName("JavaScript");
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 
-#ifndef V8_MAJOR_VERSION
-  #define V8_MAJOR_VERSION 3
-#endif
 
 #if PTRACING
     static void LogEventCallback(const char * PTRACE_PARAM(name), int PTRACE_PARAM(event))
@@ -166,7 +172,7 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
       if (!args[0]->IsUint32())
         return;
 
-      unsigned level = args[0]->Uint32Value();
+      unsigned level = args[0]->Uint32Value(args.GetIsolate()->GetCurrentContext()).FromMaybe(UINT_MAX);
       if (!PTrace::CanTrace(level))
         return;
 
@@ -175,7 +181,7 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
         v8::HandleScope handle_scope(args.GetIsolate());
         if (i > 0)
           trace << ' ';
-        v8::String::Utf8Value str(args[i]);
+        v8::String::Utf8Value str(args.GetIsolate(), args[i]);
         if (*str)
           trace << *str;
       }
@@ -185,40 +191,7 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 #endif // PTRACING
 
 
-PINDEX ParseKey(const PString & name, PStringArray & tokens)
-{
-  tokens = name.Tokenise('.', false);
-  if (tokens.GetSize() < 1) {
-    PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
-    return 0;
-  }
-  PINDEX i = 0;
-  while (i < tokens.GetSize()) {
-    PString element = tokens[i];
-    PINDEX start = element.Find('[');
-    if (start == P_MAX_INDEX)
-      ++i;
-    else {
-      PINDEX end = element.Find(']', start + 1);
-      if (end != P_MAX_INDEX) {
-        tokens[i] = element(0, start - 1);
-        ++i;
-        tokens.InsertAt(i, new PString(element(start, end - 1)));
-        if (end < element.GetLength() - 1) {
-          i++;
-          tokens.InsertAt(i, new PString(element(end + 1, P_MAX_INDEX)));
-        }
-        else {
-        }
-      }
-      ++i;
-    }
-  }
-
-  return tokens.GetSize();
-}
-
-
+#ifdef V8_BLOBS_DIR
 static bool MyInitializeExternalStartupData(const PDirectory dir)
 {
   /* For some exceptionally stupid reason, the initialisation function for the
@@ -232,88 +205,113 @@ static bool MyInitializeExternalStartupData(const PDirectory dir)
   v8::V8::InitializeExternalStartupData(dir);
   return true;
 }
+#endif // V8_BLOBS_DIR
 
 
 struct PJavaScript::Private : PObject
 {
   PCLASSINFO(PJavaScript::Private, PObject);
 
-#if V8_MAJOR_VERSION > 3
-  v8::Isolate::CreateParams m_isolateParams;
-#endif
-  v8::Isolate * m_isolate;
+  PJavaScript & m_owner;
+
+  v8::Isolate::CreateParams   m_isolateParams;
+  v8::Isolate               * m_isolate;
   v8::Persistent<v8::Context> m_context;
 
-  v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
-  template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
+  v8::Local<v8::String> NewString(const char * str) const
+  {
+    v8::Local<v8::String> obj;
+    if (!v8::String::NewFromUtf8(m_isolate, str, v8::NewStringType::kNormal).ToLocal(&obj))
+      obj = v8::String::Empty(m_isolate);
+    return obj;
+  }
+
+  template <class Type, typename Param> v8::Local<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
   v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
+  template <typename T> PString ToPString(const T & value) { return *v8::String::Utf8Value(m_isolate, value);  }
 
   struct Intialisation
   {
-#if V8_MAJOR_VERSION > 3
-    v8::Platform * m_platform;
-    bool           m_initialised;
+    unique_ptr<v8::Platform> m_platform;
+    bool m_initialised;
 
     Intialisation()
-      : m_platform(NULL)
-      , m_initialised(false)
+      : m_initialised(false)
     {
       PDirectory exeDir = PProcess::Current().GetFile().GetDirectory();
 
+#ifdef V8_BLOBS_DIR
       // Initialise some basics
       if (!MyInitializeExternalStartupData(exeDir)) {
         const char * dir = getenv("V8_BLOBS_DIR");
         if (dir == NULL || !MyInitializeExternalStartupData(dir)) {
           if (!MyInitializeExternalStartupData(V8_BLOBS_DIR)) {
-            PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeExternalStartupData() failed.");
+            PTRACE(1, NULL, PTraceModule(), "v8::V8::InitializeExternalStartupData() failed, not loaded.");
             return;
           }
         }
       }
+#endif // V8_BLOBS_DIR
 
+#if V8_MAJOR_VERSION < 6
+      if (!v8::V8::InitializeICU(exeDir)) {
+#else
       if (!v8::V8::InitializeICUDefaultLocation(exeDir)) {
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
+#endif
+        PTRACE(2, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed, continuing.");
       }
 
       // Start it up!
-      m_platform = v8::platform::CreateDefaultPlatform();
-      v8::V8::InitializePlatform(m_platform);
+      m_platform = v8::platform::NewDefaultPlatform();
+      v8::V8::InitializePlatform(m_platform.get());
 
       if (!v8::V8::Initialize()) {
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::Initialize() failed.");
+        PTRACE(1, PTraceModule(), "v8::V8::Initialize() failed, not loaded.");
         return;
       }
 
       m_initialised = true;
+      PTRACE(4, PTraceModule(), "V8 initialisation successful.");
     }
 
     ~Intialisation()
     {
+      PTRACE(4, PTraceModule(), "V8 shutdown.");
       v8::V8::Dispose();
       v8::V8::ShutdownPlatform();
-      delete m_platform;
     }
-#else
-    Intialisation()
-    {
-      v8::V8::InitializeICU();
-    }
-#endif
   };
 
+#if V8_MAJOR_VERSION < 6
+  class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator
+  {
+  public:
+      virtual void* Allocate(size_t length) { return calloc(length, 1); }
+    virtual void* AllocateUninitialized(size_t length) { return malloc(length); }
+    virtual void Free(void* data, size_t length) { free(data); }
+  };
+  __inline v8::ArrayBuffer::Allocator * NewDefaultAllocator() { return new ArrayBufferAllocator; }
+#else
+  __inline v8::ArrayBuffer::Allocator * NewDefaultAllocator() { return v8::ArrayBuffer::Allocator::NewDefaultAllocator(); }
+#endif // V8_MAJOR_VERSION < 6
+
+
 public:
-  Private()
-    : m_isolate(NULL)
+  Private(PJavaScript & owner)
+    : m_owner(owner)
+    , m_isolate(NULL)
   {
     if (!PSafeSingleton<Intialisation>()->m_initialised)
       return;
 
-    #if V8_MAJOR_VERSION > 3
-      m_isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-      m_isolate = v8::Isolate::New(m_isolateParams);
-    #else
-      m_isolate = v8::Isolate::New();
-    #endif
+    PTRACE_CONTEXT_ID_FROM(owner);
+
+    m_isolateParams.array_buffer_allocator = NewDefaultAllocator();
+    m_isolate = v8::Isolate::New(m_isolateParams);
+    if (m_isolate == NULL) {
+      PTRACE(1, "Could not create context.");
+      return;
+    }
 
     v8::Isolate::Scope isolateScope(m_isolate);
     v8::HandleScope handleScope(m_isolate);
@@ -322,10 +320,11 @@ public:
     m_isolate->SetEventLogger(LogEventCallback);
 
     // Bind the global 'PTRACE' function to the PTLib trace callback.
-    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
+    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
     global->Set(NewString("PTRACE"), v8::FunctionTemplate::New(m_isolate, TraceFunction));
 
     m_context.Reset(m_isolate, v8::Context::New(m_isolate, NULL, global));
+    PTRACE(5, "Created context.");
   #else
     m_context.Reset(m_isolate, v8::Context::New(m_isolate));
   #endif
@@ -334,41 +333,147 @@ public:
 
   ~Private()
   {
+    PTRACE(5, "Destroying context.");
+
     if (m_isolate != NULL)
       m_isolate->Dispose();
 
-#if V8_MAJOR_VERSION > 3
     delete m_isolateParams.array_buffer_allocator;
-#endif
   }
 
-  v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
+
+  v8::Local<v8::Value> GetMember(v8::Local<v8::Context> context,
+                                 v8::Local<v8::Object> object,
+                                 const PString & name)
   {
-    v8::Local<v8::Value> value;
+    if (object.IsEmpty())
+      return v8::Local<v8::Value>();
 
-    if (m_isolate == NULL)
-      return value;
-
-    // set flags if array access
-    if (name[0] == '[')
-      value = object->Get(name.Mid(1).AsInteger());
-    else
-      value = object->Get(NewString(name));
-
-    return value;
+    v8::MaybeLocal<v8::Value> result = name[0] != '[' ? object->Get(context, NewString(name))
+                                                      : object->Get(context, name.Mid(1).AsInteger());
+    return result.FromMaybe(v8::Local<v8::Value>());
   }
   
   
-  bool SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
+  bool SetMember(v8::Local<v8::Context> context,
+                 v8::Local<v8::Object> object,
+                 const PString & name,
+                 v8::Local<v8::Value> value
+                 PTRACE_PARAM(, const PString & key))
   {
-    if (m_isolate == NULL)
+    v8::Maybe<bool> result = name[0] != '[' ? object->Set(context, NewString(name), value)
+                                            : object->Set(context, name.Mid(1).AsUnsigned(), value);
+    if (result.FromMaybe(false))
+    {
+      PTRACE(5, "Set \"" << key << "\" to " << ToPString(value).Left(100).ToLiteral());
+      return true;
+    }
+
+    PTRACE(3, "Could not set \"" << key << '"');
+    return false;
+  }
+
+
+  v8::Local<v8::Object> GetObjectHandle(const v8::Local<v8::Context> & context, const PString & key, PString & var)
+  {
+    PStringArray tokens = key.Tokenise('.', false);
+    if (tokens.GetSize() < 1) {
+      PTRACE(3, "SetVar \"" << key << "\" is too short");
+      return v8::Local<v8::Object>();
+    }
+
+    for (PINDEX i = 0; i < tokens.GetSize(); ++i) {
+      PString element = tokens[i];
+      PINDEX start = element.Find('[');
+      if (start != P_MAX_INDEX) {
+        PINDEX end = element.Find(']', start + 1);
+        if (end != P_MAX_INDEX) {
+          tokens[i] = element(0, start - 1);
+          tokens.InsertAt(++i, new PString(element(start, end - 1)));
+          if (end < element.GetLength() - 1) {
+            i++;
+            tokens.InsertAt(i, new PString(element(end + 1, P_MAX_INDEX)));
+          }
+        }
+      }
+    }
+
+    v8::Local<v8::Object> object = context->Global();
+
+    PINDEX i;
+    for (i = 0; i < tokens.GetSize()-1; ++i) {
+      // get the member variable
+      v8::Local<v8::Value> value = GetMember(context, object, tokens[i]);
+      if (value.IsEmpty()) {
+        PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
+        object.Clear();
+        break;
+      }
+
+      // if path has ended, return error
+      if (!value->ToObject(context).ToLocal(&object) || object.IsEmpty()) {
+        PTRACE(3, "Intermediate element \"" << tokens[i] << "\" not found");
+        object.Clear();
+        break;
+      }
+
+      // terminals must not be composites, internal nodes must be composites
+      bool isObject = value->IsObject();
+      if (!isObject) {
+        PTRACE(3, "Intermediate element \"" << tokens[i] << "\" is not a composite");
+        object.Clear();
+        break;
+      }
+    }
+
+    var = tokens[i];
+    return object;
+  }
+
+
+  bool GetVarValue(const v8::Local<v8::Context> & context,
+                   v8::Local<v8::Value> value,
+                   PVarType & var
+                   PTRACE_PARAM(, const PString & key))
+  {
+    if (value.IsEmpty()) {
+      PTRACE(3, "Cannot get value for \"" << key << '"');
       return false;
+    }
 
-    // set flags if array access
-    if (name[0] == '[')
-      return object->Set(name.Mid(1).AsInteger(), value);
-    else
-      return object->Set(NewString(name), value);
+    if (value->IsInt32()) {
+      var = PVarType(value->Int32Value(context).FromMaybe(0));
+      PTRACE(5, "Got Int32 \"" << key << "\" = " << var);
+      return true;
+    }
+
+    if (value->IsUint32()) {
+      var = PVarType(value->Uint32Value(context).FromMaybe(0));
+      PTRACE(5, "Got Uint32 \"" << key << "\" = " << var);
+      return true;
+    }
+
+    if (value->IsNumber()) {
+      var = PVarType(value->NumberValue(context).FromMaybe(0.0));
+      PTRACE(5, "Got Number \"" << key << "\" = " << var);
+      return true;
+    }
+
+    if (value->IsBoolean()) {
+      var = PVarType(value->BooleanValue(context).FromMaybe(false));
+      PTRACE(5, "Got Boolean \"" << key << "\" = " << var);
+      return true;
+    }
+
+    if (value->IsString()) {
+      var = PVarType(ToPString(value->ToString(context).FromMaybe(v8::Local<v8::String>())));
+      PTRACE(5, "Got String \"" << key << "\" = " << var.AsString().Left(100).ToLiteral());
+      return true;
+    }
+
+    PTRACE(3, "Unable to determine type of \"" << key << "\" = \"" << ToPString(value) << '"');
+    var.SetType(PVarType::VarNULL);
+    return false;
   }
 
 
@@ -382,82 +487,59 @@ public:
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
-    PStringArray tokens;
-    if (ParseKey(key, tokens) < 1) {
-      PTRACE(5, "GetVar '" << key << " is too short");
-      return false;
-    }
-
-    v8::Handle<v8::Value> value;
-    v8::Handle<v8::Object> object = context->Global();
-
-    int i = 0;
-
-    for (;;) {
-
-      // get the member variable
-      value = GetMember(object, tokens[i]);
-      if (value.IsEmpty()) {
-        PTRACE(5, "Cannot get element '" << tokens[i] << "'");
-        return false;
-      }
-
-      // see if end of path
-      if (i == (tokens.GetSize() - 1))
-        break;
-
-      // terminals must not be composites, internal nodes must be composites
-      bool isObject = value->IsObject();
-      if (!isObject) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
-        return false;
-      }
-
-      // if path has ended, return error
-      object = value->ToObject();
-      if (object->IsNull()) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << " not found");
-        return false;
-      }
-
-      i++;
-    }
-
-    if (value->IsInt32()) {
-      var = PVarType(value->Int32Value());
-      return true;
-    }
-
-    if (value->IsUint32()) {
-      var = PVarType(value->Uint32Value());
-      return true;
-    }
-
-    if (value->IsNumber()) {
-      var = PVarType(value->NumberValue());
-      return true;
-    }
-
-    if (value->IsBoolean()) {
-      var = PVarType(value->BooleanValue());
-      return true;
-    }
-
-    if (value->IsString()) {
-      var = PVarType(PString(*v8::String::Utf8Value(value->ToString())));
-      return true;
-    }
-
-    PTRACE(5, "Unable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
-    return false;
+    PString varName;
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
+    return !object.IsEmpty() && GetVarValue(context, GetMember(context, object, varName), var PTRACE_PARAM(, key));
   }
 
 
   bool NewObject(const PString & name)
   {
     return false;
+  }
+
+
+  v8::Local<v8::Value> SetVarValue(const PVarType & var)
+  {
+    switch (var.GetType()) {
+      case PVarType::VarNULL:
+        return v8::Local<v8::Value>();
+
+      case PVarType::VarBoolean:
+        return NewObject<v8::Boolean>(var.AsBoolean());
+
+      case PVarType::VarChar:
+      case PVarType::VarStaticString:
+      case PVarType::VarFixedString:
+      case PVarType::VarDynamicString:
+      case PVarType::VarGUID:
+        return NewString(var.AsString());
+
+      case PVarType::VarInt8:
+      case PVarType::VarInt16:
+      case PVarType::VarInt32:
+        return NewObject<v8::Int32>(var.AsInteger());
+
+      case PVarType::VarUInt8:
+      case PVarType::VarUInt16:
+      case PVarType::VarUInt32:
+        return NewObject<v8::Uint32>(var.AsUnsigned());
+
+      case PVarType::VarInt64:
+      case PVarType::VarUInt64:
+        // Until V8 suppies a 64 bit integer, we use double
+
+      case PVarType::VarFloatSingle:
+      case PVarType::VarFloatDouble:
+      case PVarType::VarFloatExtended:
+        return NewObject<v8::Number>(var.AsFloat());
+
+      case PVarType::VarTime:
+      case PVarType::VarStaticBinary:
+      case PVarType::VarDynamicBinary:
+      default:
+        return v8::Object::New(m_isolate);
+    }
   }
 
 
@@ -471,92 +553,84 @@ public:
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
-    PStringArray tokens;
-    if (ParseKey(key, tokens) < 1) {
-      PTRACE(3, "SetVar \"" << key << "\" is too short");
-      return false;
-    }
-
-    v8::Handle<v8::Object> object = context->Global();
-
-    PINDEX i;
-    for (i = 0; i < tokens.GetSize()-1; ++i) {
-      // get the member variable
-      v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
-      if (value.IsEmpty()) {
-        PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
-        return false;
-      }
-
-      // if path has ended, return error
-      object = value->ToObject();
-      if (object.IsEmpty()) {
-        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" not found");
-        return false;
-      }
-
-      // terminals must not be composites, internal nodes must be composites
-      bool isObject = value->IsObject();
-      if (!isObject) {
-        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" is not a composite");
-        return false;
-      }
-    }
-
-    v8::Handle<v8::Value> value;
-
-    switch (var.GetType()) {
-      case PVarType::VarNULL:
-        //return object->Set(strKey, v8::Null::New());
-        break;
-
-      case PVarType::VarBoolean:
-        value = NewObject<v8::Boolean>(var.AsBoolean());
-        break;
-
-      case PVarType::VarChar:
-      case PVarType::VarStaticString:
-      case PVarType::VarFixedString:
-      case PVarType::VarDynamicString:
-      case PVarType::VarGUID:
-        value = NewString(var.AsString());
-        break;
-
-      case PVarType::VarInt8:
-      case PVarType::VarInt16:
-      case PVarType::VarInt32:
-        value = NewObject<v8::Int32>(var.AsInteger());
-        break;
-
-      case PVarType::VarUInt8:
-      case PVarType::VarUInt16:
-      case PVarType::VarUInt32:
-        value = NewObject<v8::Uint32>(var.AsUnsigned());
-        break;
-
-      case PVarType::VarInt64:
-      case PVarType::VarUInt64:
-        // Until V8 suppies a 64 bit integer, we use double
-
-      case PVarType::VarFloatSingle:
-      case PVarType::VarFloatDouble:
-      case PVarType::VarFloatExtended:
-        value = NewObject<v8::Number>(var.AsFloat());
-        break;
-
-      case PVarType::VarTime:
-      case PVarType::VarStaticBinary:
-      case PVarType::VarDynamicBinary:
-      default:
-        value = v8::Object::New(m_isolate);
-        break;
-    }
-
-    return SetMember(object, tokens[i], value);
+    PString varName;
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
+    return !object.IsEmpty() && SetMember(context, object, varName, SetVarValue(var) PTRACE_PARAM(, key));
   }
 
 
-  bool Run(const char * text, PString & resultText)
+  struct NotifierInfo {
+    PJavaScript    & m_owner;
+    PString          m_key;
+    PNotifierListTemplate<Signature &> m_notifiers;
+    NotifierInfo(PJavaScript & owner, const PString & key)
+      : m_owner(owner)
+      , m_key(key)
+    { }
+  };
+  std::map<PString, NotifierInfo> m_notifiers;
+
+  void FunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& callbackInfo, NotifierInfo & notifierInfo)
+  {
+    Signature signature;
+
+    int nargs = callbackInfo.Length();
+    signature.m_arguments.resize(nargs);
+    for (int arg = 0; arg < nargs; ++arg)
+      GetVarValue(GetContext(), callbackInfo[arg], signature.m_arguments[arg] PTRACE_PARAM(, notifierInfo.m_key));
+
+    notifierInfo.m_notifiers(notifierInfo.m_owner, signature);
+
+    if (!signature.m_results.empty())
+      callbackInfo.GetReturnValue().Set(SetVarValue(signature.m_results[0]));
+  }
+
+  static void StaticFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& callbackInfo)
+  {
+    v8::Local<v8::Value> callbackData = callbackInfo.Data();
+    if (callbackData.IsEmpty() || !callbackData->IsExternal())
+      return;
+
+    NotifierInfo & notifierInfo = *reinterpret_cast<NotifierInfo *>(v8::Local<v8::External>::Cast(callbackData)->Value());
+    notifierInfo.m_owner.m_private->FunctionCallback(callbackInfo, notifierInfo);
+  }
+
+  bool SetFunction(const PString & key, const FunctionNotifier & notifier)
+  {
+    if (m_isolate == NULL)
+      return false;
+
+    v8::Isolate::Scope isolateScope(m_isolate);
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
+
+    PString varName;
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
+    if (object.IsEmpty())
+      return false;
+
+    std::map<PString, NotifierInfo>::iterator it = m_notifiers.find(key);
+    if (it == m_notifiers.end())
+      it = m_notifiers.insert(make_pair(key, NotifierInfo(m_owner, key))).first;
+    NotifierInfo & info = it->second;
+    info.m_notifiers.Add(notifier);
+
+    v8::Local<v8::External> data = v8::External::New(m_isolate, &info);
+    v8::Local<v8::Function> value;
+    if (v8::Function::New(context, StaticFunctionCallback, data).ToLocal(&value) &&
+        object->Set(context, NewString(varName), value).FromMaybe(false))
+    {
+      PTRACE(5, "Set function \"" << varName << '"');
+      return true;
+    }
+
+    PTRACE(3, "Could not set function \"" << varName << '"');
+    return false;
+  }
+
+
+  bool Run(const PString & text, PString & resultText)
   {
     if (m_isolate == NULL)
       return false;
@@ -569,24 +643,22 @@ public:
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
-    // create V8 string to hold the source
-    v8::Handle<v8::String> source = NewString(text);
-
     // compile the source 
-    v8::Handle<v8::Script> script = v8::Script::Compile(source);
-    if (*script == NULL)
+    v8::Local<v8::Script> script;
+    if (!v8::Script::Compile(context, NewString(text)).ToLocal(&script)) {
+      PTRACE(3, "Could not compile source " << text.Left(100).ToLiteral());
       return false;
+    }
 
     // run the code
-    v8::Handle<v8::Value> result = script->Run();
-
-    // return error if no result
-    if (*result == NULL)
+    v8::Local<v8::Value> result;
+    if (!script->Run(context).ToLocal(&result)) {
+      PTRACE(3, "Script execution did not return a result.");
       return false;
+    }
 
-    // save return value
-    resultText = *v8::String::Utf8Value(result);
-    PTRACE(1, "Returned '" << resultText << "'");
+    resultText = ToPString(result);
+    PTRACE(4, "Script execution returned " << resultText.Left(100).ToLiteral());
 
     return true;
   }
@@ -599,9 +671,8 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 PJavaScript::PJavaScript()
-  : m_private(new Private)
+  : m_private(new Private(*this))
 {
-  PTRACE_CONTEXT_ID_TO(m_private);
 }
 
 
@@ -646,8 +717,10 @@ bool PJavaScript::Run(const char * text)
   PString script(text);
 
   PTextFile file(text, PFile::ReadOnly);
-  if (file.IsOpen())
+  if (file.IsOpen()) {
+    PTRACE(4, "Reading script file: " << file.GetFilePath());
     script = file.ReadString(P_MAX_INDEX);
+  }
 
   return m_private->Run(script, m_resultText);
 }
@@ -675,9 +748,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 bool PJavaScript::GetBoolean(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return false;
-  return var.AsBoolean();
+  return GetVar(name, var) && var.AsBoolean();
 }
 
 
@@ -691,15 +762,12 @@ bool PJavaScript::SetBoolean(const PString & name, bool value)
 int PJavaScript::GetInteger(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return 0;
-  return var.AsInteger();
+  return GetVar(name, var) ? var.AsInteger() : 0;
 }
 
 
 bool PJavaScript::SetInteger(const PString & name, int value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
@@ -707,15 +775,12 @@ bool PJavaScript::SetInteger(const PString & name, int value)
 double PJavaScript::GetNumber(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return 0.0;
-  return var.AsFloat();
+  return GetVar(name, var) ? var.AsFloat() : 0.0;
 }
 
 
 bool PJavaScript::SetNumber(const PString & name, double value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
@@ -723,15 +788,12 @@ bool PJavaScript::SetNumber(const PString & name, double value)
 PString PJavaScript::GetString(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return PString::Empty();
-  return var.AsString();
+  return GetVar(name, var) ? var.AsString() : PString::Empty();
 }
 
 
 bool PJavaScript::SetString(const PString & name, const char * value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
@@ -754,9 +816,9 @@ bool PJavaScript::Call(const PString & /*name*/, Signature & /*signature*/)
 }
 
 
-bool PJavaScript::SetFunction(const PString & /*name*/, const FunctionNotifier & /*func*/)
+bool PJavaScript::SetFunction(const PString & name, const FunctionNotifier & func)
 {
-  return false;
+  return m_private->SetFunction(name, func);
 }
 #endif // P_V8
 

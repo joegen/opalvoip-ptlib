@@ -171,13 +171,7 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 
 
-PBoolean PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  return false;
-}
-
-
-PBoolean PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
   return false;
 }

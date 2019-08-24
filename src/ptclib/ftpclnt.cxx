@@ -60,7 +60,7 @@ PBoolean PFTPClient::Close()
 
 PBoolean PFTPClient::OnOpen()
 {
-  if (!ReadResponse() || lastResponseCode != 220)
+  if (!ReadResponse() || m_lastResponseCode != 220)
     return false;
 
   // the default data port for a server is the adjacent port
@@ -101,7 +101,7 @@ PString PFTPClient::GetSystemType()
   if (ExecuteCommand(SYST)/100 != 2)
     return PString();
 
-  return lastResponseInfo.Left(lastResponseInfo.Find(' '));
+  return m_lastResponseInfo.Left(m_lastResponseInfo.Find(' '));
 }
 
 
@@ -124,23 +124,23 @@ PString PFTPClient::GetCurrentDirectory()
   if (ExecuteCommand(PWD) != 257)
     return PString();
 
-  PINDEX quote1 = lastResponseInfo.Find('"');
+  PINDEX quote1 = m_lastResponseInfo.Find('"');
   if (quote1 == P_MAX_INDEX)
     return PString();
 
   PINDEX quote2 = quote1 + 1;
   do {
-    quote2 = lastResponseInfo.Find('"', quote2);
+    quote2 = m_lastResponseInfo.Find('"', quote2);
     if (quote2 == P_MAX_INDEX)
       return PString();
 
-    while (lastResponseInfo[quote2]=='"' && lastResponseInfo[quote2+1]=='"')
+    while (m_lastResponseInfo[quote2]=='"' && m_lastResponseInfo[quote2+1]=='"')
       quote2 += 2;
 
-  } while (lastResponseInfo[quote2] != '"');
+  } while (m_lastResponseInfo[quote2] != '"');
 
   // make Apple's and Tornado's gnu compiler happy
-  PString retval = lastResponseInfo(quote1+1, quote2-1);
+  PString retval = m_lastResponseInfo(quote1+1, quote2-1);
   return retval;
 }
 
@@ -164,12 +164,12 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
   if (socket == NULL)
     return PStringArray();
 
-  PString response = lastResponseInfo;
+  PString response = m_lastResponseInfo;
   PString str = socket->ReadString(P_MAX_INDEX);
 
   delete socket;
   ReadResponse();
-  lastResponseInfo = response + '\n' + lastResponseInfo;
+  m_lastResponseInfo = response + '\n' + m_lastResponseInfo;
   return str.Lines();
 }
 
@@ -182,12 +182,12 @@ PBoolean PFTPClient::CreateDirectory(const PString & path)
 
 PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 {
-  if (ExecuteCommand(STATcmd, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
-    PINDEX startPos = lastResponseInfo.Find('\n');
+  if (ExecuteCommand(STATcmd, path)/100 == 2 && m_lastResponseInfo.Find(path) != P_MAX_INDEX) {
+    PINDEX startPos = m_lastResponseInfo.Find('\n');
     if (startPos != P_MAX_INDEX) {
-      PINDEX endPos = lastResponseInfo.Find('\n', ++startPos);
+      PINDEX endPos = m_lastResponseInfo.Find('\n', ++startPos);
       if (endPos != P_MAX_INDEX)
-        return lastResponseInfo(startPos, endPos-1);
+        return m_lastResponseInfo(startPos, endPos-1);
     }
   }
 
@@ -253,11 +253,11 @@ PTCPSocket * PFTPClient::PassiveClientTransfer(Commands cmd,
   if (ExecuteCommand(PASV) != 227)
     return NULL;
 
-  PINDEX start = lastResponseInfo.FindOneOf("0123456789");
+  PINDEX start = m_lastResponseInfo.FindOneOf("0123456789");
   if (start == P_MAX_INDEX)
     return NULL;
 
-  PStringArray bytes = lastResponseInfo(start, P_MAX_INDEX).Tokenise(',');
+  PStringArray bytes = m_lastResponseInfo(start, P_MAX_INDEX).Tokenise(',');
   if (bytes.GetSize() != 6)
     return NULL;
 

@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>XMPP Console</ProjectName>
     <ProjectGuid>{69150BC5-0FB3-A95A-8F96-0715AC57D34B}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">

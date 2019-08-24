@@ -127,7 +127,7 @@ class PQueueChannel : public PChannel
   //@}
 
   protected:
-    PMutex     mutex;
+    PDECLARE_MUTEX(mutex);
     BYTE     * queueBuffer;
     PINDEX     queueSize, queueLength, enqueuePos, dequeuePos;
     PSyncPoint unempty;

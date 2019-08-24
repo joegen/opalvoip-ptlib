@@ -39,10 +39,8 @@
 #include <Psapi.h>
 
 #ifdef _MSC_VER
-  #ifndef _WIN32_WCE
-    #pragma comment(lib, "mpr.lib")
-    #pragma comment(lib, "Shell32.lib")
-  #endif
+  #pragma comment(lib, "mpr.lib")
+  #pragma comment(lib, "Shell32.lib")
 
   #ifdef P_WIN_COM
     #pragma comment(lib, "ole32.lib")
@@ -69,14 +67,7 @@ void PTime::SetCurrentTime()
 {
   FILETIME timestamp;
 
-#ifndef _WIN32_WCE
   GetSystemTimeAsFileTime(&timestamp);
-#else
-  SYSTEMTIME SystemTime;
-  GetSystemTime(&SystemTime);
-  SystemTimeToFileTime(&SystemTime, &timestamp);
-#endif
-
   SetFromFileTime(timestamp);
 }
 
@@ -250,13 +241,11 @@ unsigned PTimer::Resolution()
   if (QueryPerformanceFrequency(&frequency) && frequency.QuadPart >= 1000)
     return 1;
 
-#ifndef _WIN32_WCE
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
   if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
     return timeIncrement/10000;
-#endif
 
   return 55;
 }
@@ -324,13 +313,9 @@ bool PDirectory::IsSubDir() const
 
 PCaselessString PDirectory::GetVolume() const
 {
-#ifdef _WIN32_WCE
-  return PCaselessString("\\");
-#else
   char volName[100];
   PAssertOS(GetVolumeInformation(NULL, volName, sizeof(volName), NULL, NULL, NULL, NULL, 0));
   return PCaselessString(volName);
-#endif
 }
 
 
@@ -345,11 +330,6 @@ void PDirectory::Close()
 
 PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDirectory)
 {
-#ifdef _WIN32_WCE //doesn't support Current Directory so the path suppose to be full
-  PString fullpath=path;
-  PINDEX len = fullpath.GetLength();
-
-#else
   PString partialpath = path;
   if (partialpath.IsEmpty()) {
       if (!isDirectory)
@@ -373,7 +353,6 @@ PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDir
      return PString::Empty();
    PString fullpath;
    GetFullPathName(partialpath, len+1, fullpath.GetPointerAndSetLength(len), &dummy);
-#endif
 
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
@@ -411,7 +390,6 @@ bool PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   if (root.IsEmpty())
     return false;
 
-#ifndef _WIN32_WCE
   PBoolean needTotalAndFree = true;
 
   static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
@@ -479,25 +457,6 @@ bool PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
     clusterSize = bytesPerSector*sectorsPerCluster;
 
   return true;
-#elif _WIN32_WCE < 300
-  USES_CONVERSION;
-    ULARGE_INTEGER freeBytesAvailableToCaller;
-    ULARGE_INTEGER totalNumberOfBytes; 
-    ULARGE_INTEGER totalNumberOfFreeBytes;
-    if (GetDiskFreeSpaceEx(A2T(root),
-                           &freeBytesAvailableToCaller,
-                           &totalNumberOfBytes,
-                           &totalNumberOfFreeBytes)) 
-  {
-    total = totalNumberOfBytes.QuadPart;
-    free = totalNumberOfFreeBytes.QuadPart;
-    clusterSize = 512; //X3
-    return true;
-  }
-  return false;
-#else
-  return false;
-#endif
 }
 
 
@@ -509,13 +468,13 @@ static char const IllegalFilenameCharacters[] =
   "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\0x10"
   "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f";
 
-PBoolean PFilePath::IsValid(char c)
+bool PFilePath::IsValid(char c)
 {
   return strchr(IllegalFilenameCharacters, c) == NULL;
 }
 
 
-PBoolean PFilePath::IsValid(const PString & str)
+bool PFilePath::IsValid(const PString & str)
 {
   return str != "." && str != ".." &&
          str.FindOneOf(IllegalFilenameCharacters) == P_MAX_INDEX;
@@ -654,10 +613,8 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     };
     osError = errors[lastError];
   }
-#ifndef _WIN32_WCE
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
     return _sys_errlist[osError];
-#endif
 
   static const struct {
     int id1;
@@ -831,11 +788,9 @@ void PThread::InternalPostMain()
 
 void PThread::Win32AttachThreadInput()
 {
-#ifndef _WIN32_WCE
   PProcess & process = PProcess::Current();
   ::AttachThreadInput(m_threadId, ((PThread&)process).m_threadId, true);
   ::AttachThreadInput(((PThread&)process).m_threadId, m_threadId, true);
-#endif
 }
 
 
@@ -872,12 +827,7 @@ PThread::PThread(PINDEX stackSize,
 {
   PAssert(m_originalStackSize > 0, PInvalidParameter);
 
-#ifndef _WIN32_WCE
   m_threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, CREATE_SUSPENDED, &m_threadId);
-#else
-  m_threadHandle = CreateThread(NULL, m_originalStackSize, 
-                       (LPTHREAD_START_ROUTINE)MainFunction, this, CREATE_SUSPENDED, (LPDWORD) &m_threadId);
-#endif
   m_uniqueId = m_threadId;
 
   PAssertOS(m_threadHandle.IsValid());
@@ -1066,12 +1016,7 @@ void PThread::Restart()
 
   InternalDestroy();
 
-#ifndef _WIN32_WCE
   m_threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, 0, &m_threadId);
-#else
-  m_threadHandle = CreateThread(NULL, m_originalStackSize, 
-                                  (LPTHREAD_START_ROUTINE)MainFunction, this, 0, (LPDWORD)&m_threadId);
-#endif
   m_uniqueId = m_threadId;
   PAssertOS(m_threadHandle.IsValid());
 }
@@ -1397,43 +1342,18 @@ bool PProcess::IsOSVersion(unsigned major, unsigned minor, unsigned build)
 
 PDirectory PProcess::GetOSConfigDir()
 {
-#ifdef _WIN32_WCE
-  return PString("\\Windows");
-#else
   char dir[_MAX_PATH];
 
   PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
   PDirectory sysdir = dir;
   return sysdir;  //+ "drivers\\etc";
-#endif
 }
 
 PString PProcess::GetUserName() const
 {
-#ifndef _WIN32_WCE
   char username[100];
   DWORD size = sizeof(username);
   return ::GetUserName(username, &size) ? PString(username, size-1) : PString::Empty();
-#else
-  TCHAR wcsuser[50] = {0};
-  HKEY hKeyComm, hKeyIdent;
-  RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Comm"), 0, 0, &hKeyComm);
-  RegOpenKeyEx(hKeyComm, _T("Ident"), 0, 0, &hKeyIdent);
-
-  DWORD dwType = REG_SZ; DWORD dw = 50;
-  if( ERROR_SUCCESS != RegQueryValueEx(
-    hKeyIdent, _T("Username"), NULL, &dwType, (LPBYTE) wcsuser, &dw) 
-    || !*wcsuser )
-  {
-  RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Ident"), 0, 0, &hKeyIdent);
-  dw = 50L;
-  if( ERROR_SUCCESS == RegQueryValueEx( 
-    hKeyIdent, _T("Name"), NULL, &dwType, (LPBYTE) wcsuser, &dw))
-      wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
-  }
-  
-  return wcsuser;
-#endif
 }
 
 
@@ -1489,12 +1409,6 @@ PProcessIdentifier PProcess::GetCurrentProcessID()
 }
 
 
-PBoolean PProcess::IsServiceProcess() const
-{
-  return false;
-}
-
-
 void PProcess::GetMemoryUsage(MemoryUsage & usage)
 {
   PROCESS_MEMORY_COUNTERS info;
@@ -1540,15 +1454,6 @@ unsigned PThread::GetNumProcessors()
 }
 
 
-#ifdef _WIN32_WCE
-
-PBoolean PProcess::IsGUIProcess() const
-{
-  return true;
-}
-
-#else
-
 static bool s_IsGUIProcess = true;
 static atomic<bool> s_checkGUIProcess(false);
 
@@ -1574,8 +1479,6 @@ PBoolean PProcess::IsGUIProcess() const
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
   return s_IsGUIProcess;
 }
-
-#endif // _WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1747,6 +1650,19 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
+PTimedMutex::~PTimedMutex()
+{
+  PMUTEX_DESTROYED();
+}
+
+
+void PTimedMutex::PrintOn(ostream &strm) const
+{
+  strm << "timed mutex " << this << '[' << GetHandle() << ']';
+  PMutexExcessiveLockInfo::PrintOn(strm);
+}
+
+
 void PTimedMutex::PlatformConstruct()
 {
   m_handle = ::CreateMutex(NULL, FALSE, NULL);
@@ -1859,10 +1775,10 @@ bool PWin32Handle::Wait(DWORD timeout) const
 }
 
 
-bool PWin32Handle::Duplicate(HANDLE h, DWORD flags)
+bool PWin32Handle::Duplicate(HANDLE h, DWORD flags, DWORD access)
 {
   Close();
-  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, 0, 0, flags);
+  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, access, 0, flags);
 }
 
 
@@ -1900,11 +1816,7 @@ PBoolean PDynaLink::Open(const PString & names)
   PStringArray filenames = names.Lines();
   for (PINDEX i = 0; i < filenames.GetSize(); ++i) {
     PVarString filename = filenames[i];
-#ifndef _WIN32_WCE
     m_hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-#else
-    m_hDLL = LoadLibrary(filename);
-#endif
     if (m_hDLL != NULL)
       return true;
   }

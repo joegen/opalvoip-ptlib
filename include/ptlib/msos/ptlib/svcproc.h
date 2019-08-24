@@ -47,8 +47,6 @@
     virtual const char * GetServiceDependencies() const;
       // Get a set of null terminated strings terminated with double null.
 
-    virtual PBoolean IsServiceProcess() const;
-
     void SetDescription(const PString & description);
     const PString & GetDescription() const;
 

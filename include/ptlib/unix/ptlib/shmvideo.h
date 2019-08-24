@@ -129,16 +129,6 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 	
 	virtual PStringArray GetDeviceNames() const
 	{ return GetInputDeviceNames(); }
-	
-	virtual PBoolean GetFrame(PBYTEArray & frame);
-
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// Optional bytes returned.
-      );
-
-    virtual PBoolean GetFrameDataNoDelay (BYTE *, PINDEX *);
-	
 
     /**Get the minimum & maximum size of a frame on the device.
 
@@ -160,6 +150,7 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 
 
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
     PBoolean shmInit();
 
     PAdaptiveDelay m_pacing;

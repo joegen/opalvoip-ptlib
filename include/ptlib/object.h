@@ -76,6 +76,14 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif
 
 
+#if !defined __GNUC__ || __GNUC__ >= 5
+  #define P_MAX_INDEX ::std::numeric_limits<PINDEX>::max()
+#elif P_PINDEX_IS_SIZE_T
+  const PINDEX P_MAX_INDEX = SIZE_MAX;
+#else
+  const PINDEX P_MAX_INDEX = INT_MAX;
+#endif
+
 #if PINDEX_SIGNED
   #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 #else
@@ -494,6 +502,7 @@ public:
                                   ///< Mask for all the rotate bits
     ObjectInstance    = 0x1000,   ///< Include object instance in all trace output
     ContextIdentifier = 0x2000,   ///< Include context identifier in all trace output
+    SingleLine        = 0x4000,   ///< Assure trace output is always on a single line
     SystemLogStream   = 0x8000,   /**< SystemLog flag for tracing within a PServiceProcess
                                        application. Setting this flag will automatically
                                        execute <code>#SetStream(new PSystemLog)</code>. */
@@ -515,6 +524,7 @@ public:
     "  file     source file name and line number\r" \
     "  object   PObject pointer\r" \
     "  context  context identifier\r" \
+    "  single   single line output\r" \
     "  daily    rotate output file daily\r" \
     "  hour     rotate output file hourly\r" \
     "  minute   rotate output file every minute\r" \
@@ -614,6 +624,18 @@ public:
      SetFilename() or Initialise().
    */
   static const char * GetFilename();
+
+  /**Set the mmaximum length for logs.
+     Default is 10k
+    */
+  static void SetMaxLength(
+    PINDEX length   ///< Maximum line length for log
+  );
+
+  /**Get the mmaximum length for logs.
+     Default is 10k
+    */
+  static PINDEX GetMaxLength();
 
   /** Set the trace options.
       The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
@@ -848,7 +870,8 @@ public:
   static void WalkStack(
     ostream & strm,
     PThreadIdentifier id = PNullThreadIdentifier,
-    PUniqueThreadIdentifier uid = 0
+    PUniqueThreadIdentifier uid = 0,
+    bool noSymbols = false
   );
 
   static unsigned MaxStackWalk; // Default 20
@@ -1456,7 +1479,7 @@ namespace PProfiling
 ///////////////////////////////////////////////////////////////////////////////
 // Memory management
 
-#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
+#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG)) 
 
 #define PMEMORY_HEAP 1
 
@@ -2389,8 +2412,8 @@ struct PIntReversedOrder {
   __inline PIntReversedOrder & operator=(type value)                                      { data = ReverseBytes(value);  return *this; }
   __inline PIntReversedOrder & operator=(const PIntReversedOrder & value)                 { data = value.data;           return *this; }
   __inline operator type() const                                                          { return ReverseBytes(data); }
-  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value)      { return s << value.data; }
-  __inline friend istream & operator>>(istream & s, PIntReversedOrder & value)            { return s >> value.data; }
+  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value)      { return s << ReverseBytes(value.data); }
+  __inline friend istream & operator>>(istream & s, PIntReversedOrder & value)            { type i; s >> i; value = i; return s; }
 
   private:
     type data;

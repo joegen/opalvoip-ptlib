@@ -44,17 +44,22 @@ else ifndef PTLIBDIR
   PTLIB_LIBDIR := $(shell pkg-config ptlib --variable=libdir)
 else
   ifeq (,$(target))
-    ifneq (,$(OS))
-      ifneq (,$(CPU))
-        target = $(OS)_$(CPU)
-      endif
+    ifeq (,$(OS))
+      OS := $(shell uname -s)
     endif
+    ifeq (,$(CPU))
+      CPU := $(shell uname -m)
+    endif
+    target := $(OS)_$(CPU)
   endif
-  ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
-    include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
-  else
-    include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
+
+  PTLIB_CONFIG_MAK_PATH := $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
+  ifeq (,$(wildcard $(PTLIB_CONFIG_MAK_PATH)))
+    PTLIB_CONFIG_MAK_PATH := $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
   endif
+  #$(info Including $(PTLIB_CONFIG_MAK_PATH))
+  include $(PTLIB_CONFIG_MAK_PATH)
+
   PTLIB_INCFLAGS := -I$(PTLIBDIR)/include
   PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
   LIBDIRS := $(PTLIBDIR) $(LIBDIRS)  # Submodules built with make lib
@@ -172,7 +177,12 @@ PTLIB_DEBUG_LIB_FILE_BASE = $(PTLIB_LIBDIR)/$(PTLIB_LIB_FILE_BASE)$(DEBUG_SUFFIX
 PTLIB_DEBUG_SHARED_LINK   = $(PTLIB_DEBUG_LIB_FILE_BASE).$(SHAREDLIBEXT)
 PTLIB_DEBUG_STATIC_FILE   = $(PTLIB_DEBUG_LIB_FILE_BASE)$(STATIC_SUFFIX).$(STATICLIBEXT)
 
-PTLIB_FILE_VERSION = $(PTLIB_MAJOR).$(PTLIB_MINOR)$(PTLIB_STAGE)$(PTLIB_BUILD)
+ifeq ($(PTLIB_OEM),0)
+  PTLIB_FILE_VERSION = $(PTLIB_MAJOR).$(PTLIB_MINOR)$(PTLIB_STAGE)$(PTLIB_PATCH)
+else
+  PTLIB_FILE_VERSION = $(PTLIB_MAJOR).$(PTLIB_MINOR)$(PTLIB_STAGE)$(PTLIB_PATCH)-$(PTLIB_OEM)
+endif
+
 
 ifneq (,$(findstring $(target_os),Darwin cygwin mingw))
   PTLIB_OPT_SHARED_FILE   = $(PTLIB_OPT_LIB_FILE_BASE).$(PTLIB_FILE_VERSION).$(SHAREDLIBEXT)

@@ -32,8 +32,14 @@
 #include <ptlib.h>
 
 #include <ptclib/pjson.h>
+#include <ptclib/cypher.h>
+
+#ifndef _MSC_VER
+  #include <tgmath.h>
+#endif
 
 #define new PNEW
+#define PTraceModule() "JSON"
 
 
 static PJSON::Base * CreateByType(PJSON::Types type)
@@ -414,18 +420,32 @@ PString PJSON::Object::GetString(const PString & name) const
 int PJSON::Object::GetInteger(const PString & name) const
 {
   const Number * num = Get<Number>(name);
-  return num != NULL ? (int)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+int64_t PJSON::Object::GetInteger64(const PString & name) const
+{
+  const Number * num = Get<Number>(name);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
 unsigned PJSON::Object::GetUnsigned(const PString & name) const
 {
   const Number * num = Get<Number>(name);
-  return num != NULL ? (unsigned)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
 }
 
 
-double PJSON::Object::GetNumber(const PString & name) const
+uint64_t PJSON::Object::GetUnsigned64(const PString & name) const
+{
+  const Number * num = Get<Number>(name);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
+}
+
+
+PJSON::NumberType PJSON::Object::GetNumber(const PString & name) const
 {
   const Number * num = Get<Number>(name);
   return num != NULL ? num->GetValue() : 0;
@@ -492,7 +512,7 @@ bool PJSON::Object::SetString(const PString & name, const PString & value)
 }
 
 
-bool PJSON::Object::SetNumber(const PString & name, double value)
+bool PJSON::Object::SetNumber(const PString & name, NumberType value)
 {
   if (!Set(name, e_Number))
     return false;
@@ -506,6 +526,18 @@ bool PJSON::Object::SetBoolean(const PString & name, bool value)
   if (!Set(name, e_Boolean))
     return false;
   *Get<Boolean>(name) = value;
+  return true;
+}
+
+
+bool PJSON::Object::Remove(const PString & name)
+{
+  iterator it = find(name);
+  if (it == end())
+    return false;
+
+  delete it->second;
+  erase(it);
   return true;
 }
 
@@ -611,18 +643,32 @@ PString PJSON::Array::GetString(size_t index) const
 int PJSON::Array::GetInteger(size_t index) const
 {
   const Number * num = Get<Number>(index);
-  return num != NULL ? (int)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+int64_t PJSON::Array::GetInteger64(size_t index) const
+{
+  const Number * num = Get<Number>(index);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
 unsigned PJSON::Array::GetUnsigned(size_t index) const
 {
   const Number * num = Get<Number>(index);
-  return num != NULL ? (unsigned)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
 }
 
 
-double PJSON::Array::GetNumber(size_t index) const
+uint64_t PJSON::Array::GetUnsigned64(size_t index) const
+{
+  const Number * num = Get<Number>(index);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
+}
+
+
+PJSON::NumberType PJSON::Array::GetNumber(size_t index) const
 {
   const Number * num = Get<Number>(index);
   return num != NULL ? num->GetValue() : 0;
@@ -677,7 +723,7 @@ void PJSON::Array::AppendString(const PString & value)
 }
 
 
-void PJSON::Array::AppendNumber(double value)
+void PJSON::Array::AppendNumber(NumberType value)
 {
   Append(e_Number);
   dynamic_cast<Number &>(*back()) = value;
@@ -688,6 +734,19 @@ void PJSON::Array::AppendBoolean(bool value)
 {
   Append(e_Boolean);
   dynamic_cast<Boolean &>(*back()) = value;
+}
+
+
+bool PJSON::Array::Remove(size_t index)
+{
+  if (index >= size())
+    return false;
+
+  iterator it = begin();
+  advance(it, index);
+  delete *it;
+  erase(it);
+  return true;
 }
 
 
@@ -715,7 +774,7 @@ PJSON::Base * PJSON::String::DeepClone() const
 }
 
 
-PJSON::Number::Number(double value)
+PJSON::Number::Number(NumberType value)
   : m_value(value)
 {
 }
@@ -839,3 +898,220 @@ PJSON::Base * PJSON::Null::DeepClone() const
 {
   return new Null();
 }
+
+
+#if P_SSL
+
+PJWT::PJWT()
+  : PJSON(e_Object)
+{
+}
+
+
+PJWT::PJWT(const PString & str, const PString & secret, const PTime & verifyTime)
+{
+  m_valid = Decode(str, secret, verifyTime);
+}
+
+
+static PHMAC * CreateHMAC(const PJWT::Algorithm algorithm)
+{
+  switch (algorithm) {
+    case PJWT::HS256:
+      return new PHMAC_SHA256;
+      break;
+    case PJWT::HS384:
+      return new PHMAC_SHA384;
+      break;
+    case PJWT::HS512:
+      return new PHMAC_SHA512;
+    default :
+      PAssertAlways("Unknown algorithm");
+      return NULL;
+  }
+}
+
+
+PString PJWT::Encode(const PString & secret, const Algorithm algorithm)
+{
+  std::auto_ptr<PHMAC> hmac(CreateHMAC(algorithm));
+  if (!hmac.get())
+    return PString::Empty();
+
+  hmac->SetKey(secret);
+
+  PJSON hdr(e_Object);
+  Object & hdrObj = hdr.GetObject();
+  hdrObj.SetString("typ", "JWT");
+  hdrObj.SetString("alg", PSTRSTRM(algorithm));
+
+  PStringStream token;
+  token << PBase64::Encode(hdr.AsString(), PBase64::e_URL) << '.' << PBase64::Encode(AsString(), PBase64::e_URL);
+  PINDEX prefixLength = token.GetLength();
+
+  token << '.' << hmac->Encode(token.GetPointer(), prefixLength, PBase64::e_URL);
+
+  return token;
+}
+
+
+bool PJWT::Decode(const PString & str, const PString & secret, const PTime & verifyTime)
+{
+  PStringArray section = str.Tokenise(".");
+  if (section.size() != 3) {
+    PTRACE(2, "Invalid JWT header: \"" << str.Left(100) << '"');
+    return false;
+  }
+
+  PJSON hdr(PBase64::Decode(section[0]));
+  if (!hdr.IsValid()) {
+    PTRACE(2, "Invalid JWT header JSON.");
+    return false;
+  }
+
+  if (!hdr.IsType(e_Object)) {
+    PTRACE(2, "Invalid JWT header JSON type.");
+    return false;
+  }
+
+  Object & hdrObj = hdr.GetObject();
+  if (hdrObj.GetString("typ") != "JWT") {
+    PTRACE(2, "Unsupported JWT type.");
+    return false;
+  }
+
+  std::auto_ptr<PHMAC> hmac(CreateHMAC(AlgorithmFromString(hdrObj.GetString("alg"))));
+  if (!hmac.get()) {
+    PTRACE(2, "Unsupported JWT algorithm.");
+    return false;
+  }
+
+  hmac->SetKey(secret);
+
+  PHMAC::Result theirs, ours;
+  PBase64::Decode(section[2], theirs);
+  hmac->Process(str.GetPointer(), str.FindLast('.'), ours);
+  if (!ours.ConstantTimeCompare(theirs)) {
+    PTRACE(2, "JWT signature does not match.");
+    return false;
+  }
+
+  if (!FromString(PBase64::Decode(section[1]))) {
+    PTRACE(2, "Invalid JWT payload JSON.");
+    return false;
+  }
+
+  if (verifyTime.IsValid()) {
+    PTime exp = GetExpiration();
+    if (exp.IsValid() && exp < verifyTime) {
+      PTRACE(2, "JWT expired at " << exp);
+      return false;
+    }
+
+    PTime nbf = GetNotBefore();
+    if (nbf.IsValid() && nbf >= verifyTime) {
+      PTRACE(2, "JWT not available before " << nbf);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void PJWT::SetIssuer(const PString & str)
+{
+  GetObject().SetString("iss", str);
+}
+
+
+PString PJWT::GetIssuer() const
+{
+  return GetObject().GetString("iss");
+}
+
+
+void PJWT::SetSubject(const PString & str)
+{
+  GetObject().SetString("sub", str);
+}
+
+
+PString PJWT::GetSubject() const
+{
+  return GetObject().GetString("sub");
+}
+
+
+void PJWT::SetAudience(const PString & str)
+{
+  GetObject().SetString("aud", str);
+}
+
+
+PString PJWT::GetAudience() const
+{
+  return GetObject().GetString("aud");
+}
+
+
+void PJWT::SetExpiration(const PTime & when)
+{
+  GetObject().SetNumber("exp", (NumberType)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetExpiration() const
+{
+  return GetObject().GetUnsigned("exp");
+}
+
+
+void PJWT::SetNotBefore(const PTime & when)
+{
+  GetObject().SetNumber("nbf", (NumberType)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetNotBefore() const
+{
+  return GetObject().GetUnsigned("nbf");
+}
+
+
+void PJWT::SetIssuedAt(const PTime & when)
+{
+  GetObject().SetNumber("iat", (NumberType)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetIssuedAt() const
+{
+  return GetObject().GetUnsigned("iat");
+}
+
+
+void PJWT::SetTokenId(const PString & str)
+{
+  GetObject().SetString("jti", str);
+}
+
+
+PString PJWT::GetTokenId() const
+{
+  return GetObject().GetString("jti");
+}
+
+
+void PJWT::SetPrivate(const PString & key, const PString & str)
+{
+  GetObject().SetString(key, str);
+}
+
+
+PString PJWT::GetPrivate(const PString & key) const
+{
+  return GetObject().GetString(key);
+}
+
+
+#endif // P_SSL

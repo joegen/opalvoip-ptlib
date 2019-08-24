@@ -38,19 +38,50 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+PSafeObject::PSafeObject()
+  : m_safeReferenceCount(0)
+  , m_safelyBeingRemoved(false)
+  , m_safeMutexCreated(true)
+  , m_safeInUseMutex(NULL)
+{
+}
+
+
+PSafeObject::PSafeObject(const PSafeObject & other)
+  : PObject(other)
+  , m_safeReferenceCount(0)
+  , m_safelyBeingRemoved(false)
+  , m_safeMutexCreated(true)
+  , m_safeInUseMutex(NULL)
+{
+}
+
+
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
   : m_safeReferenceCount(0)
   , m_safelyBeingRemoved(false)
-  , m_safeInUse(indirectLock != NULL ? indirectLock->m_safeInUse : &m_safeInUseMutex)
+  , m_safeMutexCreated(false)
 {
+  if (PAssert(indirectLock != NULL, PNullPointerReference))
+    m_safeInUseMutex = &indirectLock->InternalGetMutex();
+  else
+    m_safeInUseMutex = NULL;
 }
 
 
 PSafeObject::PSafeObject(PReadWriteMutex & mutex)
   : m_safeReferenceCount(0)
   , m_safelyBeingRemoved(false)
-  , m_safeInUse(&mutex)
+  , m_safeMutexCreated(false)
+  , m_safeInUseMutex(&mutex)
 {
+}
+
+
+PSafeObject::~PSafeObject()
+{
+  if (m_safeMutexCreated)
+    delete m_safeInUseMutex;
 }
 
 
@@ -110,6 +141,15 @@ PBoolean PSafeObject::SafeDereference()
 }
 
 
+PReadWriteMutex & PSafeObject::InternalGetMutex() const
+{
+  PWaitAndSignal lock(m_safetyMutex);
+  if (m_safeInUseMutex == NULL)
+    const_cast<PSafeObject *>(this)->m_safeInUseMutex = new PReadWriteMutex(typeid(*this).name());
+  return *m_safeInUseMutex;
+}
+
+
 bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting read ("<<(void *)this<<")");
@@ -121,12 +161,9 @@ bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
     return false;
   }
 
-  if (m_safeInUse->m_location.m_extra == NULL)
-      m_safeInUse->m_location.m_extra = typeid(*this).name();
-
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartRead(location);
+  InternalGetMutex().StartRead(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked read ("<<(void *)this<<")");
   return true;
 }
@@ -135,7 +172,7 @@ bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
 void PSafeObject::InternalUnlockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked read ("<<(void *)this<<")");
-  m_safeInUse->EndRead(location);
+  InternalGetMutex().EndRead(location);
 }
 
 
@@ -150,12 +187,9 @@ bool PSafeObject::InternalLockReadWrite(const PDebugLocation * location) const
     return false;
   }
 
-  if (m_safeInUse->m_location.m_extra == NULL)
-      m_safeInUse->m_location.m_extra = typeid(*this).name();
-
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartWrite(location);
+  InternalGetMutex().StartWrite(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked readWrite ("<<(void *)this<<")");
   return true;
 }
@@ -164,7 +198,7 @@ bool PSafeObject::InternalLockReadWrite(const PDebugLocation * location) const
 void PSafeObject::InternalUnlockReadWrite(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked readWrite ("<<(void *)this<<")");
-  m_safeInUse->EndWrite(location);
+  InternalGetMutex().EndWrite(location);
 }
 
 
@@ -226,7 +260,9 @@ void PSafeLockBase::Unlock()
 
 PSafeCollection::PSafeCollection(PCollection * coll)
   : m_collection(PAssertNULL(coll))
+  , m_collectionMutex(PDebugLocation(__FILE__, __LINE__, "SafeCollection"))
   , m_deleteObjects(true)
+  , m_removalMutex(PDebugLocation(__FILE__, __LINE__, "SafeRemoval"))
 #if P_TIMERS
   , m_deleteObjectsTimer(NULL)
 #endif
@@ -583,7 +619,7 @@ void PSafePtrBase::Assign(PINDEX idx)
 
   m_currentObject = NULL;
 
-  if (m_collection == NULL)
+  if (PAssertNULL(m_collection) == NULL)
     return;
 
   m_collection->m_collectionMutex.Wait();
@@ -606,7 +642,7 @@ void PSafePtrBase::Assign(PINDEX idx)
 
 void PSafePtrBase::Next()
 {
-  if (m_collection == NULL || m_currentObject == NULL)
+  if (PAssertNULL(m_collection) == NULL || m_currentObject == NULL)
     return;
 
   ExitSafetyMode(NoDereference);
@@ -637,7 +673,7 @@ void PSafePtrBase::Next()
 
 void PSafePtrBase::Previous()
 {
-  if (m_collection == NULL || m_currentObject == NULL)
+  if (PAssertNULL(m_collection) == NULL || m_currentObject == NULL)
     return;
 
   ExitSafetyMode(NoDereference);
@@ -752,6 +788,7 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
     return;
 
   PTRACE(6, "Deleting object (" << obj << ')');
+  obj->GarbageCollection();
   delete obj;
 }
 
@@ -760,6 +797,7 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
@@ -775,6 +813,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PINDEX idx)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
@@ -790,6 +829,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PSafeObject * obj)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
@@ -802,7 +842,8 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
 
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
-  : m_objectToDelete(NULL)
+  : m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
+  , m_objectToDelete(NULL)
 {
   LockPtr();
   enumerator.m_mutex.Wait();

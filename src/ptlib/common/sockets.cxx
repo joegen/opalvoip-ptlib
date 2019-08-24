@@ -285,17 +285,12 @@ class PHostByName : PHostByName_private
     PBoolean GetHostAliases(const PString & name, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PString & name);
-    PMutex mutex;
+    PDECLARE_MUTEX(mutex);
   friend void PIPSocket::ClearNameCache();
 };
 
-static PMutex creationMutex;
-static PHostByName & pHostByName()
-{
-  PWaitAndSignal m(creationMutex);
-  static PHostByName t;
-  return t;
-}
+static PHostByName s_HostByName;
+
 
 class PIPCacheKey : public PObject
 {
@@ -324,16 +319,11 @@ class PHostByAddr : PHostByAddr_private
     PBoolean GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
-    PMutex mutex;
+    PDECLARE_MUTEX(mutex);
   friend void PIPSocket::ClearNameCache();
 };
 
-static PHostByAddr & pHostByAddr()
-{
-  PWaitAndSignal m(creationMutex);
-  static PHostByAddr t;
-  return t;
-}
+static PHostByAddr s_HostByAddr;
 
 #define new PNEW
 
@@ -349,11 +339,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 
   hostname = host_info->h_name;
   if (host_info->h_addr != NULL)
-#ifndef _WIN32_WCE
     address = *(DWORD *)host_info->h_addr;
-#else
-    address = PIPSocket::Address(host_info->h_length, (const BYTE *)host_info->h_addr);
-#endif
   aliases.AppendString(host_info->h_name);
 
   PINDEX i;
@@ -361,11 +347,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
     aliases.AppendString(host_info->h_aliases[i]);
 
   for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
-#ifndef _WIN32_WCE
     PIPSocket::Address ip(*(DWORD *)host_info->h_addr_list[i]);
-#else
-    PIPSocket::Address ip(host_info->h_length, (const BYTE *)host_info->h_addr_list[i]);
-#endif
     aliases.AppendString(ip.AsString());
   }
 
@@ -1030,37 +1012,39 @@ PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 
 void PIPSocket::ClearNameCache()
 {
-  pHostByName().mutex.Wait();
-  pHostByName().RemoveAll();
-  pHostByName().mutex.Signal();
+  s_HostByName.mutex.Wait();
+  s_HostByName.RemoveAll();
+  s_HostByName.mutex.Signal();
 
-  pHostByAddr().mutex.Wait();
-  pHostByAddr().RemoveAll();
-  pHostByAddr().mutex.Signal();
+  s_HostByAddr.mutex.Wait();
+  s_HostByAddr.RemoveAll();
+  s_HostByAddr.mutex.Signal();
 
-#if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__) // Kludge to avoid strange NT bug
-  static PTimeInterval delay = GetConfigTime("NT Bug Delay", 0);
-  if (delay != 0) {
-    ::Sleep(delay.GetInterval());
-    ::gethostbyname("www.microsoft.com");
-  }
-#endif
-  PTRACE(4, &pHostByName(), "Cleared DNS cache.");
+  PTRACE(4, &s_HostByName, "Cleared DNS cache.");
 }
 
 
 PString PIPSocket::GetName() const
 {
-  PStringStream str;
+  return PSTRSTRM(*this);
+}
+
+
+void PIPSocket::PrintOn(ostream & str) const
+{
   str << GetProtocolName() << ':';
 
-  AddressAndPort ap;
-  if (GetLocalAddress(ap))
-    str << " local=" << ap;
-  if (GetPeerAddress(ap))
-    str << " peer= " << ap;
+  AddressAndPort peer;
+  if (GetPeerAddress(peer))
+    str << " peer=" << peer;
 
-  return str;
+  AddressAndPort local, iface;
+  if (GetLocalAddress(local) && const_cast<PIPSocket *>(this)->PIPSocket::InternalGetLocalAddress(iface)) {
+    if (local != iface)
+      str << " rflx=" << local << " if=" << iface;
+    else
+      str << " local=" << local;
+  }
 }
 
 
@@ -1110,7 +1094,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
     return GetHostName(temp);
 
   PString canonicalname;
-  if (pHostByName().GetHostName(hostname, canonicalname))
+  if (s_HostByName.GetHostName(hostname, canonicalname))
     return canonicalname;
 
   return hostname;
@@ -1123,7 +1107,7 @@ PString PIPSocket::GetHostName(const Address & addr)
     return addr.AsString();
 
   PString hostname;
-  if (pHostByAddr().GetHostName(addr, hostname))
+  if (s_HostByAddr.GetHostName(addr, hostname))
     return hostname;
 
   return addr.AsString(true);
@@ -1132,7 +1116,7 @@ PString PIPSocket::GetHostName(const Address & addr)
 
 PBoolean PIPSocket::GetHostAddress(Address & addr)
 {
-  return pHostByName().GetHostAddress(GetHostName(), addr);
+  return s_HostByName.GetHostAddress(GetHostName(), addr);
 }
 
 
@@ -1146,7 +1130,7 @@ PBoolean PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
     return true;
 
   // otherwise lookup the name as a host name
-  return pHostByName().GetHostAddress(hostname, addr);
+  return s_HostByName.GetHostAddress(hostname, addr);
 }
 
 
@@ -1157,9 +1141,9 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   // lookup the host address using inet_addr, assuming it is a "." address
   Address addr(hostname);
   if (addr.IsValid())
-    pHostByAddr().GetHostAliases(addr, aliases);
+    s_HostByAddr.GetHostAliases(addr, aliases);
   else
-    pHostByName().GetHostAliases(hostname, aliases);
+    s_HostByName.GetHostAliases(hostname, aliases);
 
   return aliases;
 }
@@ -1169,7 +1153,7 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
   PStringArray aliases;
 
-  pHostByAddr().GetHostAliases(addr, aliases);
+  s_HostByAddr.GetHostAliases(addr, aliases);
 
   return aliases;
 }
@@ -1768,6 +1752,8 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
     return LessThan;
   if (m_version > other.m_version)
     return GreaterThan;
+  if (m_version == 0)
+    return EqualTo; // Both invalid
 
 #if P_HAS_IPV6
   if (m_version == 6) {
@@ -1789,10 +1775,7 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
   }
 #endif
 
-  if (operator==((DWORD)other))
-    return EqualTo;
-
-  return ntohl(*this) < ntohl(other) ? LessThan : GreaterThan;
+  return Compare2(ntohl(*this), ntohl(other));
 }
 
 
@@ -2103,7 +2086,7 @@ bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask)
 }
 
 
-bool PIPSocket::Address::IsRFC1918() const
+bool PIPSocket::Address::IsPrivate() const
 {
   PINDEX offset = 0;
 #if P_HAS_IPV6
@@ -2120,19 +2103,11 @@ bool PIPSocket::Address::IsRFC1918() const
 
   BYTE b1 = (*this)[offset];
   BYTE b2 = (*this)[offset+1];
-  return (b1 == 10)
-          ||
-          (
-            (b1 == 172)
-            &&
-            (b2 >= 16) && (b2 <= 31)
-          )
-          ||
-          (
-            (b1 == 192) 
-            &&
-            (b2 == 168)
-          );
+  return  ((b1 == 10)                      ) || // RFC1918
+          ((b1 == 100) && ((b2&0xc0) == 64)) || // RFC6598
+          ((b1 == 169) && (b2 == 254)      ) || // RFC3927
+          ((b1 == 172) && ((b2&0xf0) == 16)) || // RFC1918
+          ((b1 == 192) && (b2 == 168)      ) ;  // RFC1918
 }
 
 
@@ -2249,7 +2224,7 @@ PIPSocket::Address PIPSocket::GetNetworkInterface(unsigned version)
   if (PIPSocket::GetInterfaceTable(interfaceTable)) {
     for (PINDEX i = 0; i < interfaceTable.GetSize(); ++i) {
       PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
-      if (localAddr.GetVersion() == version && !localAddr.IsLoopback() && !localAddr.IsRFC1918())
+      if (localAddr.GetVersion() == version && !localAddr.IsLoopback() && !localAddr.IsPrivate())
         return localAddr;
     }
   }
@@ -2690,21 +2665,35 @@ PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 }
 
 
-void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
+bool PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort, int mtuDiscovery)
 {
-  InternalSetSendAddress(PIPSocketAddressAndPort(newAddress, newPort));
+  return InternalSetSendAddress(PIPSocketAddressAndPort(newAddress, newPort), mtuDiscovery);
 }
 
 
-void PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort)
+bool PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort, int mtuDiscovery)
 {
-  InternalSetSendAddress(addressAndPort);
+  return InternalSetSendAddress(addressAndPort, mtuDiscovery);
 }
 
 
-void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
+bool PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery)
 {
   m_sendAddressAndPort = addr;
+
+  if (mtuDiscovery < 0)
+    return true;
+
+#ifdef IP_MTU_DISCOVER
+  if (!SetOption(IP_MTU_DISCOVER, mtuDiscovery, IPPROTO_IP))
+    return false;
+
+  PIPSocket::sockaddr_wrapper sa(addr);
+  return os_connect(sa, sa.GetSize());
+#else
+  PTRACE(2, "IP_MTU_DISCOVER is not supported!");
+  return false;
+#endif
 }
 
 
@@ -2765,6 +2754,21 @@ void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap) con
 void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & ap)
 {
   m_lastReceiveAddressAndPort = ap;
+}
+
+
+int PUDPSocket::GetCurrentMTU()
+{
+  int mtu;
+
+#if defined (IP_MTU)
+  if (!GetOption(IP_MTU, mtu, IPPROTO_IP))
+#elif defined(SO_MAX_MSG_SIZE)
+  if (!GetOption(SO_MAX_MSG_SIZE, mtu))
+#endif
+    mtu = -1;
+
+  return mtu;
 }
 
 

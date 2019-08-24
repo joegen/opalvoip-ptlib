@@ -344,14 +344,17 @@ class PInternetProtocol : public PIndirectChannel
        @return
        Response code
     */
-    int GetLastResponseCode() const;
+    int GetLastResponseCode() const
+      { return m_lastResponseCode; }
 
     /** Return the last response received by the socket.
 
        @return
        Response as a string
     */
-    PString GetLastResponseInfo() const;
+    PString GetLastResponseInfo() const
+      { return m_lastResponseInfo; }
+
 
 
   protected:
@@ -394,8 +397,9 @@ class PInternetProtocol : public PIndirectChannel
     PBoolean newLineToCRLF;
     // Translate \\n characters to CR/LF pairs.
 
-    int     lastResponseCode;
-    PString lastResponseInfo;
+    bool SetLastResponse(int code, const PString & info, ErrorGroup group = LastGeneralError);
+    int     m_lastResponseCode;
+    PString m_lastResponseInfo;
     // Responses
 
   private:

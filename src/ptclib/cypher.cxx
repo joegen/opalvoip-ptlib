@@ -152,28 +152,59 @@ void PSASLString::AppendValidated(wchar_t c)
 ///////////////////////////////////////////////////////////////////////////////
 // PBase64
 
-PBase64::PBase64()
+static const char Alphabet[65] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char AlphabetURL[65] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+PBase64::PBase64(Options options, PINDEX width)
 {
-  StartEncoding();
+  StartEncoding(options, width);
   StartDecoding();
 }
 
 
-void PBase64::StartEncoding(bool useCRLF, PINDEX width)
+void PBase64::StartEncoding(Options options, PINDEX width)
 {
-  encodedString.MakeEmpty();
-  currentLineLength = saveCount = 0;
-  endOfLine = useCRLF ? "\r\n" : "\n";
-  maxLineLength = width - (useCRLF ? 1 : 0);
+  m_encodedString.MakeEmpty();
+  m_currentLineLength = m_saveCount = 0;
+
+  switch (options) {
+    case e_CRLF:
+      PAssert(width > 2, PInvalidParameter);
+      m_alphabet = Alphabet;
+      m_endOfLine = "\r\n";
+      m_maxLineLength = width - 1;
+      break;
+    case e_LF:
+      PAssert(width > 1, PInvalidParameter);
+      m_alphabet = Alphabet;
+      m_endOfLine = "\n";
+      m_maxLineLength = width;
+      break;
+    case e_NoLF:
+      m_alphabet = Alphabet;
+      m_endOfLine = "";
+      m_maxLineLength = UINT_MAX;
+      break;
+    case e_URL:
+      m_alphabet = AlphabetURL;
+      m_endOfLine = "";
+      m_maxLineLength = UINT_MAX;
+      break;
+  }
 }
 
 
 void PBase64::StartEncoding(const char * eol, PINDEX width)
 {
-  encodedString.MakeEmpty();
-  currentLineLength = saveCount = 0;
-  endOfLine = eol;
-  maxLineLength = width - endOfLine.GetLength();
+  PAssert(eol != NULL && width > 0, PInvalidParameter);
+
+  m_encodedString.MakeEmpty();
+  m_currentLineLength = m_saveCount = 0;
+  m_alphabet = Alphabet;
+  m_endOfLine = eol;
+  m_maxLineLength = width - m_endOfLine.GetLength();
 }
 
 
@@ -195,22 +226,19 @@ void PBase64::ProcessEncoding(const PBYTEArray & data)
 }
 
 
-static const char Binary2Base64[65] =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
 void PBase64::OutputBase64(const BYTE * data)
 {
-  encodedString.SetMinSize(((encodedString.GetLength()+7)&~255) + 256);
+  m_encodedString.SetMinSize(((m_encodedString.GetLength()+7)&~255) + 256);
 
-  encodedString += Binary2Base64[data[0] >> 2];
-  encodedString += Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
-  encodedString += Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
-  encodedString += Binary2Base64[data[2]&0x3f];
+  m_encodedString += m_alphabet[data[0] >> 2];
+  m_encodedString += m_alphabet[((data[0]&3)<<4) | (data[1]>>4)];
+  m_encodedString += m_alphabet[((data[1]&15)<<2) | (data[2]>>6)];
+  m_encodedString += m_alphabet[data[2]&0x3f];
 
-  currentLineLength += 4;
-  if (currentLineLength >= maxLineLength) {
-    encodedString += endOfLine;
-    currentLineLength = 0;
+  m_currentLineLength += 4;
+  if (m_currentLineLength >= m_maxLineLength) {
+    m_encodedString += m_endOfLine;
+    m_currentLineLength = 0;
   }
 }
 
@@ -221,63 +249,76 @@ void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
     return;
 
   const BYTE * data = (const BYTE *)dataPtr;
-  while (saveCount < 3) {
-    saveTriple[saveCount++] = *data++;
+  while (m_saveCount < 3) {
+    m_saveTriple[m_saveCount++] = *data++;
     if (--length == 0) {
-      if (saveCount == 3) {
-        OutputBase64(saveTriple);
-        saveCount = 0;
+      if (m_saveCount == 3) {
+        OutputBase64(m_saveTriple);
+        m_saveCount = 0;
       }
       return;
     }
   }
 
-  OutputBase64(saveTriple);
+  OutputBase64(m_saveTriple);
 
   PINDEX i;
   for (i = 0; i+2 < length; i += 3)
     OutputBase64(data+i);
 
-  saveCount = length - i;
-  switch (saveCount) {
+  m_saveCount = length - i;
+  switch (m_saveCount) {
     case 2 :
-      saveTriple[0] = data[i++];
-      saveTriple[1] = data[i];
+      m_saveTriple[0] = data[i++];
+      m_saveTriple[1] = data[i];
       break;
     case 1 :
-      saveTriple[0] = data[i];
+      m_saveTriple[0] = data[i];
   }
 }
 
 
 PString PBase64::GetEncodedString()
 {
-  PString retval = encodedString;
-  encodedString.MakeEmpty();
+  PString retval = m_encodedString;
+  m_encodedString.MakeEmpty();
   return retval;
 }
 
 
 PString PBase64::CompleteEncoding()
 {
-  encodedString.SetMinSize(encodedString.GetLength() + 5);
+  m_encodedString.SetMinSize(m_encodedString.GetLength() + 5);
 
-  switch (saveCount) {
+  switch (m_saveCount) {
     case 1 :
-      encodedString += Binary2Base64[saveTriple[0] >> 2];
-      encodedString += Binary2Base64[(saveTriple[0]&3)<<4];
-      encodedString += '=';
-      encodedString += '=';
+      m_encodedString += m_alphabet[m_saveTriple[0] >> 2];
+      m_encodedString += m_alphabet[(m_saveTriple[0]&3)<<4];
+      if (m_alphabet == AlphabetURL)
+        return m_encodedString;
+      m_encodedString += '=';
+      m_encodedString += '=';
       break;
 
     case 2 :
-      encodedString += Binary2Base64[saveTriple[0] >> 2];
-      encodedString += Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
-      encodedString += Binary2Base64[((saveTriple[1]&15)<<2)];
-      encodedString += '=';
+      m_encodedString += m_alphabet[m_saveTriple[0] >> 2];
+      m_encodedString += m_alphabet[((m_saveTriple[0]&3)<<4) | (m_saveTriple[1]>>4)];
+      m_encodedString += m_alphabet[((m_saveTriple[1]&15)<<2)];
+      if (m_alphabet == AlphabetURL)
+        return m_encodedString;
+      m_encodedString += '=';
   }
 
-  return encodedString;
+  return m_encodedString;
+}
+
+
+PString PBase64::Encode(const PString & str, Options options, PINDEX width)
+{
+  if (str.IsEmpty())
+    return PString::Empty();
+
+  return Encode((const char *)str, str.GetLength(), options, width);
 }
 
 
@@ -290,6 +331,15 @@ PString PBase64::Encode(const PString & str, const char * endOfLine, PINDEX widt
 }
 
 
+PString PBase64::Encode(const char * cstr, Options options, PINDEX width)
+{
+  if (cstr == NULL || *cstr == '\0')
+    return PString::Empty();
+
+  return Encode((const BYTE *)cstr, (PINDEX)strlen(cstr), options, width);
+}
+
+
 PString PBase64::Encode(const char * cstr, const char * endOfLine, PINDEX width)
 {
   if (cstr == NULL || *cstr == '\0')
@@ -299,12 +349,32 @@ PString PBase64::Encode(const char * cstr, const char * endOfLine, PINDEX width)
 }
 
 
+PString PBase64::Encode(const PBYTEArray & data, Options options, PINDEX width)
+{
+  if (data.IsEmpty())
+    return PString::Empty();
+
+  return Encode(data, data.GetSize(), options, width);
+}
+
+
 PString PBase64::Encode(const PBYTEArray & data, const char * endOfLine, PINDEX width)
 {
   if (data.IsEmpty())
     return PString::Empty();
 
   return Encode(data, data.GetSize(), endOfLine, width);
+}
+
+
+PString PBase64::Encode(const void * data, PINDEX length, Options options, PINDEX width)
+{
+  if (length == 0)
+    return PString::Empty();
+
+  PBase64 encoder(options, width);
+  encoder.ProcessEncoding(data, length);
+  return encoder.CompleteEncoding();
 }
 
 
@@ -322,10 +392,10 @@ PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine
 
 void PBase64::StartDecoding()
 {
-  perfectDecode = true;
-  quadPosition = 0;
-  decodedData.SetSize(0);
-  decodeSize = 0;
+  m_perfectDecode = true;
+  m_quadPosition = 0;
+  m_decodedData.SetSize(0);
+  m_decodeSize = 0;
 }
 
 
@@ -340,10 +410,10 @@ PBoolean PBase64::ProcessDecoding(const char * cstr)
   static const BYTE Base642Binary[256] = {
     96, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 99, 99, 98, 99, 99,
     99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
-    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 62, 99, 99, 99, 63,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 62, 99, 62, 99, 63,
     52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 99, 99, 99, 97, 99, 99,
     99,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 99, 99, 99, 99, 99,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 99, 99, 99, 99, 63,
     99, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 99, 99, 99, 99, 99,
     99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
@@ -363,39 +433,39 @@ PBoolean PBase64::ProcessDecoding(const char * cstr)
         return false;
 
       case 97 : // '=' sign
-        if (quadPosition == 3 || (quadPosition == 2 && *cstr == '=')) {
-          quadPosition = 0;  // Reset this to zero, as have a perfect decode
+        if (m_quadPosition == 3 || (m_quadPosition == 2 && *cstr == '=')) {
+          m_quadPosition = 0;  // Reset this to zero, as have a perfect decode
           return true; // Stop decoding now as must be at end of data
         }
-        perfectDecode = false;  // Ignore '=' sign but flag decode as suspect
+        m_perfectDecode = false;  // Ignore '=' sign but flag decode as suspect
         break;
 
       case 98 : // CRLFs
         break;  // Ignore totally
 
       case 99 :  // Illegal characters
-        perfectDecode = false;  // Ignore rubbish but flag decode as suspect
+        m_perfectDecode = false;  // Ignore rubbish but flag decode as suspect
         break;
 
       default : // legal value from 0 to 63
-        BYTE * out = decodedData.GetPointer(((decodeSize+1)&~255) + 256);
-        switch (quadPosition) {
+        BYTE * out = m_decodedData.GetPointer(((m_decodeSize+1)&~255) + 256);
+        switch (m_quadPosition) {
           case 0 :
-            out[decodeSize] = (BYTE)(value << 2);
+            out[m_decodeSize] = (BYTE)(value << 2);
             break;
           case 1 :
-            out[decodeSize++] |= (BYTE)(value >> 4);
-            out[decodeSize] = (BYTE)((value&15) << 4);
+            out[m_decodeSize++] |= (BYTE)(value >> 4);
+            out[m_decodeSize] = (BYTE)((value&15) << 4);
             break;
           case 2 :
-            out[decodeSize++] |= (BYTE)(value >> 2);
-            out[decodeSize] = (BYTE)((value&3) << 6);
+            out[m_decodeSize++] |= (BYTE)(value >> 2);
+            out[m_decodeSize] = (BYTE)((value&3) << 6);
             break;
           case 3 :
-            out[decodeSize++] |= (BYTE)value;
+            out[m_decodeSize++] |= (BYTE)value;
             break;
         }
-        quadPosition = (quadPosition+1)&3;
+        m_quadPosition = (m_quadPosition+1)&3;
     }
   }
 }
@@ -403,23 +473,23 @@ PBoolean PBase64::ProcessDecoding(const char * cstr)
 
 PBYTEArray PBase64::GetDecodedData()
 {
-  perfectDecode = quadPosition == 0;
-  decodedData.SetSize(decodeSize);
-  PBYTEArray retval = decodedData;
+  m_perfectDecode = m_quadPosition == 0;
+  m_decodedData.SetSize(m_decodeSize);
+  PBYTEArray retval = m_decodedData;
   retval.MakeUnique();
-  decodedData.SetSize(0);
-  decodeSize = 0;
+  m_decodedData.SetSize(0);
+  m_decodeSize = 0;
   return retval;
 }
 
 
 PBoolean PBase64::GetDecodedData(void * dataBlock, PINDEX length)
 {
-  perfectDecode = quadPosition == 0;
-  PBoolean bigEnough = length >= decodeSize;
-  memcpy(dataBlock, decodedData, bigEnough ? decodeSize : length);
-  decodedData.SetSize(0);
-  decodeSize = 0;
+  m_perfectDecode = m_quadPosition == 0;
+  PBoolean bigEnough = length >= m_decodeSize;
+  memcpy(dataBlock, m_decodedData, bigEnough ? m_decodeSize : length);
+  m_decodedData.SetSize(0);
+  m_decodeSize = 0;
   return bigEnough;
 }
 
@@ -487,18 +557,12 @@ void PMessageDigest::Process(const void * dataBlock, PINDEX length)
   InternalProcess(dataBlock, length);
 }
 
-PString PMessageDigest::CompleteDigest()
+PString PMessageDigest::Complete()
 {
   Result result;
-  CompleteDigest(result);
+  InternalCompleteDigest(result);
   return result.AsBase64();
 }
-
-void PMessageDigest::CompleteDigest(Result & result)
-{
-  InternalCompleteDigest(result);
-}
-
 
 void PMessageDigest::Result::PrintOn(ostream & strm) const
 {
@@ -511,6 +575,34 @@ void PMessageDigest::Result::PrintOn(ostream & strm) const
       strm << setw(2) << (unsigned)GetAt(i);
     strm.fill(oldFill);
   }
+}
+
+
+bool PMessageDigest::Result::ConstantTimeCompare(const Result & other) const
+{
+  const BYTE * leftPtr = *this;
+  size_t leftCount = size();
+
+  const BYTE * rightPtr = other;
+  size_t rightCount = other.size();
+
+  unsigned check = 0;
+
+  while (leftCount-- > 0) {
+    check |= *leftPtr++ ^ *rightPtr;
+
+    if (rightCount > 0) {
+      --rightCount;
+      ++rightPtr;
+    }
+    else {
+      // Dummy code so executes at the same speed.
+      --rightCount;
+      ++rightCount; // Assuming incrementing a size_t is same speed as a pointer.
+    }
+  }
+
+  return check == 0;
 }
 
 
@@ -674,7 +766,7 @@ void PMessageDigest5::Transform(const BYTE * block)
 }
 
 
-void PMessageDigest5::Start()
+void PMessageDigest5::InternalStart()
 {
   // Load magic initialization constants.
   state[0] = 0x67452301;
@@ -743,95 +835,6 @@ void PMessageDigest5::InternalCompleteDigest(Result & result)
 }
 
 
-PString PMessageDigest5::Encode(const PString & str)
-{
-  return Encode((const char *)str);
-}
-
-
-void PMessageDigest5::Encode(const PString & str, Result & result)
-{
-  Encode((const char *)str, result);
-}
-
-
-PString PMessageDigest5::Encode(const char * cstr)
-{
-  return Encode((const BYTE *)cstr, (int)strlen(cstr));
-}
-
-
-void PMessageDigest5::Encode(const char * cstr, Result & result)
-{
-  Encode((const BYTE *)cstr, (int)strlen(cstr), result);
-}
-
-
-PString PMessageDigest5::Encode(const PBYTEArray & data)
-{
-  return Encode(data, data.GetSize());
-}
-
-
-void PMessageDigest5::Encode(const PBYTEArray & data, Result & result)
-{
-  Encode(data, data.GetSize(), result);
-}
-
-
-PString PMessageDigest5::Encode(const void * data, PINDEX length)
-{
-  Result result;
-  Encode(data, length, result);
-  return result.AsBase64();
-}
-
-
-void PMessageDigest5::Encode(const void * data, PINDEX len, Result & result)
-{
-  PMessageDigest5 stomach;
-  stomach.Process(data, len);
-  stomach.CompleteDigest(result);
-}
-
-////  backwards compatability functions
-
-void PMessageDigest5::Encode(const PString & str, Code & result)
-{
-  Encode((const char *)str, result);
-}
-
-void PMessageDigest5::Encode(const char * cstr, Code & result)
-{
-  Encode((const BYTE *)cstr, (int)strlen(cstr), result);
-}
-
-void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)
-{
-  Encode(data, data.GetSize(), result);
-}
-
-void PMessageDigest5::Encode(const void * data, PINDEX len, Code & codeResult)
-{
-  PMessageDigest5 stomach;
-  stomach.Process(data, len);
-  stomach.Complete(codeResult);
-}
-
-PString PMessageDigest5::Complete()
-{
-  Code result;
-  Complete(result);
-  return PBase64::Encode(&result, sizeof(result));
-}
-
-void PMessageDigest5::Complete(Code & codeResult)
-{
-  Result result;
-  InternalCompleteDigest(result);
-  memcpy(codeResult.value, result.GetPointer(), sizeof(codeResult.value));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PMessageDigestSHA1
 
@@ -846,97 +849,107 @@ void PMessageDigest5::Complete(Code & codeResult)
 
 #endif
 
+struct PMessageDigestSHA::Context
+{
+  virtual ~Context() { }
+  virtual bool Init() = 0;
+  virtual bool Update(const void *, PINDEX) = 0;
+  virtual bool Final(PBYTEArray & digest) = 0;
+};
+
+template <
+  typename CtxType,
+  unsigned DigestSize,
+  int (*InitFn)(CtxType *),
+  int (*UpdateFn)(CtxType *c, const void *, size_t),
+  int (*FinalFn)(unsigned char *, CtxType *)
+> struct PMessageDigestContextTemplate : PMessageDigestSHA::Context
+{
+  CtxType m_ctx;
+  virtual bool Init() { return InitFn(&m_ctx) != 0; }
+  virtual bool Update(const void * dataPtr, PINDEX length) { return UpdateFn(&m_ctx, dataPtr, length) != 0; }
+  virtual bool Final(PBYTEArray & digest) { return digest.SetSize(DigestSize) && FinalFn(digest.GetPointer(), &m_ctx) != 0; }
+};
+
+
+
+PMessageDigestSHA::PMessageDigestSHA(Context * context)
+  : m_context(context)
+  , m_state(e_Uninitialised)
+{
+}
+
+PMessageDigestSHA::~PMessageDigestSHA()
+{
+  delete m_context;
+}
+
+
+void PMessageDigestSHA::Failed()
+{
+  m_state = e_Failed;
+  PTRACE(2, "MessageDigestSHA failed!");
+}
+
+
+void PMessageDigestSHA::InternalStart()
+{
+  if (m_context->Init())
+    m_state = e_Processing;
+  else
+    Failed();
+}
+
+
+void PMessageDigestSHA::InternalProcess(const void * data, PINDEX len)
+{
+  if (m_state == e_Uninitialised)
+    InternalStart();
+
+  if (m_state == e_Failed)
+    return;
+
+  if (!m_context->Update(data, len))
+    Failed();
+}
+
+
+void PMessageDigestSHA::InternalCompleteDigest(Result & result)
+{
+  if (m_state != e_Processing)
+    return;
+
+  if (!m_context->Final(result))
+    Failed();
+}
+
 
 PMessageDigestSHA1::PMessageDigestSHA1()
+  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA_CTX, SHA_DIGEST_LENGTH, SHA1_Init, SHA1_Update, SHA1_Final>())
 {
-  shaContext = NULL;
-  Start();
-}
-
-PMessageDigestSHA1::~PMessageDigestSHA1()
-{
-  delete (SHA_CTX *)shaContext;
-}
-
-void PMessageDigestSHA1::Start()
-{
-  delete (SHA_CTX *)shaContext;
-  shaContext = new SHA_CTX;
-
-  SHA1_Init((SHA_CTX *)shaContext);
-}
-
-void PMessageDigestSHA1::InternalProcess(const void * data, PINDEX len)
-{
-  if (shaContext == NULL)
-    return;
-
-  SHA1_Update((SHA_CTX *)shaContext, data, (unsigned long)len);
-}
-
-void PMessageDigestSHA1::InternalCompleteDigest(Result & result)
-{
-  if (shaContext == NULL)
-    return;
-
-  SHA1_Final(result.GetPointer(DigestLength), (SHA_CTX *)shaContext);
-  delete ((SHA_CTX *)shaContext);
-  shaContext = NULL;
 }
 
 
-PString PMessageDigestSHA1::Encode(const PString & str)
+PMessageDigestSHA256::PMessageDigestSHA256()
+  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA256_CTX, SHA256_DIGEST_LENGTH, SHA256_Init, SHA256_Update, SHA256_Final>())
 {
-  return Encode((const char *)str);
 }
 
 
-void PMessageDigestSHA1::Encode(const PString & str, Result & result)
+PMessageDigestSHA384::PMessageDigestSHA384()
+  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA512_CTX, SHA384_DIGEST_LENGTH, SHA384_Init, SHA384_Update, SHA384_Final>())
 {
-  Encode((const char *)str, result);
 }
 
 
-PString PMessageDigestSHA1::Encode(const char * cstr)
+PMessageDigestSHA512::PMessageDigestSHA512()
+  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA512_CTX, SHA512_DIGEST_LENGTH, SHA512_Init, SHA512_Update, SHA512_Final>())
 {
-  return Encode((const BYTE *)cstr, strlen(cstr));
 }
 
 
-void PMessageDigestSHA1::Encode(const char * cstr, Result & result)
-{
-  Encode((const BYTE *)cstr, strlen(cstr), result);
-}
+#endif // P_SSL
 
-
-PString PMessageDigestSHA1::Encode(const PBYTEArray & data)
-{
-  return Encode(data, data.GetSize());
-}
-
-
-void PMessageDigestSHA1::Encode(const PBYTEArray & data, Result & result)
-{
-  Encode(data, data.GetSize(), result);
-}
-
-
-PString PMessageDigestSHA1::Encode(const void * data, PINDEX length)
-{
-  Result result;
-  Encode(data, length, result);
-  return result.AsBase64();
-}
-
-
-void PMessageDigestSHA1::Encode(const void * data, PINDEX len, Result & result)
-{
-  PMessageDigestSHA1 stomach;
-  stomach.Process(data, len);
-  stomach.CompleteDigest(result);
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCypher
@@ -1183,32 +1196,48 @@ void PTEACypher::DecodeBlock(const void * in, void * out)
 // PHMAC
 //
 
-void PHMAC::Initialise(const BYTE * key, PINDEX len)
+void PHMAC::InitKey(const void * key, PINDEX len)
 {
-  // ensure the key is at least one block long and pad out if necessary
-  if (len < GetB())
+  memcpy(m_key.GetPointer(len), key,  len);
+}
+
+
+PString PHMAC::Encode(const void * data, PINDEX len, PBase64::Options options) { Result result; InternalProcess(data, len, result); return result.AsBase64(options); }
+PString PHMAC::Encode(const PBYTEArray & data, PBase64::Options options)       { Result result; InternalProcess(data, data.GetSize(), result); return result.AsBase64(options); }
+PString PHMAC::Encode(const PString & str, PBase64::Options options)           { Result result; InternalProcess(str.GetPointer(), str.GetLength(), result); return result.AsBase64(options); }
+
+void PHMAC::Process(const void * data, PINDEX len, PHMAC::Result & result)   { InternalProcess(data, len, result); }
+void PHMAC::Process(const PBYTEArray & data, PHMAC::Result & result)         { InternalProcess(data, data.GetSize(), result); }
+void PHMAC::Process(const PString & str, PHMAC::Result & result)             { InternalProcess(str.GetPointer(), str.GetLength(), result); }
+
+
+void PHMAC_MD5::InitKey(const void * key, PINDEX len)
+{
+  // Ensure the key is no longer than a block, if so, do a digest of it.
+  if (len <= BlockSize)
     memcpy(m_key.GetPointer(len), key,  len);
-  else if (len > GetB()) {
+  else {
     Result result;
-    Hash((const BYTE *)m_key, m_key.GetSize(), result);
+    PMessageDigest5::Encode(key, len, result);
     m_key = result;
   }
 }
 
-void PHMAC::InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & result)
+void PHMAC_MD5::InternalProcess(const void * data, PINDEX len, PHMAC::Result & result)
 {
-  PINDEX i, l;
-  BYTE * s;
+  PINDEX i;
+  BYTE const * k;
   BYTE * d;
 
-  // construct key XOR ipad. This will always
-  PBYTEArray buffer(GetB() + len);
-  s = m_key.GetPointer();
-  l = m_key.GetSize();
+  PINDEX const keyLen = m_key.GetSize();
+
+  // construct key XOR ipad
+  PBYTEArray buffer(BlockSize + len);
+  k = m_key;
   d = buffer.GetPointer();
-  for (i = 0; i < l; ++i)
-    *d++ = 0x36 ^ *s++;
-  for (;i < (PINDEX)GetB(); ++i)
+  for (i = 0; i < keyLen; ++i)
+    *d++ = 0x36 ^ *k++;
+  for (;i < BlockSize; ++i)
     *d++ = 0x36;
 
   // append text
@@ -1216,33 +1245,73 @@ void PHMAC::InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & resul
 
   // hash 
   Result hash1;
-  Hash(buffer, buffer.GetSize(), hash1);
+  PMessageDigest5::Encode(buffer, buffer.GetSize(), hash1);
 
   // create key XOR opad
-  buffer.SetSize(GetB() + hash1.GetSize());
-  s = m_key.GetPointer();
-  l = m_key.GetSize();
+  buffer.SetSize(BlockSize + hash1.GetSize());
+  k = m_key;
   d = buffer.GetPointer();
-  for (i = 0; i < l; ++i)
-    *d++ = 0x5c ^ *s++;
-  for (;i < (PINDEX)GetB(); ++i)
+  for (i = 0; i < keyLen; ++i)
+    *d++ = 0x5c ^ *k++;
+  for (;i < BlockSize; ++i)
     *d++ = 0x5c;
 
   // append hash
   memcpy(d, hash1.GetPointer(), hash1.GetSize());
 
   // hash 
-  Hash(buffer.GetPointer(), buffer.GetSize(), result);
+  PMessageDigest5::Encode(buffer.GetPointer(), buffer.GetSize(), result);
 }
 
 
-PString PHMAC::Encode(const BYTE * data, PINDEX len) { Result result; InternalProcess(data, len, result);            return result.AsBase64(); }
-PString PHMAC::Encode(const PBYTEArray & data)       { Result result; InternalProcess(data, data.GetSize(), result); return result.AsBase64(); }
-PString PHMAC::Encode(const PString & str)           { Result result; InternalProcess(str, str.GetLength(), result); return result.AsBase64(); }
+#if P_SSL
 
-void PHMAC::Process(const BYTE * data, PINDEX len, PHMAC::Result & result)   { InternalProcess(data, len, result); }
-void PHMAC::Process(const PBYTEArray & data, PHMAC::Result & result)         { InternalProcess(data, data.GetSize(), result); }
-void PHMAC::Process(const PString & str, PHMAC::Result & result)             { InternalProcess(str, str.GetLength(), result); }
+#include <openssl/hmac.h>
+
+PHMAC_SHA::PHMAC_SHA(Algorithm const * algo)
+  : m_algorithm(algo)
+{
+}
+
+
+void PHMAC_SHA::InternalProcess(const void * data, PINDEX len, PHMAC::Result & result)
+{
+  HMAC_CTX hmac;
+  unsigned int signatureSize;
+  HMAC_CTX_init(&hmac);
+  HMAC_Init_ex(&hmac, m_key, m_key.GetSize(), m_algorithm, NULL);
+  HMAC_Update(&hmac, (const unsigned char *)data, len);
+  HMAC_Final(&hmac, result.GetPointer(256), &signatureSize);
+  result.SetSize(signatureSize);
+  HMAC_CTX_cleanup(&hmac);
+}
+
+
+PHMAC_SHA1::PHMAC_SHA1()
+  : PHMAC_SHA(EVP_sha1())
+{
+}
+
+
+PHMAC_SHA256::PHMAC_SHA256()
+  : PHMAC_SHA(EVP_sha256())
+{
+}
+
+
+PHMAC_SHA384::PHMAC_SHA384()
+  : PHMAC_SHA(EVP_sha384())
+{
+}
+
+
+PHMAC_SHA512::PHMAC_SHA512()
+  : PHMAC_SHA(EVP_sha512())
+{
+}
+
+#endif // P_SSL
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSecureConfig
@@ -1323,12 +1392,12 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
   if (vkey.IsEmpty())
     return Invalid;
 
-  BYTE info[sizeof(code)+1+sizeof(DWORD)];
+  BYTE info[PMessageDigest5::DigestLength+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return Invalid;
 
-  if (memcmp(info, &code, sizeof(code)) != 0)
+  if (memcmp(info, code, PMessageDigest5::DigestLength) != 0)
     return Invalid;
 
   PTime now;
@@ -1349,19 +1418,19 @@ PBoolean PSecureConfig::ValidatePending()
     return true;
 
   PMessageDigest5::Code code;
-  BYTE info[sizeof(code)+1+sizeof(DWORD)];
+  BYTE info[PMessageDigest5::DigestLength+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return false;
 
   PTime expiryDate(0, 0, 0,
-            1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
+            1, info[PMessageDigest5::DigestLength]&15, (info[PMessageDigest5::DigestLength]>>4)+1996, PTime::GMT);
   PString expiry = expiryDate.AsString("d MMME yyyy", PTime::GMT);
 
   // This is for alignment problems on processors that care about such things
   PUInt32b opt;
   void * dst = &opt;
-  void * src = &info[sizeof(code)+1];
+  void * src = &info[PMessageDigest5::DigestLength+1];
   memcpy(dst, src, sizeof(opt));
   PString options(PString::Unsigned, (DWORD)opt);
 
@@ -1373,7 +1442,7 @@ PBoolean PSecureConfig::ValidatePending()
   digestor.Process(options);
   digestor.Complete(code);
 
-  if (memcmp(info, &code, sizeof(code)) != 0)
+  if (memcmp(info, code, PMessageDigest5::DigestLength) != 0)
     return false;
 
   SetString(expiryDateKey, expiry);

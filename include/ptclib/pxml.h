@@ -104,7 +104,8 @@ class PXML : public PXMLBase
   public:
     PXML(
       Options options = NoOptions,
-      const char * noIndentElements = NULL
+      const char * noIndentElements = NULL,
+      const char * defaultEncoding = NULL
     );
     PXML(const PXML & xml);
     ~PXML();
@@ -116,7 +117,7 @@ class PXML : public PXMLBase
     bool IsDirty() const;
 
     bool Load(const PString & data);
-    bool Load(const PString & data, Options options);
+    bool Load(const PString & data, Options options, const char * defaultEncoding = NULL);
     bool LoadFile(const PFilePath & fn);
     bool LoadFile(const PFilePath & fn, Options options);
 
@@ -281,7 +282,7 @@ class PXML_HTTP : public PXML
     PTimer        m_autoLoadTimer;
     PURL          m_autoloadURL;
     PTimeInterval m_autoLoadWaitTime;
-    PMutex        m_autoLoadMutex;
+    PDECLARE_MUTEX(m_autoLoadMutex);
     PString       m_autoLoadError;
 };
 #endif // P_HTTP
@@ -339,11 +340,25 @@ class PXMLObject : public PObject
 
     virtual PXMLObject * Clone() const = 0;
 
+#if PTRACING
+    struct PrintTraceClass
+    {
+      const PXMLObject * m_object;
+      PrintTraceClass(const PXMLObject * object) : m_object(object) { }
+    };
+    friend ostream & operator<<(ostream & strm, const PrintTraceClass & e);
+    PrintTraceClass PrintTrace() { return PXMLObject::PrintTraceClass(this); }
+    static PrintTraceClass PrintTrace(PXMLObject * obj) { return PrintTraceClass(obj); }
+#endif
+
   protected:
     PXMLElement * m_parent;
     bool          m_dirty;
     unsigned      m_lineNumber;
     unsigned      m_column;
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const = 0;
+#endif
 
   P_REMOVE_VIRTUAL(PXMLObject *, Clone(PXMLElement *) const, 0);
 };
@@ -371,6 +386,10 @@ class PXMLData : public PXMLObject
 
   protected:
     PString m_value;
+
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const;
+#endif
 };
 
 
@@ -464,6 +483,10 @@ class PXMLElement : public PXMLObject
     PCaselessString m_defaultNamespace;
 
     PArray<PXMLObject> m_subObjects;
+
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const;
+#endif
 };
 
 
@@ -496,7 +519,7 @@ class PXMLRootElement : public PXMLElement
 class PXMLParserBase
 {
   protected:
-    PXMLParserBase(PXMLBase::Options options);
+    PXMLParserBase(PXMLBase::Options options, const char * encoding);
 
   public:
     ~PXMLParserBase();

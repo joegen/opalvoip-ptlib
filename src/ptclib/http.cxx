@@ -87,6 +87,10 @@ const PCaselessString & PHTTP::ForwardedTag        () { static const PConstCasel
 const PCaselessString & PHTTP::SetCookieTag        () { static const PConstCaselessString s("Set-Cookie"); return s; }
 const PCaselessString & PHTTP::CookieTag           () { static const PConstCaselessString s("Cookie"); return s; }
 const PCaselessString & PHTTP::FormUrlEncoded      () { static const PConstCaselessString s("application/x-www-form-urlencoded"); return s; }
+const PCaselessString & PHTTP::AllowHeaderTag      () { static const PConstCaselessString s("Access-Control-Allow-Headers"); return s; }
+const PCaselessString & PHTTP::AllowOriginTag      () { static const PConstCaselessString s("Access-Control-Allow-Origin"); return s; }
+const PCaselessString & PHTTP::AllowMethodTag      () { static const PConstCaselessString s("Access-Control-Allow-Methods"); return s; }
+const PCaselessString & PHTTP::MaxAgeTAG           () { static const PConstCaselessString s("Access-Control-Max-Age"); return s; }
 
 
 
@@ -105,18 +109,15 @@ PHTTP::PHTTP(const char * defaultServiceName)
 PINDEX PHTTP::ParseResponse(const PString & line)
 {
   PINDEX endVer = line.Find(' ');
-  if (endVer == P_MAX_INDEX) {
-    lastResponseInfo = "Bad response";
-    lastResponseCode = PHTTP::BadResponse;
-    return 0;
-  }
+  if (endVer == P_MAX_INDEX)
+    return SetLastResponse(PHTTP::BadResponse, "Bad response");
 
-  lastResponseInfo = line.Left(endVer);
+  m_lastResponseInfo = line.Left(endVer);
   PINDEX endCode = line.Find(' ', endVer+1);
-  lastResponseCode = line(endVer+1,endCode-1).AsInteger();
-  if (lastResponseCode == 0)
-    lastResponseCode = PHTTP::BadResponse;
-  lastResponseInfo &= line.Mid(endCode);
+  m_lastResponseCode = line(endVer+1,endCode-1).AsInteger();
+  if (m_lastResponseCode == 0)
+    m_lastResponseCode = PHTTP::BadResponse;
+  m_lastResponseInfo &= line.Mid(endCode);
   return 0;
 }
 

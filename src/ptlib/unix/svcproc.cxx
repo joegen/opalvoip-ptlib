@@ -89,8 +89,9 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                      unsigned majorVersion,
                                      unsigned minorVersion,
                                    CodeStatus status,
-                                     unsigned buildNumber)
-  : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber, false, true)
+                                     unsigned patchVersion,
+                                     unsigned oemVersion)
+  : PProcess(manuf, name, majorVersion, minorVersion, status, patchVersion, false, true, oemVersion)
 {
   isTerminating = false;
 }
@@ -450,7 +451,9 @@ int PServiceProcess::InitialiseService()
   bool daemon = args.HasOption('d');
 
   // Remove the service arguments
-  args.SetArgs(args.GetParameters());
+  PStringArray params = args.GetParameters();
+  args.SetArgs("");
+  args.SetArgs(params);
 
  // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)
@@ -534,7 +537,7 @@ int PServiceProcess::InternalMain(void *)
     try {
       started = OnStart();
     }
-    catch (std::exception & e) {
+    catch (const std::exception & e) {
       PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in service process start, terminating"));
       std::terminate();
     }
@@ -581,6 +584,12 @@ void PServiceProcess::OnContinue()
 
 void PServiceProcess::OnControl()
 {
+}
+
+
+bool PServiceProcess::IsServiceProcess() const
+{
+  return true;
 }
 
 

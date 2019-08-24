@@ -54,6 +54,17 @@ class PMutexExcessiveLockInfo
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     virtual ~PMutexExcessiveLockInfo() { }
     void Construct(unsigned timeout);
+
+#if PTRACING
+    void Constructed(const PObject & mutex) const;
+    void Destroyed(const PObject & mutex) const;
+    #define PMUTEX_CONSTRUCTED() Constructed(*this)
+    #define PMUTEX_DESTROYED() Destroyed(*this)
+#else
+    #define PMUTEX_CONSTRUCTED()
+    #define PMUTEX_DESTROYED()
+#endif
+
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
     virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
@@ -113,6 +124,9 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
       */
     PTimedMutex & operator=(const PTimedMutex &) { return *this; }
 
+    /// Destruction
+    ~PTimedMutex();
+
     /**Block until the synchronisation object is available.
      */
     virtual void Wait();
@@ -142,9 +156,13 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
     {
         DeadlockStackWalkDisabled,
         DeadlockStackWalkEnabled,
-        DeadlockStackWalkOnPhantomRelease
+        DeadlockStackWalkOnPhantomRelease,
+        DeadlockStackWalkNoSymbols
     };
     static DeadlockStackWalkModes DeadlockStackWalkMode;
+#if PTRACING
+    static unsigned CtorDtorLogLevel;
+#endif
 
   protected:
     PThreadIdentifier       m_lockerId;
@@ -172,11 +190,9 @@ typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 
-#define PDECLARE_MUTEX_ARG_1(var)              struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(P_DEBUG_LOCATION) { } } var
-#define PDECLARE_MUTEX_ARG_2(var,nam)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam            ) { } } var
-#define PDECLARE_MUTEX_ARG_3(var,nam,t)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to         ) { } } var
-#define PDECLARE_MUTEX_ARG_4(var,nam,t,w)      struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw      ) { } } var
-#define PDECLARE_MUTEX_ARG_5(var,nam,to,tw,th) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw,th   ) { } } var
+#define PDECLARE_MUTEX_ARG_1(var)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(P_DEBUG_LOCATION) { } } var
+#define PDECLARE_MUTEX_ARG_2(var,nam)    struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam            ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var,nam,to) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to         ) { } } var
 
 #define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
 #define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args

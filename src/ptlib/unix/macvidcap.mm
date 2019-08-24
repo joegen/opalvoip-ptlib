@@ -217,14 +217,14 @@ class PVideoInputDevice_Mac : public PVideoInputDevice
     static bool GetDeviceCapabilities(const PString &, Capabilities *);
     virtual bool GetDeviceCapabilities(Capabilities * caps) { return GetDeviceCapabilities(PString::Empty(), caps); }
     virtual PINDEX GetMaxFrameBytes();
-    virtual PBoolean GetFrameData(BYTE * buffer, PINDEX * bytesReturned);
-    virtual PBoolean GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned);
     virtual PBoolean SetColourFormat(const PString & colourFormat);
     virtual PBoolean SetFrameRate(unsigned rate);
     virtual PBoolean SetFrameSize(unsigned width, unsigned height);
     virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight);
   
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
     AVCaptureSession * m_session;
     AVCaptureDevice * m_device;
     AVCaptureDeviceInput * m_captureInput;
@@ -296,7 +296,7 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   m_availableFormats.clear();
   for (AVCaptureDeviceFormat * format in m_device.formats) {
     FourCharCode subType = CMFormatDescriptionGetMediaSubType(format.formatDescription);
-    char subTypeStr[5] = {(subType >> 24) & 0xFF, (subType >> 16) & 0xFF, (subType >> 8) & 0xFF, subType & 0xFF, 0};
+    char subTypeStr[5] = {(char)(subType >> 24), (char)(subType >> 16), (char)(subType >> 8), (char)subType, 0};
     // Do the SetColourFormat to get the PTLib synonym name for known FourCharCode.
     if (PVideoInputDevice::SetColourFormat(subTypeStr) && CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat))
       m_availableFormats[m_colourFormat] = format;
@@ -580,28 +580,23 @@ PINDEX PVideoInputDevice_Mac::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_Mac::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_Mac::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyframe, bool wait)
 {
   PReadWaitAndSignal mutex(m_mutex);
   
   if (!IsCapturing())
     return false;
   
-  PTRACE_DETAILED("Waiting");
-  [m_captureFrame waitFrame];
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
+  if (wait) {
+    PTRACE_DETAILED("Waiting");
+    [m_captureFrame waitFrame];
+    if (!IsCapturing())
+      return false;
+  }
  
-PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
-{
   PTRACE_DETAILED("Get frame: " << *this << ", converter=" << m_converter);
   
-  if (!IsCapturing())
-    return false;
-
-  PReadWaitAndSignal mutex(m_mutex);
-  return [m_captureFrame grabFrame:destFrame withConverter:m_converter returningBytes:bytesReturned];
+  return IsCapturing() && [m_captureFrame grabFrame:buffer withConverter:m_converter returningBytes:&bytesReturned];
 }
 
 

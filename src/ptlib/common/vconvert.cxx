@@ -335,6 +335,10 @@ void PColourConverter::PrintOn(ostream & strm) const
 
 PBoolean PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
+  if (m_srcFrameWidth == width && m_srcFrameHeight == height &&
+      m_dstFrameWidth == width && m_dstFrameHeight == height)
+    return true;
+
   bool ok1 = SetSrcFrameSize(width, height);
   bool ok2 = SetDstFrameSize(width, height);
   PTRACE(ok1 && ok2 ? 4 : 2,"SetFrameSize: " << width << 'x' << height
